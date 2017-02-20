@@ -1,8 +1,20 @@
-#**Finding Lane Lines on the Road** 
+### Finding Lane Lines on the Road
 
-##Writeup Template
+The first project of the self-driving car course deals with detecting lane lines on the road. The goals of this project are to correctly identify left and right lines on the road in video streams. 
+Therefore an image processing pipeline shall be implemented which takes a video stream as input and outputs an annotated video stream showing the detected lines.
 
-###You can use this file as a template for your writeup if you want to submit it as a markdown file. But feel free to use some other method and submit a pdf if you prefer.
+In this writeup I first present my pipeline, i.e. the image processing steps are carried out in order to successfully detect the lane lines in the provided videos. Finally, I will reflect my work and will provide pontential suggestions for further improvements.
+
+---
+
+**Image Processing Pipeline**
+In this section I describe my image processing pipeline which shall be able to detect lane lines at least under the following assumptions and constraints:
+* The lane lines to be detected are more or less straight.
+* The position of the camera that takes images is always the same.
+* Images to be processed have always the same shape.
+* Lightning conditions in the image are always the same.
+
+
 
 ---
 
