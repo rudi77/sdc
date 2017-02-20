@@ -30,14 +30,24 @@ In this section I describe my image processing pipeline which shall be able to d
 ***The pipeline***
 
 1. Read the image
-[Input]: ./examples/input.png "Input"
+
+![input image](./examples/input.png)
+
 2. Convert image to a grayscale
+
+![grayscale image](./examples/grayscale.png)
 
 3. Apply gaussian blur to smooth the image.
 
+![blurred image](./examples/blurgray.png)
+
 4. Apply canny to detect edges.
 
+![edged image](./examples/edges.png)
+
 4. Define an area of interest (AoI) and mask it with the image. Lane lines shall only be detected within the AoI.
+
+![area of interest image](./examples/roi.png)
 
 5. Apply hough transform. Hough transform can be used to detect lines in an image.
 
