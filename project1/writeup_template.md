@@ -30,7 +30,7 @@ In this section I describe my image processing pipeline which shall be able to d
 ***The pipeline***
 
 1. Read the image
-
+[Input]: ./examples/input.png "Input"
 2. Convert image to a grayscale
 
 3. Apply gaussian blur to smooth the image.
