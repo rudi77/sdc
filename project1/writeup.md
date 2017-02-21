@@ -29,7 +29,7 @@ In this section I describe my image processing pipeline which shall be able to d
 
 ***The pipeline***
 
-The images below show the image processing steps (from left to right)
+The images below show the image processing steps (from left to right and top to bottom)
 
 ![image processing pipeline](./examples/solidYellowCurve2_pipeline.png)
 
@@ -45,7 +45,46 @@ The images below show the image processing steps (from left to right)
 
 6. Apply hough transform. Hough transform can be used to detect lines in an image.
 
-7. Draw red lines over detected lane lines
+7. Draw lines over detected lanes
+  I've split this final step into several sub-steps:
+  1. I've separated lines that I received from the hough transform into left and right lines. Therefore I simply looked at the x value (x2) of the second point of each line. If the value is smaller the image_width/2 then it belongs to the left lines otherwise to the right ones. This approach might be too simple and may be replaced by a more sophisiticated one!  Within this step I've also removed lines with an invalid slope. Line separation is done in the following function
+  ```python
+def separate_lines(img, lines, draw_lines = True):
+    """
+    separates left from right lane lines and returns them 
+    """
+    color=[0, 255, 0] 
+    thickness=2
+    
+    leftLines = []
+    rightLines = []
+    
+    for line in lines:
+        for x1,y1,x2,y2 in line:
+            # lines with an invalid slope will not be taken into account
+            slope,intercept = calc_slope_and_intercept(x1, y1, x2, y2)                                
+            
+            if np.isnan(slope):
+                continue
+            
+            # This line belongs to the left lines if the x value of the second point x2
+            # is smaller then imagewidth/2.
+            if x2 < img.shape[1]/2:
+                leftLines.append(line)
+            else:
+                rightLines.append(line)
+               
+            # Draw all detected lines
+            if draw_lines:
+                points = get_line(slope, intercept, y1, y2)
+                if len(points) == 2:
+                    cv2.line(img, points[0], points[1], color, thickness)
+                    
+    return leftLines, rightLines
+    ```
+  
+  2. I've applied a linear regression on the left and right line. And then used the outcome (slope and intercept)
+    to calculate the start and end points for the final lines which are than drawn as red lines on the original image. 
 
 
 
