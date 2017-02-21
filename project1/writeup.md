@@ -128,9 +128,15 @@ Up to now my solution has several shortcomings besides the fact is not able to c
   2. I should also rethink my line separation approach, i.e. deciding whether a certain line belongs to the left or right lane.
   
   3. Lines are only drawn if there has been at least one line correctly detected. This could also be improved.
+  
+  4. A test environment which is able to measure the performance of my pipeline is also missing. Currently I decided whether a parameter setting is good or bad just by intuition and by look at the images.
 
 ###3. Suggest possible improvements to your pipeline
 
-A possible improvement would be to ...
+  1. A possible improvement would be to store the information about detected lines of one or more previously precessed images and take this info into account when calculating the lines of the current image. Such an approach may improve stability but could also be used to estimate the lane line on an image where no lines were detected.
 
-Another potential improvement could be to ...
+  2. Mirroring a line if only one line was detected could also work, at least if the lane is more or less straight.
+
+  3. Improved Region Of Interest selection. At the moment I use a trapezoid with fixed dimension and position. This does only work as long as the camera position does not change and the car maintains its lane.
+
+
