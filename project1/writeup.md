@@ -1,4 +1,4 @@
-### Finding Lane Lines on the Road
+### 1. Finding Lane Lines on the Road
 
 The first project of the self-driving car course deals with detecting lane lines on the road. The goals of this project are to correctly identify left and right lines on the road in video streams. 
 Therefore an image processing pipeline shall be implemented which takes a video stream as input and outputs an annotated video stream showing the detected lines.
@@ -29,7 +29,7 @@ In this section I describe my image processing pipeline which shall be able to d
 
 ***The pipeline***
 
-The images below show the image processing steps (from left to right)
+The images below show the image processing steps (from left to right and top to bottom)
 
 ![image processing pipeline](./examples/solidYellowCurve2_pipeline.png)
 
@@ -45,48 +45,98 @@ The images below show the image processing steps (from left to right)
 
 6. Apply hough transform. Hough transform can be used to detect lines in an image.
 
-7. Draw red lines over detected lane lines
+7. Draw lines over detected lanes
+  I've split this final step into several sub-steps:
+  1. I've separated lines that I received from the hough transform into left and right lines. Therefore I simply looked at the x value (x2) of the second point of each line. If the value is smaller then imagewidth/2 then it belongs to the left lines otherwise to the right ones. This approach might be too simple and may be replaced by a more sophisiticated one!  Within this step I've also removed lines with an invalid slope. Line separation is done in the following function
+  ```python
+  def separate_lines(img, lines, draw_lines = True):
+      """
+      separates left from right lane lines and returns them 
+      """
+      color=[0, 255, 0] 
+      thickness=2
 
+      leftLines = []
+      rightLines = []
 
+      for line in lines:
+          for x1,y1,x2,y2 in line:
+              # lines with an invalid slope will not be taken into account
+              slope,intercept = calc_slope_and_intercept(x1, y1, x2, y2)                                
 
+              if np.isnan(slope):
+                  continue
+
+              # This line belongs to the left lines if the x value of the second point x2
+              # is smaller then imagewidth/2.
+              if x2 < img.shape[1]/2:
+                  leftLines.append(line)
+              else:
+                  rightLines.append(line)
+
+              # Draw lines
+              if draw_lines:
+                  cv2.line(img, (x1,y1), (x2,y2), color, thickness)
+
+      return leftLines, rightLines
+    ```
+  
+  2. I've applied a linear regression, see extrapolate() function, on the left and right line. And then used the outcome (slope and intercept) to calculate the start and end points for the final lines which are than drawn, see draw_lines, as red lines on the original image.
+  
+  ```python
+  def extrapolate(lines, from_, to_):
+    from scipy import stats
+    
+    pointsX = []
+    pointsY = []
+    
+    for line in lines:
+        for x1,y1,x2,y2 in line:
+            pointsX.append(x1)
+            pointsX.append(x2)
+            pointsY.append(y1)
+            pointsY.append(y2)
+
+    slope, intercept, r_value, p_value, std_err = stats.linregress(pointsX, pointsY)      
+    
+    return get_line(slope, intercept, from_, to_)
+        
+  def draw_lines(img, left, right,from_, to_, color=[255, 0, 0], thickness=2):
+      """
+      Draws a single line over the left and right lane. It does a linear regression
+      and calculates the top and bottom point for the calculated line.
+      """        
+      if len(left) > 0:
+          leftPoints = extrapolate(left, from_, to_)
+
+          if (len(leftPoints) > 0):        
+              cv2.line(img, leftPoints[0], leftPoints[1], color, thickness)
+
+      if len(right) > 0:
+          rightPoints = extrapolate(right, from_, to_)
+
+          if (len(rightPoints) > 0):
+              cv2.line(img, rightPoints[0], rightPoints[1], color, thickness)
+  ```
 ---
 
-**Finding Lane Lines on the Road**
+### 2. Identify potential shortcomings with your current pipeline
+Up to now my solution has several shortcomings besides the fact is not able to correctly draw the lines on the challenge video 
 
-The goals / steps of this project are the following:
-* Make a pipeline that finds lane lines on the road
-* Reflect on your work in a written report
-
-
-[//]: # (Image References)
-
-[image1]: ./examples/grayscale.jpg "Grayscale"
-
----
-
-### Reflection
-
-###1. Describe your pipeline. As part of the description, explain how you modified the draw_lines() function.
-
-My pipeline consisted of 5 steps. First, I converted the images to grayscale, then I .... 
-
-In order to draw a single line on the left and right lanes, I modified the draw_lines() function by ...
-
-If you'd like to include images to show how the pipeline works, here is how to include an image: 
-
-![alt text][image1]
-
-
-###2. Identify potential shortcomings with your current pipeline
-
-
-One potential shortcoming would be what would happen when ... 
-
-Another shortcoming could be ...
-
+  1. It is not robust against outliers, i.e. against lines which do not really belong to a lane. Currently I simply do not take any lines into account whose slope is smaller than 0.5 - assuming that these lines do not belong to a lane which may not be the case in general.
+  
+  2. I should also rethink my line separation approach, i.e. deciding whether a certain line belongs to the left or right lane.
+  
+  3. Lines are only drawn if there has been at least one line correctly detected. This could also be improved.
+  
+  4. A test environment which is able to measure the performance of my pipeline is also missing. Currently I decided whether a parameter setting is good or bad just by intuition and by look at the images.
 
 ###3. Suggest possible improvements to your pipeline
 
-A possible improvement would be to ...
+  1. A possible improvement would be to store the information about detected lines of one or more previously precessed images and take this info into account when calculating the lines of the current image. Such an approach may improve stability but could also be used to estimate the lane line on an image where no lines were detected.
 
-Another potential improvement could be to ...
+  2. Mirroring a line if only one line was detected could also work, at least if the lane is more or less straight.
+
+  3. Improved Region Of Interest selection. At the moment I use a trapezoid with fixed dimension and position. This does only work as long as the camera position does not change and the car maintains its lane.
+
+
