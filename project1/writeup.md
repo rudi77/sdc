@@ -31,7 +31,7 @@ In this section I describe my image processing pipeline which shall be able to d
 
 The images below show the image processing steps (from left to right)
 
-![image processing pipeline](./examples/pipeline.png)
+![image processing pipeline](./examples/solidYellowCurve2_pipeline.png)
 
 1. Read the image
 
