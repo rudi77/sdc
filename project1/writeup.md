@@ -1,4 +1,4 @@
-### Finding Lane Lines on the Road
+### 1. Finding Lane Lines on the Road
 
 The first project of the self-driving car course deals with detecting lane lines on the road. The goals of this project are to correctly identify left and right lines on the road in video streams. 
 Therefore an image processing pipeline shall be implemented which takes a video stream as input and outputs an annotated video stream showing the detected lines.
@@ -74,49 +74,57 @@ def separate_lines(img, lines, draw_lines = True):
             else:
                 rightLines.append(line)
                
-            # Draw all detected lines
+            # Draw lines
             if draw_lines:
-                points = get_line(slope, intercept, y1, y2)
-                if len(points) == 2:
-                    cv2.line(img, points[0], points[1], color, thickness)
+                cv2.line(img, (x1,y1), (x2,y2), color, thickness)
                     
     return leftLines, rightLines
     ```
   
   2. I've applied a linear regression on the left and right line. And then used the outcome (slope and intercept)
-    to calculate the start and end points for the final lines which are than drawn as red lines on the original image. 
+    to calculate the start and end points for the final lines which are than drawn as red lines on the original image.
+    ```python
+    def extrapolate(lines, from_, to_):
+    from scipy import stats
+    
+    pointsX = []
+    pointsY = []
+    
+    for line in lines:
+        for x1,y1,x2,y2 in line:
+            pointsX.append(x1)
+            pointsX.append(x2)
+            pointsY.append(y1)
+            pointsY.append(y2)
 
+    slope, intercept, r_value, p_value, std_err = stats.linregress(pointsX, pointsY)      
+    
+    return get_line(slope, intercept, from_, to_)
+        
+  def draw_lines(img, left, right, color=[255, 0, 0], thickness=2):
+      """
+      Draws a single line over the left and right lane. It does a linear regression
+      and calculates the top and bottom point for the calculated line.
+      """    
+      yRatio = 0.59  
+      from_ = img.shape[0]
+      to_ = int(round(yRatio * img.shape[0]))    
 
+      if len(left) > 0:
+          leftPoints = extrapolate(left, from_, to_)
 
+          if (len(leftPoints) > 0):        
+              cv2.line(img, leftPoints[0], leftPoints[1], color, thickness)
+
+      if len(right) > 0:
+          rightPoints = extrapolate(right, from_, to_)
+
+          if (len(rightPoints) > 0):
+              cv2.line(img, rightPoints[0], rightPoints[1], color, thickness)
+    ```
 ---
 
-**Finding Lane Lines on the Road**
-
-The goals / steps of this project are the following:
-* Make a pipeline that finds lane lines on the road
-* Reflect on your work in a written report
-
-
-[//]: # (Image References)
-
-[image1]: ./examples/grayscale.jpg "Grayscale"
-
----
-
-### Reflection
-
-###1. Describe your pipeline. As part of the description, explain how you modified the draw_lines() function.
-
-My pipeline consisted of 5 steps. First, I converted the images to grayscale, then I .... 
-
-In order to draw a single line on the left and right lanes, I modified the draw_lines() function by ...
-
-If you'd like to include images to show how the pipeline works, here is how to include an image: 
-
-![alt text][image1]
-
-
-###2. Identify potential shortcomings with your current pipeline
+### 2. Identify potential shortcomings with your current pipeline
 
 
 One potential shortcoming would be what would happen when ... 
