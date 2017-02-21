@@ -79,11 +79,12 @@ The images below show the image processing steps (from left to right and top to 
                   cv2.line(img, (x1,y1), (x2,y2), color, thickness)
 
       return leftLines, rightLines
-      ```
+    ```
   
   2. I've applied a linear regression, see extrapolate() function, on the left and right line. And then used the outcome (slope and intercept) to calculate the start and end points for the final lines which are than drawn, see draw_lines, as red lines on the original image.
-    ```python
-    def extrapolate(lines, from_, to_):
+  
+  ```python
+  def extrapolate(lines, from_, to_):
     from scipy import stats
     
     pointsX = []
@@ -116,13 +117,16 @@ The images below show the image processing steps (from left to right and top to 
 
           if (len(rightPoints) > 0):
               cv2.line(img, rightPoints[0], rightPoints[1], color, thickness)
-    ```
+  ```
 ---
 
 ### 2. Identify potential shortcomings with your current pipeline
 Up to now my solution has several shortcomings besides the fact is not able to correctly draw the lines on the challenge video 
+
   1. It is not robust against outliers, i.e. against lines which do not really belong to a lane. Currently I simply do not take any lines into account whose slope is smaller than 0.5 - assuming that these lines do not belong to a lane which may not be the case in general.
+  
   2. I should also rethink my line separation approach, i.e. deciding whether a certain line belongs to the left or right lane.
+  
   3. Lines are only drawn if there has been at least one line correctly detected. This could also be improved.
 
 ###3. Suggest possible improvements to your pipeline
