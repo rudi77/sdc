@@ -29,6 +29,10 @@ In this section I describe my image processing pipeline which shall be able to d
 
 ***The pipeline***
 
+The images below show the image processing steps (from left to right)
+
+![image processing pipeline](./examples/pipeline.png)
+
 1. Read the image
 
 2. Convert image to a grayscale
@@ -37,11 +41,11 @@ In this section I describe my image processing pipeline which shall be able to d
 
 4. Apply canny to detect edges.
 
-4. Define an area of interest (AoI) and mask it with the image. Lane lines shall only be detected within the AoI.
+5. Define an area of interest (AoI) and mask it with the image. Lane lines shall only be detected within the AoI.
 
-5. Apply hough transform. Hough transform can be used to detect lines in an image.
+6. Apply hough transform. Hough transform can be used to detect lines in an image.
 
-6. Draw red lines over detected lane lines
+7. Draw red lines over detected lane lines
 
 
 
