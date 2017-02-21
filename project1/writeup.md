@@ -49,40 +49,39 @@ The images below show the image processing steps (from left to right and top to 
   I've split this final step into several sub-steps:
   1. I've separated lines that I received from the hough transform into left and right lines. Therefore I simply looked at the x value (x2) of the second point of each line. If the value is smaller the image_width/2 then it belongs to the left lines otherwise to the right ones. This approach might be too simple and may be replaced by a more sophisiticated one!  Within this step I've also removed lines with an invalid slope. Line separation is done in the following function
   ```python
-def separate_lines(img, lines, draw_lines = True):
-    """
-    separates left from right lane lines and returns them 
-    """
-    color=[0, 255, 0] 
-    thickness=2
-    
-    leftLines = []
-    rightLines = []
-    
-    for line in lines:
-        for x1,y1,x2,y2 in line:
-            # lines with an invalid slope will not be taken into account
-            slope,intercept = calc_slope_and_intercept(x1, y1, x2, y2)                                
-            
-            if np.isnan(slope):
-                continue
-            
-            # This line belongs to the left lines if the x value of the second point x2
-            # is smaller then imagewidth/2.
-            if x2 < img.shape[1]/2:
-                leftLines.append(line)
-            else:
-                rightLines.append(line)
-               
-            # Draw lines
-            if draw_lines:
-                cv2.line(img, (x1,y1), (x2,y2), color, thickness)
-                    
-    return leftLines, rightLines
-    ```
+  def separate_lines(img, lines, draw_lines = True):
+      """
+      separates left from right lane lines and returns them 
+      """
+      color=[0, 255, 0] 
+      thickness=2
+
+      leftLines = []
+      rightLines = []
+
+      for line in lines:
+          for x1,y1,x2,y2 in line:
+              # lines with an invalid slope will not be taken into account
+              slope,intercept = calc_slope_and_intercept(x1, y1, x2, y2)                                
+
+              if np.isnan(slope):
+                  continue
+
+              # This line belongs to the left lines if the x value of the second point x2
+              # is smaller then imagewidth/2.
+              if x2 < img.shape[1]/2:
+                  leftLines.append(line)
+              else:
+                  rightLines.append(line)
+
+              # Draw lines
+              if draw_lines:
+                  cv2.line(img, (x1,y1), (x2,y2), color, thickness)
+
+      return leftLines, rightLines
+      ```
   
-  2. I've applied a linear regression on the left and right line. And then used the outcome (slope and intercept)
-    to calculate the start and end points for the final lines which are than drawn as red lines on the original image.
+  2. I've applied a linear regression, see extrapolate() function, on the left and right line. And then used the outcome (slope and intercept) to calculate the start and end points for the final lines which are than drawn, see draw_lines, as red lines on the original image.
     ```python
     def extrapolate(lines, from_, to_):
     from scipy import stats
@@ -101,15 +100,11 @@ def separate_lines(img, lines, draw_lines = True):
     
     return get_line(slope, intercept, from_, to_)
         
-  def draw_lines(img, left, right, color=[255, 0, 0], thickness=2):
+  def draw_lines(img, left, right,from_, to_, color=[255, 0, 0], thickness=2):
       """
       Draws a single line over the left and right lane. It does a linear regression
       and calculates the top and bottom point for the calculated line.
-      """    
-      yRatio = 0.59  
-      from_ = img.shape[0]
-      to_ = int(round(yRatio * img.shape[0]))    
-
+      """        
       if len(left) > 0:
           leftPoints = extrapolate(left, from_, to_)
 
@@ -125,12 +120,10 @@ def separate_lines(img, lines, draw_lines = True):
 ---
 
 ### 2. Identify potential shortcomings with your current pipeline
-
-
-One potential shortcoming would be what would happen when ... 
-
-Another shortcoming could be ...
-
+Up to now my solution has several shortcomings besides the fact is not able to correctly draw the lines on the challenge video 
+  1. It is not robust against outliers, i.e. against lines which do not really belong to a lane. Currently I simply do not take any lines into account whose slope is smaller than 0.5 - assuming that these lines do not belong to a lane which may not be the case in general.
+  2. I should also rethink my line separation approach, i.e. deciding whether a certain line belongs to the left or right lane.
+  3. Lines are only drawn if there has been at least one line correctly detected. This could also be improved.
 
 ###3. Suggest possible improvements to your pipeline
 
