@@ -5,7 +5,6 @@ Created on Sat Mar 11 19:54:02 2017
 @author: rudi
 """
 
-import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 import random
@@ -37,14 +36,26 @@ def grayscale(image):
     Converts an image to grayscale and reshapes it to (32,32,1)
     """
     return cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    #img_gray_blur = cv2.GaussianBlur(img_gray, (3, 3), 0)
-    #img_gray_blur = img_gray_blur[:, :, newaxis]
-    #return img_gray_blur
+
+    
+def blur(image, kernel):
+    """
+    Blurs an image using a provided kernel
+    @kernel The kernel used in the gaussian blur function
+    """
+    blurred_img = cv2.GaussianBlur(image, kernel, 0)
+    return blurred_img    
  
 def expand(image):
+    """
+    Adds another axis
+    """
     return image[:,:,newaxis]
     
 def normalize(image):
+    """
+    Normalizes the provided image. Image must be greyscale
+    """
     image = (image.astype('float') - 128.0) / 128.0
     # Or cv2.normalize(image.astype('float'), None, 0.0, 1.0, cv2.NORM_MINMAX)
     return image
@@ -70,13 +81,36 @@ def rotate(img, d):
 
 def scale(img, s):
     """
-    
+    Scales the image
     """
     height, width = img.shape[:2]
     
     return cv2.resize(img,(s*width, s*height), interpolation = cv2.INTER_CUBIC)
 
-def deform_image(image, translation, rotation):
+def contrast(image, limit):
+    """
+    Contrast equalization. Can only be applied on gray images
+    """
+    # create a CLAHE object (Arguments are optional).
+    clahe = cv2.createCLAHE(clipLimit=limit, tileGridSize=(8,8))
+    cl1 = clahe.apply(image.copy())
+    
+def contrast_color(image, limit=2.0, gridSize=4):
+    img_yuv = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
+    
+    # equalize the histogram of the Y channel
+    #img_yuv[:,:,0] = cv2.equalizeHist(img_yuv[:,:,0])
+    
+    # adaptive equalization
+    clahe = cv2.createCLAHE(clipLimit=limit, tileGridSize=(gridSize,gridSize))
+    img_yuv[:,:,0] = clahe.apply(img_yuv[:,:,0])
+    
+    # convert the YUV image back to RGB format
+    new_image = cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
+    
+    return new_image
+
+def deform_image(image, translation, rotation, contrast):
     """
     Takes an image as input and translates, rotates and scales it based on
     the provided input paramters. Images are generated based on the method presented
@@ -84,6 +118,7 @@ def deform_image(image, translation, rotation):
     @translation [+|-]T% of the image size for translation
     @rotation    [+|-]R° for rotation
     @scaling     1[+|-]S/100 for scaling
+    @contrast    A tuple containing clipping limit and grid size parameters for CLAHE
     """    
     new_image = image.copy()
 
@@ -101,40 +136,20 @@ def deform_image(image, translation, rotation):
     #if scaling != 0:
     #    s = 1 + (random.uniform(-scaling, scaling) / 100.0)
     #    new_image = scale(new_image, s)
-        
-    return new_image
-       
-
-plt.rcParams['figure.figsize'] = (12, 10)
-def showimages(images):
-    for i in range(9):
-    		rand_idx = np.random.randint(len(images))
-    		image = images[rand_idx]
-    		plt.subplot(3, 3, i+1)
-    		plt.imshow(image)
-    		plt.title('Image Idx: %d' % (rand_idx,))
     
-newimagesA = [deform_image(img, 5, 0) for img in X_train] 
-newimagesB = [deform_image(img, 5, 10) for img in X_train] 
-newimagesC = [deform_image(img, 10, 10) for img in X_train]
+    if contrast is not None:
+        new_image = contrast_color(new_image, contrast[0], contrast[1])        
+    return new_image
+           
+#newimagesA = [deform_image(img, 5, 0, None) for img in X_train] 
+#newimagesB = [deform_image(img, 5, 10, (2.0, 4)) for img in X_train] 
+#newimagesC = [deform_image(img, 10, 10, (1.0, 2)) for img in X_train]
 
+#import data_plotting as dp
 
-# Convert each image to grayscale
-#X_train_gray = [to_grayscale(image.copy()) for image in X_train]
-#X_valid_gray = [to_grayscale(image.copy()) for image in X_valid]
-
-#plot_traffic_signs_of_class(classes_dict[0], X_train_gray)
-# Normalize images
-#X_train_normalized = [normalize(image) for image in X_train_gray]
-#X_valid_normalized = [normalize(image) for image in X_valid_gray]
-
-#X_train = X_train_normalized
-#X_valid = X_valid_normalized   
-
-
-showimages(newimagesA)
-#showimages(newimagesB)
-#showimages(newimagesC)
+#dp.showimages(newimagesA, y_train, 5, 1, 5, isRandom=False)
+#dp.showimages(newimagesB, y_train, 5, 1, 5, isRandom=False)
+#dp.showimages(newimagesC, y_train, 5, 1, 5, isRandom=False)
 
         
         
