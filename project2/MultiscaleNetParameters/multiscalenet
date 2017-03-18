@@ -1,0 +1,5 @@
+model_checkpoint_path: "MultiscaleNetParameters-99"
+all_model_checkpoint_paths: "MultiscaleNetParameters-24"
+all_model_checkpoint_paths: "MultiscaleNetParameters-49"
+all_model_checkpoint_paths: "MultiscaleNetParameters-74"
+all_model_checkpoint_paths: "MultiscaleNetParameters-99"
