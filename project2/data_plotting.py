@@ -17,7 +17,7 @@ def set_plotsize(x,y):
 def get_plotsize():
     return plt.rcParams['figure.figsize'] 
 
-def showimages(images, labels, counts=10, rows=2, cols=5, isRandom=True):
+def showimages(images, labels, counts=10, rows=2, cols=5, isRandom=True, isGray=False):
     assert(len(images) == len(labels))
     
     trafficsignmap = dh.create_trafficsign_map('signnames.csv')
@@ -30,7 +30,10 @@ def showimages(images, labels, counts=10, rows=2, cols=5, isRandom=True):
             idx = i
         image = images[idx]
         ax = fig.add_subplot(rows, cols, i+1)
-        ax.imshow(image)
+        if not isGray: 
+            ax.imshow(image)
+        else:
+            ax.imshow(image, cmap="gray_r")
         ax.set_title('%s' % (trafficsignmap[labels[idx]]))
         
 def histogram(samples, classes):

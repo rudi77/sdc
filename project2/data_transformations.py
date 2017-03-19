@@ -14,24 +14,6 @@ from numpy import newaxis
 # Load pickled data
 import pickle
 
-# TODO: Fill this in based on where you saved the training and testing data
-base_dir = "traffic-signs-data"
-
-training_file = os.path.join(base_dir, "train.p")
-validation_file = os.path.join(base_dir, "valid.p")
-testing_file = os.path.join(base_dir, "test.p")
-
-with open(training_file, mode='rb') as f:
-    train = pickle.load(f)
-with open(validation_file, mode='rb') as f:
-    valid = pickle.load(f)
-with open(testing_file, mode='rb') as f:
-    test = pickle.load(f)
-    
-X_train, y_train = train['features'], train['labels']
-X_valid, y_valid = valid['features'], valid['labels']
-X_test, y_test = test['features'], test['labels']
-
 def grayscale(image):
     """
     Converts an image to grayscale and reshapes it to (32,32,1)
@@ -185,30 +167,6 @@ def deform_image(image, translation, rotation, scalefactor, contrast_range):
         new_image = scale(new_image, s)
           
     return new_image
-
-#import data_plotting as dp
-
-#dp.set_plotsize(6,4)
-#dp.showimages([X_train[0]], [y_train[0]], 1, 1, 1, isRandom=False)
-
-#img = contrast(X_train[0])
-#dp.showimages([img], [y_train[0]], 1, 1, 1, isRandom=False)
-
-#img = scale(X_train[0], 0.7)
-#for i in range(10):
-#   img = deform_image(X_train[0], 5, 10, 30, [0.5, 1.5])
-#   dp.showimages([img], [y_train[0]], 1, 1, 1, isRandom=False)
-
-
-#newimagesA = [deform_image(img, 5, 0, None) for img in X_train] 
-#newimagesB = [deform_image(img, 5, 10, (2.0, 4)) for img in X_train] 
-#newimagesC = [deform_image(img, 10, 10, (1.0, 2)) for img in X_train]
-
-#import data_plotting as dp
-
-#dp.showimages(newimagesA, y_train, 5, 1, 5, isRandom=False)
-#dp.showimages(newimagesB, y_train, 5, 1, 5, isRandom=False)
-#dp.showimages(newimagesC, y_train, 5, 1, 5, isRandom=False)
 
         
         

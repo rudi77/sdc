@@ -94,7 +94,7 @@ def create_testset(rootpath):
             if os.path.isfile(imagepath): 
                 image = cv2.imread(imagepath)
                 imageRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                resizedimg = cv2.resize(imageRGB, (32, 32))
+                resizedimg = cv2.resize(imageRGB, (32, 32), interpolation = cv2.INTER_AREA)
                 images.append( resizedimg )
                 
                 path, foldername = os.path.split(dir)
