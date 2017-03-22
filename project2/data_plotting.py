@@ -41,4 +41,52 @@ def histogram(samples, classes):
     plt.rcParams['figure.figsize'] = (8, 6)
     n, bins, patches = plt.hist(samples, classes, facecolor='green', histtype='bar', rwidth=0.8, alpha=1)
     plt.grid(True)
+     
+    
+def top5_barchart(probabilities, indices):
+    plt.rcParams['figure.figsize'] = (8, 6)
+    trafficsignmap = dh.create_trafficsign_map('signnames.csv')
+    trafficsigns = [trafficsignmap[idx] for idx in indices]
+    
+    plt.figure(1)
+    plt.barh(indices,probabilities, align='center', color='g')
+    plt.yticks(indices, trafficsigns)
+    plt.xlabel('Probabilities')
+    plt.grid(True)
+
+
+def show_top5(images, probs, indices):
+    assert(len(images) == len(probs) == len(indices))
+
+    trafficsignmap = dh.create_trafficsign_map('signnames.csv')
+    plt.rcParams['figure.figsize'] = (16, 4)
+    
+    pos = np.arange(5)
+    
+    
+    for i in range(len(images)):
+        img  = images[i]
+        prob = probs[i]
+        idxs = indices[i]
         
+        trafficsigns = [trafficsignmap[idx] for idx in idxs]
+        
+        fig = plt.figure()
+        ax_ts = fig.add_subplot(1,2,1)
+        ax_ts.imshow(img, cmap='gray_r')
+        
+        ax_p = fig.add_subplot(1, 2, 2)       
+        ax_p.barh(pos, prob, align='center', color='g')
+        ax_p.set_yticks(pos)
+        ax_p.set_yticklabels(trafficsigns)
+        ax_p.set_xlabel('Probabilities')
+        ax_p.grid(True)  
+        #plt.show()
+        
+        
+import data_helpers as dh
+myexamplespath = ".\examples\MyGermanTrafficSigns"
+X_test, y_test = dh.create_testset(myexamplespath)
+probs = [[0.5, 0.2, 0.1, 0.05, 0.025], [0.5, 0.2, 0.1, 0.05, 0.025], [0.5, 0.2, 0.1, 0.05, 0.025]]
+indices = [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
+show_top5(X_test[0:3], probs, indices)
