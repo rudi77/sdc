@@ -36,6 +36,16 @@ def showimages(images, labels, counts=10, rows=2, cols=5, isRandom=True, isGray=
             ax.imshow(image, cmap="gray_r")
         ax.set_title('%s' % (trafficsignmap[labels[idx]]))
         
+def histogram_traffic_signs(trafficsigns, classes, titles=["Training", "Validation", "Testing"]):
+    fig = plt.figure()
+    
+    colors = ['green', 'blue', 'red']
+    
+    for i in range(len(trafficsigns)):
+        ax = fig.add_subplot(1,3,i+1)
+        ax.set_title(titles[i])
+        n, bins, patches = ax.hist(trafficsigns[i], classes, facecolor=colors[i], histtype='bar', rwidth=0.8, alpha=1)
+        
 def histogram(samples, classes):
     # distribution of examples per class displayed as a histogram
     plt.rcParams['figure.figsize'] = (8, 6)
@@ -43,27 +53,24 @@ def histogram(samples, classes):
     plt.grid(True)
      
     
-def top5_barchart(probabilities, indices):
-    plt.rcParams['figure.figsize'] = (8, 6)
+def barchart(probabilities, indices, title):
+
     trafficsignmap = dh.create_trafficsign_map('signnames.csv')
     trafficsigns = [trafficsignmap[idx] for idx in indices]
     
     plt.figure(1)
     plt.barh(indices,probabilities, align='center', color='g')
     plt.yticks(indices, trafficsigns)
-    plt.xlabel('Probabilities')
+    plt.title(title)
     plt.grid(True)
 
 
 def show_top5(images, probs, indices):
     assert(len(images) == len(probs) == len(indices))
 
-    trafficsignmap = dh.create_trafficsign_map('signnames.csv')
-    plt.rcParams['figure.figsize'] = (16, 4)
-    
+    trafficsignmap = dh.create_trafficsign_map('signnames.csv')    
     pos = np.arange(5)
-    
-    
+        
     for i in range(len(images)):
         img  = images[i]
         prob = probs[i]
@@ -89,4 +96,5 @@ myexamplespath = ".\examples\MyGermanTrafficSigns"
 X_test, y_test = dh.create_testset(myexamplespath)
 probs = [[0.5, 0.2, 0.1, 0.05, 0.025], [0.5, 0.2, 0.1, 0.05, 0.025], [0.5, 0.2, 0.1, 0.05, 0.025]]
 indices = [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
+set_plotsize(16,4)
 show_top5(X_test[0:3], probs, indices)

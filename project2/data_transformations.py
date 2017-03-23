@@ -14,6 +14,12 @@ from numpy import newaxis
 # Load pickled data
 import pickle
 
+def to_yuv(image):
+    """
+    Converts and RGB to an YUV image
+    """
+    return cv2.cvtColor(image, cv2.COLOR_RGB2YUV    )
+
 def grayscale(image):
     """
     Converts an image to grayscale and reshapes it to (32,32,1)
@@ -133,7 +139,7 @@ def contrast(image, cfactor=0.5):
     # convert the YUV image back to RGB format
     return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
 
-def deform_image(image, translation, rotation, scalefactor, contrast_range):
+def deform_image(images, translation, rotation, scalefactor, contrast_range, num_samples = 1):
     """
     Takes an image as input and translates, rotates and scales it based on
     the provided input paramters. Images are generated based on the method presented
@@ -142,32 +148,33 @@ def deform_image(image, translation, rotation, scalefactor, contrast_range):
     @rotation    [+|-]R° for rotation
     @scalefactor 1[+|-]S/100 for scaling
     @contrast    A tuple containing clipping limit and grid size parameters for CLAHE
-    """    
-    new_image = image.copy()
-
-    if translation != 0:
-        rows, cols = new_image.shape[:2]
-        tx = random.uniform(-translation, translation)
-        ty = random.uniform(-translation, translation)
-        new_image = translate(new_image, tx, ty)
-        
-    if rotation != 0:
-        d = random.uniform(-rotation, rotation)
-        new_image = rotate(new_image, d)
-
-    if contrast_range is not None:
-        assert(len(contrast_range) == 2)
-        assert(contrast_range[0] < contrast_range[1])
-        
-        cfactor = random.uniform(contrast_range[0], contrast_range[1])
-        new_image = contrast(new_image, cfactor)  
-        
-    if scalefactor != 0:
-        s = 1 + (random.uniform(-scalefactor, scalefactor) / 100.0)
-        new_image = scale(new_image, s)
-          
-    return new_image
-
-        
-        
+    """
+    deformed_images = []
+    num_images = len(images)
+    for i in range(num_samples):        
+        new_image = images[i%num_images].copy()
     
+        if translation != 0:
+            rows, cols = new_image.shape[:2]
+            tx = random.uniform(-translation, translation)
+            ty = random.uniform(-translation, translation)
+            new_image = translate(new_image, tx, ty)
+            
+        if rotation != 0:
+            d = random.uniform(-rotation, rotation)
+            new_image = rotate(new_image, d)
+            
+        if scalefactor != 0:
+            s = 1 + (random.uniform(-scalefactor, scalefactor) / 100.0)
+            new_image = scale(new_image, s)
+            
+        if contrast_range is not None:
+            assert(len(contrast_range) == 2)
+            assert(contrast_range[0] < contrast_range[1])
+            
+            cfactor = random.uniform(contrast_range[0], contrast_range[1])
+            new_image = contrast(new_image, cfactor)  
+              
+        deformed_images.append(new_image)
+
+    return deformed_images
