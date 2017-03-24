@@ -19,7 +19,7 @@ The goals / steps of this project are the following:
 
 [image1]: ./examples/train_images.png "Traffics Sign of the Training Set"
 [image2]: ./examples/traffic_sign_samples_distributions.png "Sample Distributions"
-[image3]: ./examples/random_noise.jpg "Random Noise"
+[image3]: ./examples/training_set_samples_distribution.png "Training Set Sample Distribution"
 [image4]: ./examples/placeholder.png "Traffic Sign 1"
 [image5]: ./examples/placeholder.png "Traffic Sign 2"
 [image6]: ./examples/placeholder.png "Traffic Sign 3"
@@ -27,10 +27,9 @@ The goals / steps of this project are the following:
 [image8]: ./examples/placeholder.png "Traffic Sign 5"
 
 ## Rubric Points
-###Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
+Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
 
 ---
-
 
 ### 1. Dataset Summary
 Here, I provide a summary of the german traffic sign data set. The code for this step is contained in the second code cell of the IPython notebook. For this task I used pyhton's built-in functions and numpy
@@ -50,9 +49,13 @@ Photographs are taken under different lighting conditions and from different per
 
 ![alt text][image1]
 
-The sample distributions of the training, validation and test sets are shown in the next image.
+The sample distributions of the training, validation and test sets are shown in the next image. The distributions across the data sets look very similar and unbalanced. Some classes contain more then 2000 images whereas others contain less then 250 images. This could lead to biased predictions which means that some classes mmay be predicted more accurately than others. One way to overcome this problem is to increase the samples of the underrepresented data by artificially augmenting them.
 
 ![alt text][image2]
+
+Finally I have also generated a horizontal bar chart showing the sample distribution of the training set with it class names.
+
+![alt text][image3]
 
 ###Design and Test a Model Architecture
 
