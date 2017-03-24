@@ -17,7 +17,7 @@ def set_plotsize(x,y):
 def get_plotsize():
     return plt.rcParams['figure.figsize'] 
 
-def showimages(images, labels, counts=10, rows=2, cols=5, isRandom=True, isGray=False):
+def showimages(images, labels, counts=10, rows=2, cols=5, isRandom=True, isGray=False, name=''):
     assert(len(images) == len(labels))
     
     trafficsignmap = dh.create_trafficsign_map('signnames.csv')
@@ -36,24 +36,37 @@ def showimages(images, labels, counts=10, rows=2, cols=5, isRandom=True, isGray=
             ax.imshow(image, cmap="gray_r")
         ax.set_title('%s' % (trafficsignmap[labels[idx]]))
         
-def histogram_traffic_signs(trafficsigns, classes, titles=["Training", "Validation", "Testing"]):
+    if name and not name.isspace():
+        fig.savefig(name)
+        
+def histogram_traffic_signs(trafficsigns, xlabels, titles=["Training", "Validation", "Testing"], name=''):
+    colors = ['g', 'b', 'r']
     fig = plt.figure()
-    
-    colors = ['green', 'blue', 'red']
+    indices = np.arange(len(xlabels))
+    bar_width = 0.8
     
     for i in range(len(trafficsigns)):
-        ax = fig.add_subplot(1,3,i+1)
+        ax = fig.add_subplot(3,1,i+1)
         ax.set_title(titles[i])
-        n, bins, patches = ax.hist(trafficsigns[i], classes, facecolor=colors[i], histtype='bar', rwidth=0.8, alpha=1)
+        ax.set_xticks(indices)
+        ax.set_xticklabels(xlabels)                
+        ax.bar(indices, trafficsigns[i], width=bar_width, align='center', color=colors[i])
         
-def histogram(samples, classes):
+    if name and not name.isspace():
+        fig.savefig(name)
+        
+def histogram(samples, xlabels, name=''):
     # distribution of examples per class displayed as a histogram
     plt.rcParams['figure.figsize'] = (8, 6)
-    n, bins, patches = plt.hist(samples, classes, facecolor='green', histtype='bar', rwidth=0.8, alpha=1)
+    n, bins, patches = plt.hist(samples, len(xlabels), facecolor='green', histtype='bar', rwidth=0.8, alpha=1)
     plt.grid(True)
+    plt.xticklabels(xlabels)
+    
+    if name and not name.isspace():
+        plt.savefig(name)
      
     
-def barchart(probabilities, indices, title):
+def barchart(probabilities, indices, title, name=''):
 
     trafficsignmap = dh.create_trafficsign_map('signnames.csv')
     trafficsigns = [trafficsignmap[idx] for idx in indices]
@@ -63,9 +76,11 @@ def barchart(probabilities, indices, title):
     plt.yticks(indices, trafficsigns)
     plt.title(title)
     plt.grid(True)
-
-
-def show_top5(images, probs, indices):
+    
+    if name and not name.isspace():
+        plt.savefig(name)
+         
+def show_top5(images, probs, indices, name=''):
     assert(len(images) == len(probs) == len(indices))
 
     trafficsignmap = dh.create_trafficsign_map('signnames.csv')    
@@ -88,13 +103,12 @@ def show_top5(images, probs, indices):
         ax_p.set_yticklabels(trafficsigns)
         ax_p.set_xlabel('Probabilities')
         ax_p.grid(True)  
+
+        if name and not name.isspace():
+            plt.savefig(name + '_' + i)
         #plt.show()
         
-        
-import data_helpers as dh
-myexamplespath = ".\examples\MyGermanTrafficSigns"
-X_test, y_test = dh.create_testset(myexamplespath)
-probs = [[0.5, 0.2, 0.1, 0.05, 0.025], [0.5, 0.2, 0.1, 0.05, 0.025], [0.5, 0.2, 0.1, 0.05, 0.025]]
-indices = [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
-set_plotsize(16,4)
-show_top5(X_test[0:3], probs, indices)
+
+# samples = [[10,8,6],[4,2,1]]
+# classes = [0,1,2]
+# histogram_traffic_signs(samples, classes)

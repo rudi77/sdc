@@ -66,8 +66,8 @@ def create_testset(rootpath):
     """
     Creates a test set used to validate a trained network. There exists a root directory
     and within this directory there exists a directory for each traffic sign class using
-    the ClassId as directory name. We iterate over each directory, read all images
-    label them and return an array of all images and and a corresponding label array.
+    the ClassId as directory name. We iterate over each directory, read all images,
+    label them and return an array of all images and a corresponding label array.
     """    
     # TODO: check if rootpath exists
     
@@ -101,14 +101,3 @@ def create_testset(rootpath):
                 labels.append(int(foldername))
                 
     return images, labels
-
-rootpath = "C:\\Users\\rudi\\Documents\\Udacity\\SelfDrivingCar\\sdc\\project2\\examples\\MyGermanTrafficSigns"
-X_test, y_test = create_testset(rootpath)
-
-#dplt.set_plotsize(40,30)
-#dplt.showimages(X_test, y_test, counts=len(y_test), rows=6, cols=8, isRandom=True)
-#print(labels)
-
-#signnames = "C:\\Users\\rudi\\Documents\\Udacity\\SelfDrivingCar\\sdc\\project2\\signnames.csv"
-#tsmap = create_trafficsign_map(signnames)
-#print(tsmap)
