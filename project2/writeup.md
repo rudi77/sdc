@@ -43,14 +43,16 @@ Here, I provide a summary of the german traffic sign data set. The code for this
 
 ### 2. Exploratory Visualization
 
+Different visualization techniques have been applied to the data sets. First I displayed one traffic sign per class of the
+training set. Then I plotted the samples distribution of the training, validation and test sets. And finally I made a horizontal bar chart of the training set.
 The code for this step is contained in the code cells 3,6, and 8 of the IPython notebook.  
-In code cell 3 the first image of each traffic sign class is displayed.
+Photographs are taken under different lighting conditions and from different perspectives and distances.
 
 ![alt text][image1]
 
-In code cell 6 the sample distributions
+The sample distributions of the training, validation and test sets are shown in the next image.
 
-
+![alt text][image2]
 
 ###Design and Test a Model Architecture
 
