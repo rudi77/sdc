@@ -1,10 +1,10 @@
-#**Traffic Sign Recognition** 
+# Traffic Sign Recognition
 
 This is the summary of the second project - classifying german traffic sign with a convolutional neural network that is built, trained and evaluated in [tensorflow](tensorflow.org).
 
 ---
 
-**Build a Traffic Sign Recognition Project**
+## Build a Traffic Sign Recognition Project
 
 The goals / steps of this project are the following:
 * Load the data set (see below for links to the project data set)
@@ -32,7 +32,7 @@ The goals / steps of this project are the following:
 ---
 
 
-###1. Dataset Summary
+### 1. Dataset Summary
 Here, I provide a summary of the german traffic sign data set. The code for this step is contained in the second code cell of the IPython notebook. For this task I used pyhton's built-in functions and numpy
 
 * The size of training set is 34799
@@ -41,14 +41,14 @@ Here, I provide a summary of the german traffic sign data set. The code for this
 * The shape of a traffic sign image is  (32, 32, 3)
 * The number of unique classes/labels in the data set is 43
 
-###2. Exploratory Visualization
+### 2. Exploratory Visualization
 
 The code for this step is contained in the code cells 3,6, and 8 of the IPython notebook.  
 In code cell 3 the first image of each traffic sign class is displayed.
 
 ![alt text][image1]
 
-Here is an exploratory visualization of the data set. It is a bar chart showing how the data ...
+In code cell 6 the sample distributions
 
 
 
