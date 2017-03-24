@@ -31,6 +31,8 @@ Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/4
 
 ---
 
+## Dataset Exploration
+
 ### 1. Dataset Summary
 Here, I provide a summary of the german traffic sign data set. The code for this step is contained in the second code cell of the IPython notebook. For this task I used pyhton's built-in functions and numpy
 
@@ -57,7 +59,25 @@ Finally I have also generated a horizontal bar chart showing the sample distribu
 
 ![alt text][image3]
 
-###Design and Test a Model Architecture
+## Design and Test a Model Architecture
+
+### 1. Preprocessing
+
+The submission describes the preprocessing techniques used and why these techniques were chosen.
+
+### 2. Model Architecture
+
+The submission provides details of the characteristics and qualities of the architecture, such as the type of model used, the number of layers, the size of each layer. Visualizations emphasizing particular qualities of the architecture are encouraged.
+
+### 3. Model Training
+
+The submission describes how the model was trained by discussing what optimizer was used, batch size, number of epochs and values for hyperparameters.
+
+### 4. Solution Approach
+
+The submission describes the approach to finding a solution. Accuracy on the validation set is 0.93 or greater.
+
+---
 
 ####1. Describe how, and identify where in your code, you preprocessed the image data. What tecniques were chosen and why did you choose these techniques? Consider including images showing the output of each preprocessing technique. Pre-processing refers to techniques such as converting to grayscale, normalization, etc.
 
@@ -69,7 +89,8 @@ Here is an example of a traffic sign image before and after grayscaling.
 
 ![alt text][image2]
 
-As a last step, I normalized the image data because ...
+As a last step, I normalized the image data because ... 
+
 
 ####2. Describe how, and identify where in your code, you set up training, validation and testing data. How much data was in each set? Explain what techniques were used to split the data into these sets. (OPTIONAL: As described in the "Stand Out Suggestions" part of the rubric, if you generated additional data for training, describe why you decided to generate additional data, how you generated the data, identify where in your code, and provide example images of the additional data)
 
@@ -85,8 +106,7 @@ Here is an example of an original image and an augmented image:
 
 ![alt text][image3]
 
-The difference between the original data set and the augmented data set is the following ... 
-
+The difference between the original data set and the augmented data set is the following ...
 
 ####3. Describe, and identify where in your code, what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
 
