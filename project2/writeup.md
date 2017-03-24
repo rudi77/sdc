@@ -55,7 +55,7 @@ The sample distributions of the training, validation and test sets are shown in 
 
 ![alt text][image2]
 
-Finally I have also generated a horizontal bar chart showing the sample distribution of the training set with it class names.
+Finally I have also generated a horizontal bar chart showing the sample distribution of the training set with its class names instead of the class ids.
 
 ![alt text][image3]
 
@@ -63,7 +63,11 @@ Finally I have also generated a horizontal bar chart showing the sample distribu
 
 ### 1. Preprocessing
 
-The submission describes the preprocessing techniques used and why these techniques were chosen.
+- Images are converted to grayscale.
+
+- Grayscaled images are then normalized between -1 and 1 by subtracting 128 from each pixel and then divided this value by 128. px_new = (px_old - 128) / 128. Input normalization is good practice - helps GDC to converge faster.
+
+- One hot encoded labels:
 
 ### 2. Model Architecture
 
