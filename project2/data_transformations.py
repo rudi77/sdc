@@ -45,7 +45,9 @@ def normalize(image):
     """
     Normalizes the provided image. Image must be greyscale
     """
-    image = (image.astype('float') - 128.0) / 128.0
+    image = image.astype('float32')
+    image = (image - 128.) / 128.
+    #image = (image.astype('float') - 128.0) / 128.0
     # Or cv2.normalize(image.astype('float'), None, 0.0, 1.0, cv2.NORM_MINMAX)
     return image
 
