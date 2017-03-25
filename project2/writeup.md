@@ -28,6 +28,7 @@ The goals / steps of this project are the following:
 
 ## Rubric Points
 Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
+I should also mention that I have implemented several functions used for image tranformation, visualization and others in separate python files. These files can be found here: [data_transformations.py](https://github.com/rudi77/sdc/blob/master/project2/data_transformations.py), [data_plotting.py](https://github.com/rudi77/sdc/blob/master/project2/data_plotting.py) and [data_helper.py](https://github.com/rudi77/sdc/blob/master/project2/data_helpers.py). 
 
 ---
 
@@ -47,11 +48,11 @@ Here, I provide a summary of the german traffic sign data set. The code for this
 Different visualization techniques have been applied to the data sets. First I displayed one traffic sign per class of the
 training set. Then I plotted the samples distribution of the training, validation and test sets. And finally I made a horizontal bar chart of the training set.
 The code for this step is contained in the code cells 3,6, and 8 of the IPython notebook.  
-Photographs are taken under different lighting conditions and from different perspectives and distances.
+Photographs of the traffic signs are taken under different lighting conditions and from different perspectives and distances.
 
 ![alt text][image1]
 
-The sample distributions of the training, validation and test sets are shown in the next image. The distributions across the data sets look very similar and unbalanced. Some classes contain more then 2000 images whereas others contain less then 250 images. This could lead to biased predictions which means that some classes mmay be predicted more accurately than others. One way to overcome this problem is to increase the samples of the underrepresented data by artificially augmenting them.
+The sample distributions of the training, validation and test sets are shown in the next image. The distributions across the data sets look very similar and unbalanced. Some classes contain more then 1500 images whereas others contain less then 250 images. This could lead to biased predictions which means that some classes may be predicted more accurately than others. One way to overcome this problem is to increase the samples of the underrepresented data by artificially augmenting them.
 
 ![alt text][image2]
 
@@ -63,9 +64,15 @@ Finally I have also generated a horizontal bar chart showing the sample distribu
 
 ### 1. Preprocessing
 
-- Images are converted to grayscale.
+- Images are converted to grayscale. I converted the images from color to grayscale mainly because I thought it might reduce training time and memory usage.
 
-- Grayscaled images are then normalized between -1 and 1 by subtracting 128 from each pixel and then divided this value by 128. px_new = (px_old - 128) / 128. Input normalization is good practice - helps GDC to converge faster.
+- Grayscaled images are then normalized between -1 and 1 by subtracting 128 from each pixel and then dividing this value by 128. 
+
+  px_new = (px_old - 128) / 128
+  
+  Input normalization is good practice - helps GDC to converge faster.
+
+- Artificially augmenting number of example images: The bar charts above showed that data is unbalanced among the different traffic sign classes which could distort predictions. Therefore different geometric transformations like translation, rotation and contrast adaptation are applied on the existing training samples to augment the number of training examples per traffic sign class. This approach is based on data augmentation methods mentioned in [http://www.people.usi.ch/mascij/data/papers/2011_ijcnn_committee.pdf] and [http://yann.lecun.com/exdb/publis/pdf/sermanet-ijcnn-11.pdf]. The newly generated images are stored with their corresponding labels as a pickle file in a separate folder "./traffic-signs-data-augmented/augmented_training.p". Moreover, data generation is only executed once and only the training set will be augmented leaving the validation and test images untouched. 
 
 - One hot encoded labels:
 
