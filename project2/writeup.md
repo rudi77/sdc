@@ -1,10 +1,10 @@
-#**Traffic Sign Recognition** 
+# Traffic Sign Recognition
 
 This is the summary of the second project - classifying german traffic sign with a convolutional neural network that is built, trained and evaluated in [tensorflow](tensorflow.org).
 
 ---
 
-**Build a Traffic Sign Recognition Project**
+## Build a Traffic Sign Recognition Project
 
 The goals / steps of this project are the following:
 * Load the data set (see below for links to the project data set)
@@ -19,20 +19,26 @@ The goals / steps of this project are the following:
 
 [image1]: ./examples/train_images.png "Traffics Sign of the Training Set"
 [image2]: ./examples/traffic_sign_samples_distributions.png "Sample Distributions"
-[image3]: ./examples/random_noise.jpg "Random Noise"
+[image3]: ./examples/training_set_samples_distribution.png "Training Set Sample Distribution"
 [image4]: ./examples/placeholder.png "Traffic Sign 1"
 [image5]: ./examples/placeholder.png "Traffic Sign 2"
 [image6]: ./examples/placeholder.png "Traffic Sign 3"
 [image7]: ./examples/placeholder.png "Traffic Sign 4"
 [image8]: ./examples/placeholder.png "Traffic Sign 5"
 
+[//]: # (Literature References)
+[1]: http://www.people.usi.ch/mascij/data/papers/2011_ijcnn_committee.pdf
+[2]: http://yann.lecun.com/exdb/publis/pdf/sermanet-ijcnn-11.pdf
+
 ## Rubric Points
-###Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
+Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
+I should also mention that I have implemented several functions used for image tranformation, visualization and others in separate python files. These files can be found here: [data_transformations.py](https://github.com/rudi77/sdc/blob/master/project2/data_transformations.py), [data_plotting.py](https://github.com/rudi77/sdc/blob/master/project2/data_plotting.py) and [data_helper.py](https://github.com/rudi77/sdc/blob/master/project2/data_helpers.py). 
 
 ---
 
+## Dataset Exploration
 
-###1. Dataset Summary
+### 1. Dataset Summary
 Here, I provide a summary of the german traffic sign data set. The code for this step is contained in the second code cell of the IPython notebook. For this task I used pyhton's built-in functions and numpy
 
 * The size of training set is 34799
@@ -41,18 +47,52 @@ Here, I provide a summary of the german traffic sign data set. The code for this
 * The shape of a traffic sign image is  (32, 32, 3)
 * The number of unique classes/labels in the data set is 43
 
-###2. Exploratory Visualization
+### 2. Exploratory Visualization
 
+Different visualization techniques have been applied to the data sets. First I displayed one traffic sign per class of the
+training set. Then I plotted the samples distribution of the training, validation and test sets. And finally I made a horizontal bar chart of the training set.
 The code for this step is contained in the code cells 3,6, and 8 of the IPython notebook.  
-In code cell 3 the first image of each traffic sign class is displayed.
+Photographs of the traffic signs are taken under different lighting conditions and from different perspectives and distances.
 
 ![alt text][image1]
 
-Here is an exploratory visualization of the data set. It is a bar chart showing how the data ...
+The sample distributions of the training, validation and test sets are shown in the next image. The distributions across the data sets look very similar and unbalanced. Some classes contain more then 1500 images whereas others contain less then 250 images. This could lead to biased predictions which means that some classes may be predicted more accurately than others. One way to overcome this problem is to increase the samples of the underrepresented data by artificially augmenting them.
 
+![alt text][image2]
 
+Finally I have also generated a horizontal bar chart showing the sample distribution of the training set with its class names instead of the class ids.
 
-###Design and Test a Model Architecture
+![alt text][image3]
+
+## Design and Test a Model Architecture
+
+### 1. Preprocessing
+
+- Images are converted to grayscale. I converted the images from color to grayscale mainly because I've this approach was also used in [1][1] and [2][2]. Converted images to grayscale may also reduce training time and memory usage.
+
+- Grayscaled images are then normalized between -1 and 1 by subtracting 128 from each pixel and then dividing this value by 128. 
+
+  px_new = (px_old - 128) / 128
+  
+  Input normalization is good practice - helps GDC to converge faster.
+
+- Artificially augmenting number of example images: The bar charts above showed that data is unbalanced among the different traffic sign classes which could distort predictions. Therefore different geometric transformations like translation, rotation and contrast adaptation are applied on the existing training samples to augment the number of training examples per traffic sign class. This approach is based on data augmentation methods mentioned in [1][1] and [2][2]. The newly generated images are stored with their corresponding labels as a pickle file in a separate folder "./traffic-signs-data-augmented/augmented_training.p". Moreover, data generation is only executed once and only the training set will be augmented leaving the validation and test images untouched. 
+
+- One hot encoded labels: Although labels were already one hot encoded in the template it should be mentioned as it is an important step and is a standard method in machine learning. This method transforms categorical data like the traffic sign classes into one-hot encoded vectors.
+
+### 2. Model Architecture
+
+The submission provides details of the characteristics and qualities of the architecture, such as the type of model used, the number of layers, the size of each layer. Visualizations emphasizing particular qualities of the architecture are encouraged.
+
+### 3. Model Training
+
+The submission describes how the model was trained by discussing what optimizer was used, batch size, number of epochs and values for hyperparameters.
+
+### 4. Solution Approach
+
+The submission describes the approach to finding a solution. Accuracy on the validation set is 0.93 or greater.
+
+---
 
 ####1. Describe how, and identify where in your code, you preprocessed the image data. What tecniques were chosen and why did you choose these techniques? Consider including images showing the output of each preprocessing technique. Pre-processing refers to techniques such as converting to grayscale, normalization, etc.
 
@@ -64,7 +104,8 @@ Here is an example of a traffic sign image before and after grayscaling.
 
 ![alt text][image2]
 
-As a last step, I normalized the image data because ...
+As a last step, I normalized the image data because ... 
+
 
 ####2. Describe how, and identify where in your code, you set up training, validation and testing data. How much data was in each set? Explain what techniques were used to split the data into these sets. (OPTIONAL: As described in the "Stand Out Suggestions" part of the rubric, if you generated additional data for training, describe why you decided to generate additional data, how you generated the data, identify where in your code, and provide example images of the additional data)
 
@@ -80,8 +121,7 @@ Here is an example of an original image and an augmented image:
 
 ![alt text][image3]
 
-The difference between the original data set and the augmented data set is the following ... 
-
+The difference between the original data set and the augmented data set is the following ...
 
 ####3. Describe, and identify where in your code, what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
 
