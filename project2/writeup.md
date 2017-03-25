@@ -20,7 +20,7 @@ The goals / steps of this project are the following:
 [image1]: ./examples/train_images.png "Traffics Sign of the Training Set"
 [image2]: ./examples/traffic_sign_samples_distributions.png "Sample Distributions"
 [image3]: ./examples/training_set_samples_distribution.png "Training Set Sample Distribution"
-[image4]: ./examples/placeholder.png "Traffic Sign 1"
+[image4]: ./examples/augmented_trainset_distribution.png "Augmented training set distribution"
 [image5]: ./examples/placeholder.png "Traffic Sign 2"
 [image6]: ./examples/placeholder.png "Traffic Sign 3"
 [image7]: ./examples/placeholder.png "Traffic Sign 4"
@@ -67,18 +67,20 @@ Finally I have also generated a horizontal bar chart showing the sample distribu
 ## Design and Test a Model Architecture
 
 ### 1. Preprocessing
+The following preprocessing steps are carried out before the model is trained. First the traffic signs were artificially augmented, then converted into grayscale images and normalized. Finally, the class ids are transformed into one hot encoded vectors.
+- Augment training set: The bar charts above showed that data is unbalanced among the different traffic sign classes which could distort predictions. Therefore different geometric transformations like translation, rotation and contrast adaptation are applied on the existing training samples to augment the number of training examples per traffic sign class. This approach is based on data augmentation methods mentioned in [1][1] and [2][2]. The newly generated images are stored with their corresponding labels as a pickle file in a separate folder "./traffic-signs-data-augmented/augmented_training.p". Moreover, data generation is only executed once and only the training set will be augmented leaving the validation and test images untouched. The code for data augmentation is in code cell 6. For every traffic sign class I generate __n_augmented_samples = (max_samples - number_of_samples_of_class_n)__ so that in the end all classes are out-balanced as it is shown in the next bar chart below. 
 
-- Images are converted to grayscale. I converted the images from color to grayscale mainly because I've this approach was also used in [1][1] and [2][2]. Converted images to grayscale may also reduce training time and memory usage.
+![alt text][image4]
 
-- Grayscaled images are then normalized between -1 and 1 by subtracting 128 from each pixel and then dividing this value by 128. 
+- Convert images to grayscale: I converted the images from color to grayscale mainly because I've this approach was also used in [1][1] and [2][2]. Converted images to grayscale may also reduce training time and memory usage.
+
+- Normalize images: Grayscaled images are then normalized between -1 and 1 by subtracting 128 from each pixel and then dividing this value by 128. 
 
   px_new = (px_old - 128) / 128
   
   Input normalization is good practice - helps GDC to converge faster.
 
-- Artificially augmenting number of example images: The bar charts above showed that data is unbalanced among the different traffic sign classes which could distort predictions. Therefore different geometric transformations like translation, rotation and contrast adaptation are applied on the existing training samples to augment the number of training examples per traffic sign class. This approach is based on data augmentation methods mentioned in [1][1] and [2][2]. The newly generated images are stored with their corresponding labels as a pickle file in a separate folder "./traffic-signs-data-augmented/augmented_training.p". Moreover, data generation is only executed once and only the training set will be augmented leaving the validation and test images untouched. 
-
-- One hot encoded labels: Although labels were already one hot encoded in the template it should be mentioned as it is an important step and is a standard method in machine learning. This method transforms categorical data like the traffic sign classes into one-hot encoded vectors.
+- Encode traffics sign classes into one hot vectors: Although labels were already one hot encoded in the template it should be mentioned as it is an important step and is a standard method in machine learning. This method transforms categorical data like the traffic sign classes into one-hot encoded vectors.
 
 ### 2. Model Architecture
 
@@ -94,17 +96,7 @@ The submission describes the approach to finding a solution. Accuracy on the val
 
 ---
 
-####1. Describe how, and identify where in your code, you preprocessed the image data. What tecniques were chosen and why did you choose these techniques? Consider including images showing the output of each preprocessing technique. Pre-processing refers to techniques such as converting to grayscale, normalization, etc.
-
-The code for this step is contained in the fourth code cell of the IPython notebook.
-
-As a first step, I decided to convert the images to grayscale because ...
-
-Here is an example of a traffic sign image before and after grayscaling.
-
-![alt text][image2]
-
-As a last step, I normalized the image data because ... 
+ 
 
 
 ####2. Describe how, and identify where in your code, you set up training, validation and testing data. How much data was in each set? Explain what techniques were used to split the data into these sets. (OPTIONAL: As described in the "Stand Out Suggestions" part of the rubric, if you generated additional data for training, describe why you decided to generate additional data, how you generated the data, identify where in your code, and provide example images of the additional data)
