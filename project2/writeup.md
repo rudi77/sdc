@@ -26,6 +26,10 @@ The goals / steps of this project are the following:
 [image7]: ./examples/placeholder.png "Traffic Sign 4"
 [image8]: ./examples/placeholder.png "Traffic Sign 5"
 
+[//]: # (Literature References)
+[1]: http://www.people.usi.ch/mascij/data/papers/2011_ijcnn_committee.pdf
+[2]: http://yann.lecun.com/exdb/publis/pdf/sermanet-ijcnn-11.pdf
+
 ## Rubric Points
 Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
 I should also mention that I have implemented several functions used for image tranformation, visualization and others in separate python files. These files can be found here: [data_transformations.py](https://github.com/rudi77/sdc/blob/master/project2/data_transformations.py), [data_plotting.py](https://github.com/rudi77/sdc/blob/master/project2/data_plotting.py) and [data_helper.py](https://github.com/rudi77/sdc/blob/master/project2/data_helpers.py). 
@@ -64,7 +68,7 @@ Finally I have also generated a horizontal bar chart showing the sample distribu
 
 ### 1. Preprocessing
 
-- Images are converted to grayscale. I converted the images from color to grayscale mainly because I thought it might reduce training time and memory usage.
+- Images are converted to grayscale. I converted the images from color to grayscale mainly because I've this approach was also used in [1][1] and [2][2]. Converted images to grayscale may also reduce training time and memory usage.
 
 - Grayscaled images are then normalized between -1 and 1 by subtracting 128 from each pixel and then dividing this value by 128. 
 
@@ -72,9 +76,9 @@ Finally I have also generated a horizontal bar chart showing the sample distribu
   
   Input normalization is good practice - helps GDC to converge faster.
 
-- Artificially augmenting number of example images: The bar charts above showed that data is unbalanced among the different traffic sign classes which could distort predictions. Therefore different geometric transformations like translation, rotation and contrast adaptation are applied on the existing training samples to augment the number of training examples per traffic sign class. This approach is based on data augmentation methods mentioned in [http://www.people.usi.ch/mascij/data/papers/2011_ijcnn_committee.pdf] and [http://yann.lecun.com/exdb/publis/pdf/sermanet-ijcnn-11.pdf]. The newly generated images are stored with their corresponding labels as a pickle file in a separate folder "./traffic-signs-data-augmented/augmented_training.p". Moreover, data generation is only executed once and only the training set will be augmented leaving the validation and test images untouched. 
+- Artificially augmenting number of example images: The bar charts above showed that data is unbalanced among the different traffic sign classes which could distort predictions. Therefore different geometric transformations like translation, rotation and contrast adaptation are applied on the existing training samples to augment the number of training examples per traffic sign class. This approach is based on data augmentation methods mentioned in [1][1] and [2][2]. The newly generated images are stored with their corresponding labels as a pickle file in a separate folder "./traffic-signs-data-augmented/augmented_training.p". Moreover, data generation is only executed once and only the training set will be augmented leaving the validation and test images untouched. 
 
-- One hot encoded labels:
+- One hot encoded labels: Although labels were already one hot encoded in the template it should be mentioned as it is an important step and is a standard method in machine learning. This method transforms categorical data like the traffic sign classes into one-hot encoded vectors.
 
 ### 2. Model Architecture
 
