@@ -22,7 +22,7 @@ The goals / steps of this project are the following:
 [image3]: ./examples/training_set_samples_distribution.png "Training Set Sample Distribution"
 [image4]: ./examples/augmented_trainset_distribution.png "Augmented training set distribution"
 [image5]: ./examples/msnet_graph.png "Multiscale network"
-[image6]: ./examples/placeholder.png "Traffic Sign 3"
+[image6]: ./examples/training_vs_validation_accuracy.png "Training vs validation accuracy"
 [image7]: ./examples/placeholder.png "Traffic Sign 4"
 [image8]: ./examples/placeholder.png "Traffic Sign 5"
 
@@ -63,6 +63,8 @@ The sample distributions of the training, validation and test sets are shown in 
 Finally I have also generated a horizontal bar chart showing the sample distribution of the training set with its class names instead of the class ids.
 
 ![alt text][image3]
+
+---
 
 ## Design and Test a Model Architecture
 
@@ -129,15 +131,18 @@ The submission describes the approach to finding a solution. Accuracy on the val
 
 ---
 
-
 ####5. Describe the approach taken for finding a solution. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
 
 The code for calculating the accuracy of the model is located in the ninth cell of the Ipython notebook.
 
 My final model results were:
-* training set accuracy of ?
-* validation set accuracy of ? 
-* test set accuracy of ?
+* training set accuracy of 98.2 %
+* validation set accuracy of 96.6 %
+* test set accuracy of 94.8 %
+
+The following plot shows the training and validation accuracies over 100 Epochs.
+
+![alt text][image6]
 
 If an iterative approach was chosen:
 * What was the first architecture that was tried and why was it chosen?
@@ -151,18 +156,21 @@ If a well known architecture was chosen:
 * Why did you believe it would be relevant to the traffic sign application?
 * How does the final model's accuracy on the training, validation and test set provide evidence that the model is working well?
  
+---
 
-###Test a Model on New Images
+### Test a Model on New Images
 
+#### 1. Acquiring New Images
 ####1. Choose five German traffic signs found on the web and provide them in the report. For each image, discuss what quality or qualities might be difficult to classify.
 
 Here are five German traffic signs that I found on the web:
 
-![alt text][image4] ![alt text][image5] ![alt text][image6] 
-![alt text][image7] ![alt text][image8]
+![alt text][image7] ![alt text][image7] ![alt text][image7] 
+![alt text][image7] ![alt text][image7]
 
 The first image might be difficult to classify because ...
 
+#### 2. Performance on New Images
 ####2. Discuss the model's predictions on these new traffic signs and compare the results to predicting on the test set. Identify where in your code predictions were made. At a minimum, discuss what the predictions were, the accuracy on these new predictions, and compare the accuracy to the accuracy on the test set (OPTIONAL: Discuss the results in more detail as described in the "Stand Out Suggestions" part of the rubric).
 
 The code for making predictions on my final model is located in the tenth cell of the Ipython notebook.
@@ -180,6 +188,7 @@ Here are the results of the prediction:
 
 The model was able to correctly guess 4 of the 5 traffic signs, which gives an accuracy of 80%. This compares favorably to the accuracy on the test set of ...
 
+#### 3. Model Certainty - Softmax Probabilities
 ####3. Describe how certain the model is when predicting on each of the five new images by looking at the softmax probabilities for each prediction and identify where in your code softmax probabilities were outputted. Provide the top 5 softmax probabilities for each image along with the sign type of each probability. (OPTIONAL: as described in the "Stand Out Suggestions" part of the rubric, visualizations can also be provided such as bar charts)
 
 The code for making predictions on my final model is located in the 11th cell of the Ipython notebook.
