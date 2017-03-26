@@ -21,7 +21,7 @@ The goals / steps of this project are the following:
 [image2]: ./examples/traffic_sign_samples_distributions.png "Sample Distributions"
 [image3]: ./examples/training_set_samples_distribution.png "Training Set Sample Distribution"
 [image4]: ./examples/augmented_trainset_distribution.png "Augmented training set distribution"
-[image5]: ./examples/placeholder.png "Traffic Sign 2"
+[image5]: ./examples/msnet_graph.png "Multiscale network"
 [image6]: ./examples/placeholder.png "Traffic Sign 3"
 [image7]: ./examples/placeholder.png "Traffic Sign 4"
 [image8]: ./examples/placeholder.png "Traffic Sign 5"
@@ -85,6 +85,28 @@ The following preprocessing steps are carried out before the model is trained. F
 ### 2. Model Architecture
 
 The submission provides details of the characteristics and qualities of the architecture, such as the type of model used, the number of layers, the size of each layer. Visualizations emphasizing particular qualities of the architecture are encouraged.
+
+For this project I implemented a so-called multiscale network which is based on the convolutional network described in [2][2]. 
+This network consists of the following layers
+
+| Layer         		|     Description	        					            | 
+|:-----------------:|:---------------------------------------------:| 
+| Input         		| 32x32x1 grayscale image   							      | 
+| Convolution 5x5   | 1x1 stride, valid padding, outputs 28x28x38 	|
+| RELU					    |												                        |
+| Max pooling	      | 2x2 stride,  outputs 14x14x38 				        |
+| Convolution 5x5	  | 1x1 stride, valid padding, outputs 10x10x64   |
+| RELU					    |												                        |
+| Max pooling	      | 2x2 stride,  outputs 5x5x64   				        |
+| Fully connected		| input 9048, output 100        							  |
+| Fully connected		|             output 84         							  |
+| Fully connected		|             output 43         							  |
+| Softmax				    |             									                |
+
+
+It differs to traditional convnets in that it is not a strict feed forward network but instead it branches the output after the first pooling layer and feds it directly into the fully connected layer.   It is shown below in the next image.
+
+![alt text][image5]
 
 ### 3. Model Training
 
