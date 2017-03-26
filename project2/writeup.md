@@ -91,23 +91,33 @@ The submission provides details of the characteristics and qualities of the arch
 For this project I implemented a so-called multiscale network which is based on the convolutional network described in [[2][2]]. 
 My network consists of the following layers:
 
-| Layer         		|     Description	        					            | 
-|:-----------------:|:---------------------------------------------:| 
-| Input         		| 32x32x1 grayscale image   							      | 
-| Convolution 5x5   | 1x1 stride, valid padding, outputs 28x28x38 	|
-| RELU					    |												                        |
-| Max pooling	      | 2x2 stride,  outputs 14x14x38 				        |
-| Convolution 5x5	  | 1x1 stride, valid padding, outputs 10x10x64   |
-| RELU					    |												                        |
-| Max pooling	      | 2x2 stride,  outputs 5x5x64   				        |
-| Fully connected		| input 9048, output 500        							  |
-| Fully connected		|             output 100        							  |
-| Fully connected		|             output 84         							  |
-| Fully connected		|             output 43         							  |
-| Softmax				    |             									                |
+| Layer         		| Layer name     |     Description	        					            | 
+|:-----------------:|:--------------:|:----------------------------------------------:| 
+| Input         		|                |  32x32x1 grayscale image   							      | 
+| Convolution 5x5   |   conv1        |  1x1 stride, valid padding, outputs 28x28x38 	|
+| RELU					    |			           |       									                        |
+| Max pooling	      |   pool1        |  2x2 stride,  outputs 14x14x38 				        |
+| Convolution 5x5	  |   conv2        |  1x1 stride, valid padding, outputs 10x10x64   |
+| RELU					    |						     |               					                        |
+| Max pooling	      |   pool2        |  2x2 stride,  outputs 5x5x64   				        |
+| Fully connected		|   fc1          |  input 9048, output 500        							  |
+| Fully connected		|   fc2          |  output 100                    							  |
+| Fully connected		|   fc3          |  output 84                      							  |
+| Fully connected		|   output       |  output 43                      							  |
+| Softmax				    |   crossentropy |              									                |
 
 
-It differs to traditional convnets in that it is not a strict feed forward network but instead it branches the output after the first pooling layer and feds it directly into the fully connected layer. Merging the output from different layers into the classifier provides different scales of receiptive fields to the classifier which should improve accuracy. For further details please refer to [[2][2]]  It is shown below in the next image.
+It differs to traditional convnets in that it is not a strict feed forward network but instead it branches the output after the first pooling layer and feds it directly into the fully connected layer. Merging the output from different layers into the classifier provides different scales of receiptive fields to the classifier which should improve accuracy. The following code shows how one can merge the outputs of different layers into a single tensor. First I flattened the outputs  and then I used tensorflow's ```tf.concat``` function which concatenates a list of tensors values along a certain dimension axis.
+```python
+    with tf.name_scope("fc0"):    
+        # Flatten Input = 14x14x38. Output = 7448
+        conv1_flattened = flatten(conv1)
+        # Flatten. Input = 5x5x64. Output = 1600    
+        conv2_flattened = flatten(conv2)
+        fc0 = tf.concat([conv1_flattened, conv2_flattened], 1)
+```
+
+For further details please refer to [[2][2]]  It is shown below in the next image.
 
 ![alt text][image5]
 
