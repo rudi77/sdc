@@ -32,14 +32,14 @@ The goals / steps of this project are the following:
 
 ## Rubric Points
 Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
-I should also mention that I have implemented several functions used for image tranformation, visualization and others in separate python files. These files can be found here: [data_transformations.py](https://github.com/rudi77/sdc/blob/master/project2/data_transformations.py), [data_plotting.py](https://github.com/rudi77/sdc/blob/master/project2/data_plotting.py) and [data_helper.py](https://github.com/rudi77/sdc/blob/master/project2/data_helpers.py). 
+I should also mention that I have implemented several functions used for image tranformation, visualization and others in separate python files. These files can be found here: [data_transformations.py](https://github.com/rudi77/sdc/blob/master/project2/data_transformations.py), [data_plotting.py](https://github.com/rudi77/sdc/blob/master/project2/data_plotting.py) and [data_helper.py](https://github.com/rudi77/sdc/blob/master/project2/data_helpers.py). I have imported them as modules into my [notebook](https://github.com/rudi77/sdc/blob/master/project2/Traffic_Sign_Classifier.ipynb) wherever they are being needed.
 
 ---
 
 ## Dataset Exploration
 
 ### 1. Dataset Summary
-Here, I provide a summary of the german traffic sign data set. The code for this step is contained in the second code cell of the IPython notebook. For this task I used pyhton's built-in functions and numpy
+Here, I provide a summary of the german traffic sign data set. The pickled [dataset](https://d17h27t6h515a5.cloudfront.net/topher/2017/February/5898cd6f_traffic-signs-data/traffic-signs-data.zip) has already been resized to 32x32 images and also has been split into training, validation and test sets. The code for this step is contained in the second code cell of the IPython notebook. For this task I used pyhton's built-in functions and numpy
 
 * The size of training set is 34799
 * The size of the validation set is 4410
@@ -72,7 +72,7 @@ The following preprocessing steps are carried out before the model is trained. F
 
 ![alt text][image4]
 
-- Convert images to grayscale: I converted the images from color to grayscale mainly because I've this approach was also used in [1][1] and [2][2]. Converted images to grayscale may also reduce training time and memory usage.
+- Convert images to grayscale: I converted the images from color to grayscale mainly because I've this approach was also used in [[1][1]] and [[2][2]]. Converted images to grayscale may also reduce training time and memory usage.
 
 - Normalize images: Grayscaled images are then normalized between -1 and 1 by subtracting 128 from each pixel and then dividing this value by 128. 
 
@@ -86,8 +86,8 @@ The following preprocessing steps are carried out before the model is trained. F
 
 The submission provides details of the characteristics and qualities of the architecture, such as the type of model used, the number of layers, the size of each layer. Visualizations emphasizing particular qualities of the architecture are encouraged.
 
-For this project I implemented a so-called multiscale network which is based on the convolutional network described in [2][2]. 
-This network consists of the following layers
+For this project I implemented a so-called multiscale network which is based on the convolutional network described in [[2][2]]. 
+My network consists of the following layers:
 
 | Layer         		|     Description	        					            | 
 |:-----------------:|:---------------------------------------------:| 
@@ -98,19 +98,30 @@ This network consists of the following layers
 | Convolution 5x5	  | 1x1 stride, valid padding, outputs 10x10x64   |
 | RELU					    |												                        |
 | Max pooling	      | 2x2 stride,  outputs 5x5x64   				        |
-| Fully connected		| input 9048, output 100        							  |
+| Fully connected		| input 9048, output 500        							  |
+| Fully connected		|             output 100        							  |
 | Fully connected		|             output 84         							  |
 | Fully connected		|             output 43         							  |
 | Softmax				    |             									                |
 
 
-It differs to traditional convnets in that it is not a strict feed forward network but instead it branches the output after the first pooling layer and feds it directly into the fully connected layer.   It is shown below in the next image.
+It differs to traditional convnets in that it is not a strict feed forward network but instead it branches the output after the first pooling layer and feds it directly into the fully connected layer. Merging the output from different layers into the classifier provides different scales of receiptive fields to the classifier which should improve accuracy. For further details please refer to [[2][2]]  It is shown below in the next image.
 
 ![alt text][image5]
 
 ### 3. Model Training
+At the beginning of this project I executed my models on my laptop's CPU which is an Intel I7 with four cores but later on I executed all my experiments on a "g2.2xlarge" EC2 instance which drastically reduced execution time and therefore, I was able to try different network architectures and hyperparameters. Finally I used the following settings and hyperparameters:
 
-The submission describes how the model was trained by discussing what optimizer was used, batch size, number of epochs and values for hyperparameters.
+* Number of training examples: 91589 - the training set comprises the orginal training set plus my augmented set.
+* Optimizer : AdamOptimizer. This one was taken from the LeNet example from lesson 9. I haven't tried others.
+* Batch size: 1024
+* Epochs: 100
+* Learning rate: 0.001
+* Dropout probability: 0.5. In my final network I used dropouts in the every fully connected layer to overcome overfitting.
+
+The code for training the model is located in the eigth cell of the ipython notebook. 
+
+To train the model, I used an ...
 
 ### 4. Solution Approach
 
@@ -118,50 +129,6 @@ The submission describes the approach to finding a solution. Accuracy on the val
 
 ---
 
- 
-
-
-####2. Describe how, and identify where in your code, you set up training, validation and testing data. How much data was in each set? Explain what techniques were used to split the data into these sets. (OPTIONAL: As described in the "Stand Out Suggestions" part of the rubric, if you generated additional data for training, describe why you decided to generate additional data, how you generated the data, identify where in your code, and provide example images of the additional data)
-
-The code for splitting the data into training and validation sets is contained in the fifth code cell of the IPython notebook.  
-
-To cross validate my model, I randomly split the training data into a training set and validation set. I did this by ...
-
-My final training set had X number of images. My validation set and test set had Y and Z number of images.
-
-The sixth code cell of the IPython notebook contains the code for augmenting the data set. I decided to generate additional data because ... To add more data to the the data set, I used the following techniques because ... 
-
-Here is an example of an original image and an augmented image:
-
-![alt text][image3]
-
-The difference between the original data set and the augmented data set is the following ...
-
-####3. Describe, and identify where in your code, what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
-
-The code for my final model is located in the seventh cell of the ipython notebook. 
-
-My final model consisted of the following layers:
-
-| Layer         		|     Description	        					| 
-|:---------------------:|:---------------------------------------------:| 
-| Input         		| 32x32x3 RGB image   							| 
-| Convolution 3x3     	| 1x1 stride, same padding, outputs 32x32x64 	|
-| RELU					|												|
-| Max pooling	      	| 2x2 stride,  outputs 16x16x64 				|
-| Convolution 3x3	    | etc.      									|
-| Fully connected		| etc.        									|
-| Softmax				| etc.        									|
-|						|												|
-|						|												|
- 
-
-
-####4. Describe how, and identify where in your code, you trained your model. The discussion can include the type of optimizer, the batch size, number of epochs and any hyperparameters such as learning rate.
-
-The code for training the model is located in the eigth cell of the ipython notebook. 
-
-To train the model, I used an ....
 
 ####5. Describe the approach taken for finding a solution. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
 
