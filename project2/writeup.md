@@ -22,7 +22,7 @@ The goals / steps of this project are the following:
 [image3]: ./examples/training_set_samples_distribution.png "Training Set Sample Distribution"
 [image4]: ./examples/augmented_trainset_distribution.png "Augmented training set distribution"
 [image5]: ./examples/msnet_graph.png "Multiscale network"
-[image6]: ./examples/training_vs_validation_accuracy.png "Training vs validation accuracy"
+[image6]: ./examples/train_vs_accuracy_130.png "Training vs validation accuracy"
 
 
 [image7]: ./examples/MyGermanTrafficSigns/1/speed_limit_30_1.jpg "Speed Limit 30 km/h"
@@ -142,6 +142,8 @@ To train the model, I used an ...
 
 ### 4. Solution Approach
 
+I started with a modified LeNet model and trained it with the provided training set without any additional (artificially augmented) training data. With this approach I reached a very high accuracy on the training set - over 99% but was low on the validation and test sets. So, after reading the proposed paper [[2][2]] by Pierre Sermanet and Yann LeCun I decided to implement my own multiscale-net based on their work. I liked the idea of being able to detect traffic signs on different scales by using such an architecture - as it is in real world a traffic sign in front will become larger and larger when heading towards it. Furthermore, 
+
 If an iterative approach was chosen:
 * What was the first architecture that was tried and why was it chosen?
 * What were some problems with the initial architecture?
@@ -157,11 +159,11 @@ If a well known architecture was chosen:
 The code for calculating the accuracy of the model is located in the ninth cell of the Ipython notebook.
 
 My final model results were:
-* training set accuracy of 98.2 %
-* validation set accuracy of 96.6 %
-* test set accuracy of 94.8 %
+* training set accuracy of 99.1 %
+* validation set accuracy of 95.9 %
+* test set accuracy of 94.9 %
 
-The following plot shows the training and validation accuracies over 100 Epochs.
+The following plot shows the training and validation accuracies over 130 Epochs.
 
 ![alt text][image6]
  
