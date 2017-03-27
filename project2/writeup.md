@@ -23,8 +23,13 @@ The goals / steps of this project are the following:
 [image4]: ./examples/augmented_trainset_distribution.png "Augmented training set distribution"
 [image5]: ./examples/msnet_graph.png "Multiscale network"
 [image6]: ./examples/training_vs_validation_accuracy.png "Training vs validation accuracy"
-[image7]: ./examples/placeholder.png "Traffic Sign 4"
-[image8]: ./examples/placeholder.png "Traffic Sign 5"
+
+
+[image7]: ./examples/MyGermanTrafficSigns/1/speed_limit_30_1.jpg "Speed Limit 30 km/h"
+[image8]: ./examples/MyGermanTrafficSigns/13/yield_1.jpg "Yield"
+[image9]: ./examples/MyGermanTrafficSigns/14/stopSign1.jpg "Stop Sign"
+[image10]: ./examples/MyGermanTrafficSigns/18/General_Caution_1.jpg "General Caution"
+[image11]: ./examples/MyGermanTrafficSigns/40/roundabout_1.jpg "Roundabout"
 
 [//]: # (Literature References)
 [1]: http://www.people.usi.ch/mascij/data/papers/2011_ijcnn_committee.pdf
@@ -175,8 +180,8 @@ If a well known architecture was chosen:
 
 Here are five German traffic signs that I found on the web:
 
-![alt text][image7] ![alt text][image7] ![alt text][image7] 
-![alt text][image7] ![alt text][image7]
+![alt text][image7] ![alt text][image8] ![alt text][image9] 
+![alt text][image10] ![alt text][image11]
 
 The first image might be difficult to classify because ...
 
