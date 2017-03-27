@@ -197,10 +197,13 @@ I downloaded the following traffic sign images from the web.
 ![alt text][image7] ![alt text][image8] ![alt text][image9] 
 ![alt text][image10] ![alt text][image11]
 
-The first image might be difficult to classify because ...
+- The first image might contains two traffic signs a yield and a roundabout sign which I labeled with 'Yield'. In real life we should be able to successfully predict both traffic signs at once but with my current model this is impossible because it can only classify images but not detect more than one object in an image. But at least it should be able to successfully predict one of them.
+- In the second image a man hides some parts of the traffic sign. I thought this might also be a challenge for my model.
+- The remaining images do not contain any noticable abnormalities and shouldn't be a problem for my model. This is what I thought. 
+
+The code for loading and displaying the downloaded images is located in code cell 44.
 
 #### 2. Performance on New Images
-####2. Discuss the model's predictions on these new traffic signs and compare the results to predicting on the test set. Identify where in your code predictions were made. At a minimum, discuss what the predictions were, the accuracy on these new predictions, and compare the accuracy to the accuracy on the test set (OPTIONAL: Discuss the results in more detail as described in the "Stand Out Suggestions" part of the rubric).
 
 The code for making predictions on my final model is located in the cell 34 of the Ipython notebook.
 
