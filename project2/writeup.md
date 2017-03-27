@@ -21,6 +21,8 @@ The goals / steps of this project are the following:
 [image2]: ./examples/traffic_sign_samples_distributions.png "Sample Distributions"
 [image3]: ./examples/training_set_samples_distribution.png "Training Set Sample Distribution"
 [image4]: ./examples/augmented_trainset_distribution.png "Augmented training set distribution"
+[image19]: ./examples/image_augmentation_examples.png "Augmentation examples"
+
 [image5]: ./examples/msnet_graph.png "Multiscale network"
 [image6]: ./examples/train_vs_accuracy_130_1.png "Msnet Training vs validation accuracy"
 [image12]: ./examples/lenet_train_vs_accuracy.png "LeNet Training vs validation accuracy"
@@ -83,7 +85,11 @@ Finally I have also generated a horizontal bar chart showing the sample distribu
 
 ### 1. Preprocessing
 The following preprocessing steps are carried out before the model is trained. First the traffic signs were artificially augmented, then converted into grayscale images and normalized. Finally, the class ids are transformed into one hot encoded vectors.
-- Augment training set: The bar charts above showed that data is unbalanced among the different traffic sign classes which could distort predictions. Therefore different geometric transformations like translation, rotation and contrast adaptation are applied on the existing training samples to augment the number of training examples per traffic sign class. This approach is based on data augmentation methods mentioned in [1][1] and [2][2]. The newly generated images are stored with their corresponding labels as a pickle file in a separate folder "./traffic-signs-data-augmented/augmented_training.p". Moreover, data generation is only executed once and only the training set will be augmented leaving the validation and test images untouched. The code for data augmentation is in code cell 6. For every traffic sign class I generate __n_augmented_samples = (max_samples - number_of_samples_of_class_n)__ so that in the end all classes are out-balanced as it is shown in the next bar chart below. 
+- Augment training set: The bar charts above showed that data is unbalanced among the different traffic sign classes which could distort predictions. Therefore different geometric transformations like translation, rotation and contrast adaptation are applied on the existing training samples to augment the number of training examples per traffic sign class. The following images show the different transformations applied on a single traffic sign.
+
+  ![alt text][image19]
+  
+  This approach is based on data augmentation methods mentioned in [[1][1]] and [[2][2]]. The newly generated images are stored with their corresponding labels as a pickle file in a separate folder "./traffic-signs-data-augmented/augmented_training.p". Moreover, data generation is only executed once and only the training set will be augmented leaving the validation and test images untouched. The code for data augmentation is in code cell 6. For every traffic sign class I generate __n_augmented_samples = (max_samples - number_of_samples_of_class_n)__ so that in the end all classes are out-balanced as it is shown in the next bar chart below. 
 
 ![alt text][image4]
 
