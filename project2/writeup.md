@@ -33,6 +33,11 @@ The goals / steps of this project are the following:
 [image10]: ./examples/MyGermanTrafficSigns/40/roundabout_1.jpg "Roundabout"
 [image11]: ./examples/MyGermanTrafficSigns/14/stopSign1.jpg "Stop Sign"
 
+[image14]: ./examples/top_five_1.png "Top Five 1"
+[image15]: ./examples/top_five_2.png "Top Five 2"
+[image16]: ./examples/top_five_3.png "Top Five 3"
+[image17]: ./examples/top_five_4.png "Top Five 4"
+[image18]: ./examples/top_five_5.png "Top Five 5"
 
 [//]: # (Literature References)
 [1]: http://www.people.usi.ch/mascij/data/papers/2011_ijcnn_committee.pdf
@@ -227,13 +232,12 @@ The code for making predictions on my final model is located in the 11th cell of
 
 For the first image, the model is relatively sure that this is a stop sign (probability of 0.6), and the image does contain a stop sign. The top five soft max probabilities were
 
-| Probability         	|     Prediction	        					| 
-|:---------------------:|:---------------------------------------------:| 
-| .60         			| Stop sign   									| 
-| .20     				| U-turn 										|
-| .05					| Yield											|
-| .04	      			| Bumpy Road					 				|
-| .01				    | Slippery Road      							|
+![alt text][image14]
 
+![alt text][image15]
 
-For the second image ... 
+![alt text][image16]
+
+![alt text][image17]
+
+![alt text][image18]
