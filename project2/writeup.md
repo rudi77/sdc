@@ -142,7 +142,7 @@ It differs to traditional convnets in that it is not a strict feed forward netwo
         fc0 = tf.concat([conv1_flattened, conv2_flattened], 1)
 ```
 
-For further details please refer to [[2][2]]  It is shown below in the next image.
+For further details please refer to [[2][2]]  My derived model is plotted as graph in the next image below. The plot was generated with the Tensorboard application.
 
 ![alt text][image5]
 
@@ -205,7 +205,7 @@ The following plot shows the training and validation accuracies over 130 Epochs.
 ### Test a Model on New Images
 
 #### 1. Acquiring New Images
-I downloaded the following traffic sign images from the web.
+I downloaded the following 6 traffic sign images from the web.
 
 ![alt text][image7] ![alt text][image8] ![alt text][image9] 
 ![alt text][image10] ![alt text][image11] ![alt text][image21] 
@@ -229,14 +229,17 @@ Here are the results of the prediction:
 | Speed limit (30km/h)  | Roundabout mandatory	 | 0.991          |
 | Roundabout mandatory	| Roundabout mandatory	 | 0.999          |
 | Stop			            | Stop      						 | 1.0            |
+| No Passing            | No Passing             | 1.0            |
 
 
-The model was able to correctly guess 3 of the 5 traffic signs, which gives an accuracy of 60%. The model also correctly predicted one of the two traffic sign in the first image. And with a very high certainty it predicted a 'Roundabout' where it should have predicted a 'Speed Limit' sign. This is strange and I haven't figured out yet why this happened.
+The model was able to correctly guess 4 of the 6 captured traffic signs, which gives an accuracy of 66.7%. The model also correctly predicted one of the two traffic sign in the first image. And with a very high certainty it predicted a 'Roundabout' where it should have predicted a 'Speed Limit' sign. This is strange and I haven't figured out yet why this happened.
+At a first glance the accuracy of  my captured images seems to be really bad compared to the test accuracy which was 94.9 %. But, if we do not take the first image containing the two traffic signs into account - which is reasonable - than the accuracy increases to 80 % which is still below the test accuracy. Anyway, with five or in my case even six images it is not possible to reach 94.9 %. 
+
 
 #### 3. Model Certainty - Softmax Probabilities
 The code for making predictions on my final model is located in cell 46 of my notebook.
 
-For all images my models is very confident about its predictions even for 'Speed Limit' image were it predicted a 'Roundabout' traffic sign.
+For all images my models is very confident about its predictions even for the 'Speed Limit' image were it predicted a 'Roundabout' traffic sign.
 
 ![alt text][image14]
 
@@ -248,7 +251,7 @@ For all images my models is very confident about its predictions even for 'Speed
 
 ![alt text][image18]
 
-![alt text][image21]
+![alt text][image20]
 
 #### Conclusion
 In this project I learned how to implement and train a convolutional neural network in tensorflow that can be used for classifying traffic signs. I started by exploring and visualizing the data and trained a modified LeNet model with the provided training set. Adding dropouts, augmenting the training set and switching to a more complex network drastically improved my models accuracy although still having not reached state-of-art results. 
