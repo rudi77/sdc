@@ -143,6 +143,7 @@ The code for training the model is located in the eigth cell of the ipython note
 To train the model, I used an ...
 
 ### 4. Solution Approach
+Two models, a modified LeNet and a multiscale model with different parameter settings were implemented and used in this project. The code for the LeNet model is located code cell 9 and the multiscale net can be found in code cell 10. And the code for training the models is located in code cell 12 and 14.
 
 I started with a modified LeNet model and trained it with the provided training set without any additional (artificially augmented) training data. With this approach I reached a very high accuracy on the training set - over 98% but was relatively low on the validation set. This discrepancy between training and validation set is shown in the next plot.  
 
@@ -174,7 +175,7 @@ The corresponding accuracy plot is presented in the next plot.
 
 ![alt text][image13]
 
-After reading the proposed paper [[2][2]] by Pierre Sermanet and Yann LeCun I decided to implement my own multiscale-net based on their work. I liked the idea of being able to detect traffic signs on different scales by using such an architecture - as it is in real world a traffic sign in front will become larger and larger when heading towards it. Furthermore, I've have augmented my training set to further improve my model's performance. I have already described in detail my data augmentation approach in detail. And again this approach improved my model's accuracy.
+After reading the proposed paper [[2][2]] by Pierre Sermanet and Yann LeCun I decided to implement my own multiscale-net based on their work. I liked the idea of being able to detect traffic signs on different scales by using such an architecture - as it is in real world a traffic sign in front will become larger and larger when heading towards it. Furthermore, I've have augmented my training set to further improve my model's performance. I have already described in detail my data augmentation approach. And again this approach improved my model's accuracy altough it is still far away from state-of-the-art models.
 
 My final model results were:
 * training set accuracy of 99.1 %
@@ -185,17 +186,12 @@ The following plot shows the training and validation accuracies over 130 Epochs.
 
 ![alt text][image6]
 
-
-The code for calculating the accuracy of the model is located in the ninth cell of the Ipython notebook.
- 
 ---
 
 ### Test a Model on New Images
 
 #### 1. Acquiring New Images
-####1. Choose five German traffic signs found on the web and provide them in the report. For each image, discuss what quality or qualities might be difficult to classify.
-
-Here are five German traffic signs that I found on the web:
+I downloaded the following traffic sign images from the web.
 
 ![alt text][image7] ![alt text][image8] ![alt text][image9] 
 ![alt text][image10] ![alt text][image11]
@@ -205,20 +201,20 @@ The first image might be difficult to classify because ...
 #### 2. Performance on New Images
 ####2. Discuss the model's predictions on these new traffic signs and compare the results to predicting on the test set. Identify where in your code predictions were made. At a minimum, discuss what the predictions were, the accuracy on these new predictions, and compare the accuracy to the accuracy on the test set (OPTIONAL: Discuss the results in more detail as described in the "Stand Out Suggestions" part of the rubric).
 
-The code for making predictions on my final model is located in the tenth cell of the Ipython notebook.
+The code for making predictions on my final model is located in the cell 34 of the Ipython notebook.
 
 Here are the results of the prediction:
 
-| Image			        |     Prediction	        					| 
-|:---------------------:|:---------------------------------------------:| 
-| Stop Sign      		| Stop sign   									| 
-| U-turn     			| U-turn 										|
-| Yield					| Yield											|
-| 100 km/h	      		| Bumpy Road					 				|
-| Slippery Road			| Slippery Road      							|
+| Image			            |     Prediction	       | 
+|:---------------------:|:----------------------:| 
+| Yield      		        | Roundabout mandatory   | 
+| General caution       | General caution 			 |
+| Speed limit (30km/h)  | Roundabout mandatory	 |
+| Roundabout mandatory	| Roundabout mandatory	 |
+| Stop			            | Stop      						 |
 
 
-The model was able to correctly guess 4 of the 5 traffic signs, which gives an accuracy of 80%. This compares favorably to the accuracy on the test set of ...
+The model was able to correctly guess 3 of the 5 traffic signs, which gives an accuracy of 60%. 
 
 #### 3. Model Certainty - Softmax Probabilities
 ####3. Describe how certain the model is when predicting on each of the five new images by looking at the softmax probabilities for each prediction and identify where in your code softmax probabilities were outputted. Provide the top 5 softmax probabilities for each image along with the sign type of each probability. (OPTIONAL: as described in the "Stand Out Suggestions" part of the rubric, visualizations can also be provided such as bar charts)
