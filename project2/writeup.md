@@ -34,12 +34,15 @@ The goals / steps of this project are the following:
 [image9]: ./examples/MyGermanTrafficSigns/1/speed_limit_30_1.jpg "Speed Limit 30 km/h"
 [image10]: ./examples/MyGermanTrafficSigns/40/roundabout_1.jpg "Roundabout"
 [image11]: ./examples/MyGermanTrafficSigns/14/stopSign1.jpg "Stop Sign"
+[image20]: ./examples/MyGermanTrafficSigns/9/no_passing.jpg "No Passing"
+
 
 [image14]: ./examples/top_five_1.png "Top Five 1"
 [image15]: ./examples/top_five_2.png "Top Five 2"
 [image16]: ./examples/top_five_3.png "Top Five 3"
 [image17]: ./examples/top_five_4.png "Top Five 4"
 [image18]: ./examples/top_five_5.png "Top Five 5"
+[image19]: ./examples/top_five_6.png "Top Five 6"
 
 [//]: # (Literature References)
 [1]: http://www.people.usi.ch/mascij/data/papers/2011_ijcnn_committee.pdf
@@ -205,7 +208,7 @@ The following plot shows the training and validation accuracies over 130 Epochs.
 I downloaded the following traffic sign images from the web.
 
 ![alt text][image7] ![alt text][image8] ![alt text][image9] 
-![alt text][image10] ![alt text][image11]
+![alt text][image10] ![alt text][image11] ![alt text][image20] 
 
 - The first image might contains two traffic signs a yield and a roundabout sign which I labeled with 'Yield'. In real life we should be able to successfully predict both traffic signs at once but with my current model this is impossible because it can only classify images (it's this or that) but not detect more than one object in an image. But at least it should be able to successfully predict one of them.
 - In the second image a man hides some parts of the traffic sign. I thought this might also be a challenge for my model.
@@ -244,6 +247,8 @@ For all images my models is very confident about its predictions even for 'Speed
 ![alt text][image17]
 
 ![alt text][image18]
+
+![alt text][image19]
 
 #### Conclusion
 In this project I learned how to implement and train a convolutional neural network in tensorflow that can be used for classifying traffic signs. I started by exploring and visualizing the data and trained a modified LeNet model with the provided training set. Adding dropouts, augmenting the training set and switching to a more complex network drastically improved my models accuracy although still having not reached state-of-art results. 
