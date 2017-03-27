@@ -22,7 +22,9 @@ The goals / steps of this project are the following:
 [image3]: ./examples/training_set_samples_distribution.png "Training Set Sample Distribution"
 [image4]: ./examples/augmented_trainset_distribution.png "Augmented training set distribution"
 [image5]: ./examples/msnet_graph.png "Multiscale network"
-[image6]: ./examples/train_vs_accuracy_130.png "Training vs validation accuracy"
+[image6]: ./examples/train_vs_accuracy_130.png "Msnet Training vs validation accuracy"
+[image12]: ./examples/lenet_train_vs_accuracy.png "LeNet Training vs validation accuracy"
+[image13]: ./examples/lenet_train_vs_accuracy_0001_40_512_05.png "LeNet Training vs validation accuracy wiht dropout"
 
 
 [image7]: ./examples/MyGermanTrafficSigns/1/speed_limit_30_1.jpg "Speed Limit 30 km/h"
@@ -142,21 +144,37 @@ To train the model, I used an ...
 
 ### 4. Solution Approach
 
-I started with a modified LeNet model and trained it with the provided training set without any additional (artificially augmented) training data. With this approach I reached a very high accuracy on the training set - over 99% but was low on the validation and test sets. So, after reading the proposed paper [[2][2]] by Pierre Sermanet and Yann LeCun I decided to implement my own multiscale-net based on their work. I liked the idea of being able to detect traffic signs on different scales by using such an architecture - as it is in real world a traffic sign in front will become larger and larger when heading towards it. Furthermore, 
+I started with a modified LeNet model and trained it with the provided training set without any additional (artificially augmented) training data. With this approach I reached a very high accuracy on the training set - over 98% but was relatively low on the validation set. This discrepancy between training and validation set is shown in the next plot.  
 
-If an iterative approach was chosen:
-* What was the first architecture that was tried and why was it chosen?
-* What were some problems with the initial architecture?
-* How was the architecture adjusted and why was it adjusted? Typical adjustments could include choosing a different model architecture, adding or taking away layers (pooling, dropout, convolution, etc), using an activation function or changing the activation function. One common justification for adjusting an architecture would be due to over fitting or under fitting. A high accuracy on the training set but low accuracy on the validation set indicates over fitting; a low accuracy on both sets indicates under fitting.
-* Which parameters were tuned? How were they adjusted and why?
-* What are some of the important design choices and why were they chosen? For example, why might a convolution layer work well with this problem? How might a dropout layer help with creating a successful model?
+![alt text][image12]
 
-If a well known architecture was chosen:
-* What architecture was chosen?
-* Why did you believe it would be relevant to the traffic sign application?
-* How does the final model's accuracy on the training, validation and test set provide evidence that the model is working well?
+I tried to improve validation accuracy by introducing dropouts into the fully connected layer of my model. Added dropouts to the network can be easily done in tensorflow by using tensorflow's built in dropout function. The code below, which is located in code cell 8, shows how dropout can be integrated into a fully connected layer.
 
-The code for calculating the accuracy of the model is located in the ninth cell of the Ipython notebook.
+```python
+def fc_layer(x, w_shape, b_size, layername, mu = 0.0, sigma = 0.1, keep_prob = 1.0):
+    with tf.name_scope(layername):
+        with tf.name_scope("weights"):
+            fc_W = tf.Variable(tf.truncated_normal(shape=w_shape, mean = mu, stddev = sigma))
+            variable_summaries(fc_W)
+        with tf.name_scope("biases"):
+            fc_b = tf.Variable(tf.zeros(b_size))
+            variable_summaries(fc_b)
+        fc = tf.matmul(x, fc_W) + fc_b
+        fc = tf.nn.relu(fc)
+        fc = tf.nn.dropout(fc, keep_prob)
+        
+        return fc
+```        
+Adding dropouts with probability of 0.5 improved my model's performance:
+* Training Accuracy: 99.3 %
+* Validation Accuracy: 94.5 %
+* Test Accuracy: 92.4 %
+
+The corresponding accuracy plot is presented in the next plot.
+
+![alt text][image13]
+
+After reading the proposed paper [[2][2]] by Pierre Sermanet and Yann LeCun I decided to implement my own multiscale-net based on their work. I liked the idea of being able to detect traffic signs on different scales by using such an architecture - as it is in real world a traffic sign in front will become larger and larger when heading towards it. Furthermore, I've have augmented my training set to further improve my model's performance. I have already described in detail my data augmentation approach in detail. And again this approach improved my model's accuracy.
 
 My final model results were:
 * training set accuracy of 99.1 %
@@ -166,6 +184,9 @@ My final model results were:
 The following plot shows the training and validation accuracies over 130 Epochs.
 
 ![alt text][image6]
+
+
+The code for calculating the accuracy of the model is located in the ninth cell of the Ipython notebook.
  
 ---
 
