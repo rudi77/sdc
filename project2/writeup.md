@@ -112,7 +112,7 @@ My network consists of the following layers:
 | Softmax				    |   crossentropy |              									                |
 
 
-It differs to traditional convnets in that it is not a strict feed forward network but instead it branches the output after the first pooling layer and feds it directly into the fully connected layer. Merging the output from different layers into the classifier provides different scales of receiptive fields to the classifier which should improve accuracy. The following code shows how one can merge the outputs of different layers into a single tensor. First I flattened the outputs  and then I used tensorflow's ```tf.concat``` function which concatenates a list of tensors values along a certain dimension axis.
+It differs to traditional convnets in that it is not a strict feed forward network but instead it branches the output after the first pooling layer and feds it directly into the fully connected layer. Merging the output from different layers into the classifier provides different scales of receiptive fields to the classifier which should improve accuracy. The following code shows how one can merge the outputs of different layers into a single tensor. In my case I concatenated the output of "pool1" and "pool2" into a new tensor labeled as "fc0". This concatenation is also graphically presented in the next image below. First I flattened the outputs  and then I used tensorflow's ```tf.concat``` function which concatenates a list of tensors values along a certain dimension axis.
 ```python
     with tf.name_scope("fc0"):    
         # Flatten Input = 14x14x38. Output = 7448
@@ -131,33 +131,16 @@ At the beginning of this project I executed my models on my laptop's CPU which i
 
 * Number of training examples: 91589 - the training set comprises the orginal training set plus my augmented set.
 * Optimizer : AdamOptimizer. This one was taken from the LeNet example from lesson 9. I haven't tried others.
-* Batch size: 1024
-* Epochs: 100
-* Learning rate: 0.001
-* Dropout probability: 0.5. In my final network I used dropouts in the every fully connected layer to overcome overfitting.
+* Batch size: 1024. I've also tried smaller batch sizes like 128, 256 and 512 but finally chosen 1024 because the GPU was able to handle it. 
+* Epochs: 130. I stopped training when I reached a training accuracy of 99% or more.
+* Learning rate: 0.001. I've also tried different learning rates.
+* Dropout probability: 0.5. In my final network I used dropouts in every fully connected layer to overcome overfitting.
 
 The code for training the model is located in the eigth cell of the ipython notebook. 
 
 To train the model, I used an ...
 
 ### 4. Solution Approach
-
-The submission describes the approach to finding a solution. Accuracy on the validation set is 0.93 or greater.
-
----
-
-####5. Describe the approach taken for finding a solution. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
-
-The code for calculating the accuracy of the model is located in the ninth cell of the Ipython notebook.
-
-My final model results were:
-* training set accuracy of 98.2 %
-* validation set accuracy of 96.6 %
-* test set accuracy of 94.8 %
-
-The following plot shows the training and validation accuracies over 100 Epochs.
-
-![alt text][image6]
 
 If an iterative approach was chosen:
 * What was the first architecture that was tried and why was it chosen?
@@ -170,6 +153,17 @@ If a well known architecture was chosen:
 * What architecture was chosen?
 * Why did you believe it would be relevant to the traffic sign application?
 * How does the final model's accuracy on the training, validation and test set provide evidence that the model is working well?
+
+The code for calculating the accuracy of the model is located in the ninth cell of the Ipython notebook.
+
+My final model results were:
+* training set accuracy of 98.2 %
+* validation set accuracy of 96.6 %
+* test set accuracy of 94.8 %
+
+The following plot shows the training and validation accuracies over 100 Epochs.
+
+![alt text][image6]
  
 ---
 
