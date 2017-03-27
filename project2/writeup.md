@@ -241,3 +241,6 @@ For the first image, the model is relatively sure that this is a stop sign (prob
 ![alt text][image17]
 
 ![alt text][image18]
+
+#### Conclusion
+In this project I learned how to implement and train a convolutional neural network that can be used for classifying traffic signs. I started by exploring and visualizing the data and training a modified LeNet model with the provided training set. Adding dropouts, augmenting the training set and switching to a more complex network drastically improved my models accuracy although still having not reached state-of-art results. Further model and hyperparameter tuning, like extending the feature maps in the existing conv layer or adding new layeres and so on, would probably improve my model's performance. 
