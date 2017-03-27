@@ -27,11 +27,12 @@ The goals / steps of this project are the following:
 [image13]: ./examples/lenet_train_vs_accuracy_0001_40_512_05.png "LeNet Training vs validation accuracy wiht dropout"
 
 
-[image7]: ./examples/MyGermanTrafficSigns/1/speed_limit_30_1.jpg "Speed Limit 30 km/h"
-[image8]: ./examples/MyGermanTrafficSigns/13/yield_1.jpg "Yield"
-[image9]: ./examples/MyGermanTrafficSigns/14/stopSign1.jpg "Stop Sign"
-[image10]: ./examples/MyGermanTrafficSigns/18/General_Caution_1.jpg "General Caution"
-[image11]: ./examples/MyGermanTrafficSigns/40/roundabout_1.jpg "Roundabout"
+[image7]: ./examples/MyGermanTrafficSigns/13/yield_1.jpg "Yield"
+[image8]: ./examples/MyGermanTrafficSigns/18/General_Caution_1.jpg "General Caution"
+[image9]: ./examples/MyGermanTrafficSigns/1/speed_limit_30_1.jpg "Speed Limit 30 km/h"
+[image10]: ./examples/MyGermanTrafficSigns/40/roundabout_1.jpg "Roundabout"
+[image11]: ./examples/MyGermanTrafficSigns/14/stopSign1.jpg "Stop Sign"
+
 
 [//]: # (Literature References)
 [1]: http://www.people.usi.ch/mascij/data/papers/2011_ijcnn_committee.pdf
@@ -205,13 +206,13 @@ The code for making predictions on my final model is located in the cell 34 of t
 
 Here are the results of the prediction:
 
-| Image			            |     Prediction	       | 
-|:---------------------:|:----------------------:| 
-| Yield      		        | Roundabout mandatory   | 
-| General caution       | General caution 			 |
-| Speed limit (30km/h)  | Roundabout mandatory	 |
-| Roundabout mandatory	| Roundabout mandatory	 |
-| Stop			            | Stop      						 |
+| Image			            |     Prediction	       | Probabilities  |
+|:---------------------:|:----------------------:|:--------------:| 
+| Yield      		        | Roundabout mandatory   | 0.989          |
+| General caution       | General caution 			 | 1.0            |
+| Speed limit (30km/h)  | Roundabout mandatory	 | 0.991          |
+| Roundabout mandatory	| Roundabout mandatory	 | 0.999          |
+| Stop			            | Stop      						 | 1.0            |
 
 
 The model was able to correctly guess 3 of the 5 traffic signs, which gives an accuracy of 60%. 
