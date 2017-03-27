@@ -22,7 +22,7 @@ The goals / steps of this project are the following:
 [image3]: ./examples/training_set_samples_distribution.png "Training Set Sample Distribution"
 [image4]: ./examples/augmented_trainset_distribution.png "Augmented training set distribution"
 [image5]: ./examples/msnet_graph.png "Multiscale network"
-[image6]: ./examples/train_vs_accuracy_130.png "Msnet Training vs validation accuracy"
+[image6]: ./examples/train_vs_accuracy_130_1.png "Msnet Training vs validation accuracy"
 [image12]: ./examples/lenet_train_vs_accuracy.png "LeNet Training vs validation accuracy"
 [image13]: ./examples/lenet_train_vs_accuracy_0001_40_512_05.png "LeNet Training vs validation accuracy wiht dropout"
 
