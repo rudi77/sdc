@@ -223,14 +223,12 @@ Here are the results of the prediction:
 | Stop			            | Stop      						 | 1.0            |
 
 
-The model was able to correctly guess 3 of the 5 traffic signs, which gives an accuracy of 60%. 
+The model was able to correctly guess 3 of the 5 traffic signs, which gives an accuracy of 60%. The model also correctly predicted one of the two traffic sign in the first image. And with a very high certainty it predicted a 'Roundabout' where it should have predicted a 'Speed Limit' sign. This is strange and I haven't figured out why this happened.
 
 #### 3. Model Certainty - Softmax Probabilities
-####3. Describe how certain the model is when predicting on each of the five new images by looking at the softmax probabilities for each prediction and identify where in your code softmax probabilities were outputted. Provide the top 5 softmax probabilities for each image along with the sign type of each probability. (OPTIONAL: as described in the "Stand Out Suggestions" part of the rubric, visualizations can also be provided such as bar charts)
+The code for making predictions on my final model is located in cell 46 of my notebook.
 
-The code for making predictions on my final model is located in the 11th cell of the Ipython notebook.
-
-For the first image, the model is relatively sure that this is a stop sign (probability of 0.6), and the image does contain a stop sign. The top five soft max probabilities were
+For all images my models is very confident about its predictions even for 'Speed Limit' image were it predicted a 'Roundabout' traffic sign.
 
 ![alt text][image14]
 
@@ -243,4 +241,5 @@ For the first image, the model is relatively sure that this is a stop sign (prob
 ![alt text][image18]
 
 #### Conclusion
-In this project I learned how to implement and train a convolutional neural network that can be used for classifying traffic signs. I started by exploring and visualizing the data and training a modified LeNet model with the provided training set. Adding dropouts, augmenting the training set and switching to a more complex network drastically improved my models accuracy although still having not reached state-of-art results. Further model and hyperparameter tuning, like extending the feature maps in the existing conv layer or adding new layeres and so on, would probably improve my model's performance. 
+In this project I learned how to implement and train a convolutional neural network that can be used for classifying traffic signs. I started by exploring and visualizing the data and training a modified LeNet model with the provided training set. Adding dropouts, augmenting the training set and switching to a more complex network drastically improved my models accuracy although still having not reached state-of-art results. 
+Further model and hyperparameter tuning, like extending the feature maps in the existing conv layer or adding new layeres, would probably improve my model's performance. 
