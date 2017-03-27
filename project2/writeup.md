@@ -49,12 +49,14 @@ The goals / steps of this project are the following:
 Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
 I should also mention that I have implemented several functions used for image tranformation, visualization and others in separate python files. These files can be found here: [data_transformations.py](https://github.com/rudi77/sdc/blob/master/project2/data_transformations.py), [data_plotting.py](https://github.com/rudi77/sdc/blob/master/project2/data_plotting.py) and [data_helper.py](https://github.com/rudi77/sdc/blob/master/project2/data_helpers.py). I have imported them as modules into my [notebook](https://github.com/rudi77/sdc/blob/master/project2/Traffic_Sign_Classifier.ipynb) wherever they are being needed.
 
+Furthermore, execute the [setup.py](https://github.com/rudi77/sdc/blob/master/project2/setup.sh) script before you run my notebook for the first time.
+
 ---
 
 ## Dataset Exploration
 
 ### 1. Dataset Summary
-Here, I provide a summary of the german traffic sign data set. The pickled [dataset](https://d17h27t6h515a5.cloudfront.net/topher/2017/February/5898cd6f_traffic-signs-data/traffic-signs-data.zip) has already been resized to 32x32 images and also has been split into training, validation and test sets. The code for this step is contained in the second code cell of the IPython notebook. For this task I used pyhton's built-in functions and numpy
+Here, I provide a summary of the german traffic sign data set. The pickled [dataset](https://d17h27t6h515a5.cloudfront.net/topher/2017/February/5898cd6f_traffic-signs-data/traffic-signs-data.zip) has already been resized to 32x32 images and is already split into training, validation and test sets. The code for this step is contained in the second code cell of the IPython notebook. For this task I used pyhton's built-in functions and [numpy](http://www.numpy.org/).
 
 * The size of training set is 34799
 * The size of the validation set is 4410
@@ -65,13 +67,14 @@ Here, I provide a summary of the german traffic sign data set. The pickled [data
 ### 2. Exploratory Visualization
 
 Different visualization techniques have been applied to the data sets. First I displayed one traffic sign per class of the
-training set. Then I plotted the samples distribution of the training, validation and test sets. And finally I made a horizontal bar chart of the training set.
+training set. Then I plotted the sample distributions of the training, validation and test sets. And finally I made a horizontal bar chart of the training set.
+
 The code for this step is contained in the code cells 3,6, and 8 of the IPython notebook.  
 Photographs of the traffic signs are taken under different lighting conditions and from different perspectives and distances.
 
 ![alt text][image1]
 
-The sample distributions of the training, validation and test sets are shown in the next image. The distributions across the data sets look very similar and unbalanced. Some classes contain more then 1500 images whereas others contain less then 250 images. This could lead to biased predictions which means that some classes may be predicted more accurately than others. One way to overcome this problem is to increase the samples of the underrepresented data by artificially augmenting them.
+The sample distributions of the training, validation and test sets are shown in the next image. The distributions across the data sets look very similar. In all three sets the samples per traffic sign class are pretty unbalanced. Some classes contain more then 1500 images whereas others contain less then 250 images. This could lead to biased predictions which means that some classes may be predicted more accurately than others. One way to overcome this problem is to increase the samples of the underrepresented data by artificially augmenting them.
 
 ![alt text][image2]
 
@@ -85,11 +88,11 @@ Finally I have also generated a horizontal bar chart showing the sample distribu
 
 ### 1. Preprocessing
 The following preprocessing steps are carried out before the model is trained. First the traffic signs were artificially augmented, then converted into grayscale images and normalized. Finally, the class ids are transformed into one hot encoded vectors.
-- Augment training set: The bar charts above showed that data is unbalanced among the different traffic sign classes which could distort predictions. Therefore different geometric transformations like translation, rotation and contrast adaptation are applied on the existing training samples to augment the number of training examples per traffic sign class. The following images show the different transformations applied on a single traffic sign.
+- Augment training set: The bar charts above showed that data is unbalanced among the different traffic sign classes which could distort predictions. Therefore different geometric transformations like translation, rotation, scaling and contrast adaptation are applied on the existing training samples to augment the number of training examples per traffic sign class. The following images show the different transformations applied on a single traffic sign.
 
   ![alt text][image19]
   
-  This approach is based on data augmentation methods mentioned in [[1][1]] and [[2][2]]. The newly generated images are stored with their corresponding labels as a pickle file in a separate folder "./traffic-signs-data-augmented/augmented_training.p". Moreover, data generation is only executed once and only the training set will be augmented leaving the validation and test images untouched. The code for data augmentation is in code cell 6. For every traffic sign class I generate __n_augmented_samples = (max_samples - number_of_samples_of_class_n)__ so that in the end all classes are out-balanced as it is shown in the next bar chart below. 
+  This approach is based on data augmentation methods mentioned in [[1][1]] and [[2][2]]. The newly generated images are stored with their corresponding labels as a pickle file in a separate folder "./traffic-signs-data-augmented/augmented_training.p". Moreover, data generation is only executed once and only the training set is augmented leaving the validation and test images untouched. The code for data augmentation is in code cell 6. For every traffic sign class I generate __n_augmented_samples = (max_samples - number_of_samples_of_class_n)__ so that in the end all classes are out-balanced as it is shown in the next bar chart below. 
 
 ![alt text][image4]
 
@@ -103,9 +106,9 @@ The following preprocessing steps are carried out before the model is trained. F
 
 - Encode traffics sign classes into one hot vectors: Although labels were already one hot encoded in the template it should be mentioned as it is an important step and is a standard method in machine learning. This method transforms categorical data like the traffic sign classes into one-hot encoded vectors.
 
-### 2. Model Architecture
+Image grayscale conversion and normalization is done in code cell 7.
 
-The submission provides details of the characteristics and qualities of the architecture, such as the type of model used, the number of layers, the size of each layer. Visualizations emphasizing particular qualities of the architecture are encouraged.
+### 2. Model Architecture
 
 For this project I implemented a so-called multiscale network which is based on the convolutional network described in [[2][2]]. 
 My network consists of the following layers:
@@ -141,7 +144,7 @@ For further details please refer to [[2][2]]  It is shown below in the next imag
 ![alt text][image5]
 
 ### 3. Model Training
-At the beginning of this project I executed my models on my laptop's CPU which is an Intel I7 with four cores but later on I executed all my experiments on a "g2.2xlarge" EC2 instance which drastically reduced execution time and therefore, I was able to try different network architectures and hyperparameters. Finally I used the following settings and hyperparameters:
+At the beginning of this project I executed my models on my laptop's CPU which is an Intel I7 with four cores but later on I executed all my experiments on a "g2.2xlarge" EC2 instance which drastically reduced execution time and therefore, I was able to try different network architectures and hyperparameter settings. Finally I used the following settings and hyperparameters:
 
 * Number of training examples: 91589 - the training set comprises the orginal training set plus my augmented set.
 * Optimizer : AdamOptimizer. This one was taken from the LeNet example from lesson 9. I haven't tried others.
@@ -149,10 +152,6 @@ At the beginning of this project I executed my models on my laptop's CPU which i
 * Epochs: 130. I stopped training when I reached a training accuracy of 99% or more.
 * Learning rate: 0.001. I've also tried different learning rates.
 * Dropout probability: 0.5. In my final network I used dropouts in every fully connected layer to overcome overfitting.
-
-The code for training the model is located in the eigth cell of the ipython notebook. 
-
-To train the model, I used an ...
 
 ### 4. Solution Approach
 Two models, a modified LeNet and a multiscale model with different parameter settings were implemented and used in this project. The code for the LeNet model is located code cell 9 and the multiscale net can be found in code cell 10. And the code for training the models is located in code cell 12 and 14.
@@ -178,7 +177,7 @@ def fc_layer(x, w_shape, b_size, layername, mu = 0.0, sigma = 0.1, keep_prob = 1
         
         return fc
 ```        
-Adding dropouts with probability of 0.5 improved my model's performance:
+Adding dropouts with a probability of 0.5 improved my model's performance:
 * Training Accuracy: 99.3 %
 * Validation Accuracy: 94.5 %
 * Test Accuracy: 92.4 %
@@ -187,7 +186,7 @@ The corresponding accuracy plot is presented in the next plot.
 
 ![alt text][image13]
 
-After reading the proposed paper [[2][2]] by Pierre Sermanet and Yann LeCun I decided to implement my own multiscale-net based on their work. I liked the idea of being able to detect traffic signs on different scales by using such an architecture - as it is in real world a traffic sign in front will become larger and larger when heading towards it. Furthermore, I've have augmented my training set to further improve my model's performance. I have already described in detail my data augmentation approach. And again this approach improved my model's accuracy altough it is still far away from state-of-the-art models.
+After reading the proposed paper [[2][2]] by Pierre Sermanet and Yann LeCun I decided to implement my own multiscale-net based on their work. I liked the idea of being able to detect traffic signs on different scales by using such an architecture - as it is in real world where a traffic sign in front of you will get larger and larger when heading towards it. Furthermore, I've have augmented my training set to further improve my model's performance. I have already described in detail my data augmentation approach in a previous section. And again this approach improved my model's accuracy altough it is still far away from state-of-the-art models.
 
 My final model results were:
 * training set accuracy of 99.1 %
@@ -208,7 +207,7 @@ I downloaded the following traffic sign images from the web.
 ![alt text][image7] ![alt text][image8] ![alt text][image9] 
 ![alt text][image10] ![alt text][image11]
 
-- The first image might contains two traffic signs a yield and a roundabout sign which I labeled with 'Yield'. In real life we should be able to successfully predict both traffic signs at once but with my current model this is impossible because it can only classify images but not detect more than one object in an image. But at least it should be able to successfully predict one of them.
+- The first image might contains two traffic signs a yield and a roundabout sign which I labeled with 'Yield'. In real life we should be able to successfully predict both traffic signs at once but with my current model this is impossible because it can only classify images (it's this or that) but not detect more than one object in an image. But at least it should be able to successfully predict one of them.
 - In the second image a man hides some parts of the traffic sign. I thought this might also be a challenge for my model.
 - The remaining images do not contain any noticable abnormalities and shouldn't be a problem for my model. This is what I thought. 
 
@@ -229,7 +228,7 @@ Here are the results of the prediction:
 | Stop			            | Stop      						 | 1.0            |
 
 
-The model was able to correctly guess 3 of the 5 traffic signs, which gives an accuracy of 60%. The model also correctly predicted one of the two traffic sign in the first image. And with a very high certainty it predicted a 'Roundabout' where it should have predicted a 'Speed Limit' sign. This is strange and I haven't figured out why this happened.
+The model was able to correctly guess 3 of the 5 traffic signs, which gives an accuracy of 60%. The model also correctly predicted one of the two traffic sign in the first image. And with a very high certainty it predicted a 'Roundabout' where it should have predicted a 'Speed Limit' sign. This is strange and I haven't figured out yet why this happened.
 
 #### 3. Model Certainty - Softmax Probabilities
 The code for making predictions on my final model is located in cell 46 of my notebook.
@@ -247,5 +246,6 @@ For all images my models is very confident about its predictions even for 'Speed
 ![alt text][image18]
 
 #### Conclusion
-In this project I learned how to implement and train a convolutional neural network that can be used for classifying traffic signs. I started by exploring and visualizing the data and training a modified LeNet model with the provided training set. Adding dropouts, augmenting the training set and switching to a more complex network drastically improved my models accuracy although still having not reached state-of-art results. 
-Further model and hyperparameter tuning, like extending the feature maps in the existing conv layer or adding new layeres, would probably improve my model's performance. 
+In this project I learned how to implement and train a convolutional neural network in tensorflow that can be used for classifying traffic signs. I started by exploring and visualizing the data and trained a modified LeNet model with the provided training set. Adding dropouts, augmenting the training set and switching to a more complex network drastically improved my models accuracy although still having not reached state-of-art results. 
+Further model and hyperparameter tuning, like extending the feature maps in the existing conv layer or adding new layeres, would probably improve my model's performance.
+Besides exploring data, implementing, training and evaluating different models I also learned how to use tensorflow and how to visualize scores, histograms, model graphs etc. in tensoboard which is very helpful especially when you want to improve your model's performance. Finally, running the models on a GPU accelerates this 'implement, train, evaluate, test' loop by an order of magnitude.
