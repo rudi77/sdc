@@ -51,16 +51,21 @@ def nvidia_net():
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"hi:",["ifile="])
+        opts, args = getopt.getopt(argv,"hi:s",["ifile=", "summary"])
     except getopt.GetoptError:
-        print('usage: python model.py -i <trainingfiles[,trainingfiles]>')
+        print('usage: python model.py -i <trainingfiles[,trainingfiles]> [-s]')
         sys.exit(2)
 
     trainingfiles = []      
     for opt, arg in opts:
         if opt == '-h':
-            print('usage: python model.py -i <trainingfiles[,trainingfiles]>')
+            print('usage: python model.py -i <trainingfiles[,trainingfiles]> [-s]')
             sys.exit()
+        elif opt in ('-s', '--summary'):
+            model = nvidia_net()
+            model.summary()
+            model = None
+            sys.exit(0)
         elif opt in ('-i', '--ifile'):
             trainingfiles = arg.split(',')
             print( 'Trainingfiles: {}'.format(trainingfiles))
@@ -82,7 +87,6 @@ def main(argv):
     
     # create the model
     model_n = nvidia_net()
-    model_n.summary()
     
     # Tensorboard logging
     callback_tb = TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
