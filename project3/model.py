@@ -54,7 +54,7 @@ def nvidia_net():
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"hi:sb:e:m:",["ifile=", "summary", "batch_size", "epochs", "model"])
+        opts, args = getopt.getopt(argv,"hi:sb:e:m:w:",["ifile=", "summary", "batch_size", "epochs", "model", "model_weights"])
     except getopt.GetoptError:
         print('usage: python model.py -i <trainingfiles[,trainingfiles]> [-s]')
         sys.exit(2)
@@ -62,7 +62,10 @@ def main(argv):
     trainingfiles = []      
     batches = 128
     epochs=2
+    
     model_n = None
+    # Path to serialized model weights
+    mwpath = ''
     
     for opt, arg in opts:
         if opt == '-h':
@@ -82,9 +85,11 @@ def main(argv):
         elif opt in ('-i', '--ifile'):
             trainingfiles = arg.split(',')
             print( 'Trainingfiles: {}'.format(trainingfiles))
-        elif opt in ('-m', '--model'):
-            with tf.device('/cpu:0'):
-                model_n = load_model(arg)
+        elif opt in ('-w', '--model_weights'):            
+            model_weights_path = arg
+            print('Path to model_weights: {}'.format(mwpath))
+        elif opt in ('-m', '--model'):            
+            model_n = load_model(arg)
             print('Loaded model: {}'.format(arg))
    
     if len(trainingfiles) == 0:
@@ -102,9 +107,12 @@ def main(argv):
     train_generator = dg.generator(train_samples, batch_size=batches)
     validation_generator = dg.generator(validation_samples, batch_size=batches, isAugment=False)
     
-    # create the model if not yet loaded
+    # create the model
     if model_n == None:
         model_n = nvidia_net()
+        
+        if mwpath != '':
+            model_n.load_weights( mwpath )
         print("Created new model")
     
     # Tensorboard logging
@@ -120,7 +128,7 @@ def main(argv):
                           validation_steps=len(validation_samples) / batches,
                           callbacks=[callback_tb])
     # save model
-    model_n.save('./model.h5')  
+    model_n.save_weights('./model_weights.h5')  
    
 if __name__ == "__main__":
     main(sys.argv[1:])
