@@ -19,6 +19,9 @@ from keras.layers.normalization import BatchNormalization
 from keras.callbacks import TensorBoard
 
 def nvidia_net():
+    # Dropout is used in every FC to prevent the net from overfitting
+    keep_prob = 0.7
+    
     model = Sequential()
 
     # Crop image, normalize it and resize it to the shape that nvidia used too.   
@@ -33,11 +36,7 @@ def nvidia_net():
     model.add(Conv2D(64, 3, activation='relu'))
     model.add(Conv2D(64, 3, activation='relu'))
 
-    # Fully Connected Layers
-    
-    # Dropout is used in every FC to prevent the net from overfitting
-    keep_prob = 0.7
-    
+    # Fully Connected Layers    
     model.add(Flatten())
     model.add(Dense(100))
     model.add(Dropout(keep_prob))
@@ -51,12 +50,15 @@ def nvidia_net():
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"hi:s",["ifile=", "summary"])
+        opts, args = getopt.getopt(argv,"hi:sb:e:",["ifile=", "summary", "batch_size", "epochs"])
     except getopt.GetoptError:
         print('usage: python model.py -i <trainingfiles[,trainingfiles]> [-s]')
         sys.exit(2)
 
     trainingfiles = []      
+    batches = 128
+    epochs=2
+    
     for opt, arg in opts:
         if opt == '-h':
             print('usage: python model.py -i <trainingfiles[,trainingfiles]> [-s]')
@@ -66,6 +68,12 @@ def main(argv):
             model.summary()
             model = None
             sys.exit(0)
+        elif opt in ('-b', '--batch_size'):
+            batches = int(arg)
+            print('Batch_size: {}'.format(batches))
+        elif opt in ('-e', '--epochs'):
+            epochs = int(arg)
+            print('Epochs: {}'.format(epochs))
         elif opt in ('-i', '--ifile'):
             trainingfiles = arg.split(',')
             print( 'Trainingfiles: {}'.format(trainingfiles))
@@ -82,8 +90,8 @@ def main(argv):
     
     # create training and validation generators.
     # only training samples will be augmented
-    train_generator = dg.generator(train_samples, batch_size=128)
-    validation_generator = dg.generator(validation_samples, batch_size=128, isAugment=False)
+    train_generator = dg.generator(train_samples, batch_size=batches)
+    validation_generator = dg.generator(validation_samples, batch_size=batches, isAugment=False)
     
     # create the model
     model_n = nvidia_net()
@@ -95,10 +103,10 @@ def main(argv):
     model_n.compile(loss='mse', optimizer='adam')
     
     model_n.fit_generator(train_generator, 
-                          steps_per_epoch = len(train_samples) * 3,
-                          epochs = 10,            
+                          steps_per_epoch = len(train_samples) / batches,
+                          epochs = epochs,            
                           validation_data=validation_generator,
-                          validation_steps=len(validation_samples),
+                          validation_steps=len(validation_samples) / batches,
                           callbacks=[callback_tb])
     # save model
     model_n.save('./model.h5')  

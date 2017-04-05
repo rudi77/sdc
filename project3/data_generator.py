@@ -12,12 +12,21 @@ import sklearn
 
 #steering_angle_left_right = 0.061
 steering_angle_left_right = 0.25
+
 # Taken from Stackoverflow:
 # http://stackoverflow.com/questions/25699439/how-to-iterate-over-consecutive-chunks-of-pandas-dataframe-efficiently
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
 def image_and_angle(sample, camera):
+    """
+    Reads image with its corresponding steering angle and returns
+    it as a tuple (image, steering_angle)
+    @sample represents one row in the csv file from the image path and steering angle 
+            is extracted.
+    @camera an int [0,1,2] representing the camera image that shall be loaded.
+            Where 0...center, 1...left and 2...right camera image.                   
+    """
     tokens = re.split('[\\\\,/]', sample.iat[0,camera])
     path = os.path.join('data', 'IMG')
     path = os.path.join(path, tokens[-1])
@@ -29,10 +38,12 @@ def image_and_angle(sample, camera):
 
 
 def generator(samples, batch_size, isAugment = True):
-    num_samples = len(samples)
-        
+    """
+    Generates batches of training sets.
+    """
     while 1: # Loop forever so the generator never terminates
         samples = sklearn.utils.shuffle(samples)
+        
         for batch_samples in chunker(samples,batch_size):
            
             images = []
@@ -54,8 +65,10 @@ def generator(samples, batch_size, isAugment = True):
                     right_image, right_angle = image_and_angle(batch_sample, 2)
                     images.append(right_image)
                     angles.append(right_angle - steering_angle_left_right)
+                    
+                    # TODO: Flip image horizontally, also invert sign of steering angle
         
             X_train = np.array(images)
             y_train = np.array(angles)
             
-            yield sklearn.utils.shuffle(X_train, y_train)
+            yield X_train, y_train
