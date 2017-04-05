@@ -10,6 +10,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import data_generator as dg
 
+import tensorflow as tf
+
 from keras.layers.core import K
 from keras.models import Sequential
 from keras.layers import Cropping2D, Flatten, Dense, Lambda, Activation
@@ -17,6 +19,8 @@ from keras.layers import Conv2D, Input
 from keras.layers.core import Dropout
 from keras.layers.normalization import BatchNormalization
 from keras.callbacks import TensorBoard
+from keras.models import load_model
+import h5py
 
 def nvidia_net():
     # Dropout is used in every FC to prevent the net from overfitting
@@ -50,7 +54,7 @@ def nvidia_net():
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"hi:sb:e:",["ifile=", "summary", "batch_size", "epochs"])
+        opts, args = getopt.getopt(argv,"hi:sb:e:m:",["ifile=", "summary", "batch_size", "epochs", "model"])
     except getopt.GetoptError:
         print('usage: python model.py -i <trainingfiles[,trainingfiles]> [-s]')
         sys.exit(2)
@@ -58,6 +62,7 @@ def main(argv):
     trainingfiles = []      
     batches = 128
     epochs=2
+    model_n = None
     
     for opt, arg in opts:
         if opt == '-h':
@@ -77,6 +82,10 @@ def main(argv):
         elif opt in ('-i', '--ifile'):
             trainingfiles = arg.split(',')
             print( 'Trainingfiles: {}'.format(trainingfiles))
+        elif opt in ('-m', '--model'):
+            with tf.device('/cpu:0'):
+                model_n = load_model(arg)
+            print('Loaded model: {}'.format(arg))
    
     if len(trainingfiles) == 0:
         print("No training files set")
@@ -93,14 +102,16 @@ def main(argv):
     train_generator = dg.generator(train_samples, batch_size=batches)
     validation_generator = dg.generator(validation_samples, batch_size=batches, isAugment=False)
     
-    # create the model
-    model_n = nvidia_net()
+    # create the model if not yet loaded
+    if model_n == None:
+        model_n = nvidia_net()
+        print("Created new model")
     
     # Tensorboard logging
     callback_tb = TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
     
     # Mean square error function is used as loss function because this is a regression problem.
-    model_n.compile(loss='mse', optimizer='adam')
+    model_n.compile(loss='mse', optimizer='adam',  metrics=['accuracy'])
     
     model_n.fit_generator(train_generator, 
                           steps_per_epoch = len(train_samples) / batches,
