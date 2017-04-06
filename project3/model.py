@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Thu Mar 30 21:27:38 2017
 
@@ -20,6 +19,7 @@ from keras.layers.core import Dropout
 from keras.layers.normalization import BatchNormalization
 from keras.callbacks import TensorBoard
 from keras.models import load_model
+from models import model_from_json
 import h5py
 
 def nvidia_net():
@@ -127,8 +127,9 @@ def main(argv):
                           validation_data=validation_generator,
                           validation_steps=len(validation_samples) / batches,
                           callbacks=[callback_tb])
-    # save model
-    model_n.save_weights('./model_weights.h5')  
-   
+
+	# save model
+	model_n.save('./model.h5')
+
 if __name__ == "__main__":
     main(sys.argv[1:])
