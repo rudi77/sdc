@@ -10,8 +10,8 @@ import cv2
 import numpy as np
 import sklearn
 
-#steering_angle_left_right = 0.061
-steering_angle_left_right = 0.25
+#angle_offset = 0.061
+angle_offset = 0.25
 
 # Taken from Stackoverflow:
 # http://stackoverflow.com/questions/25699439/how-to-iterate-over-consecutive-chunks-of-pandas-dataframe-efficiently
@@ -27,7 +27,12 @@ def image_and_angle(sample, camera):
     @camera an int [0,1,2] representing the camera image that shall be loaded.
             Where 0...center, 1...left and 2...right camera image.                   
     """
-    tokens = re.split('[\\\\,/]', sample.iat[0,camera])
+    
+    # Assumption: On the ec2 instance all images are placed into the ./data/IMG folder.
+    # The path is split into tokens and only the file name of the image as used as the path
+    # to the image may differ on your host machine. This should work for windows as well as
+    # linux paths.
+    tokens = re.split('[\\,\\\\,/]', sample.iat[0,camera])
     path = os.path.join('data', 'IMG')
     path = os.path.join(path, tokens[-1])
     
@@ -40,6 +45,10 @@ def image_and_angle(sample, camera):
 def generator(samples, batch_size, isAugment = True):
     """
     Generates batches of training sets.
+    @samples       The samples, as a pandas dataframe, which shall be split into batches
+    @batch_size    The size of one batch.
+    @isAugment     If set to true then the samples will be augmented, i.e. left and right camera images 
+                    will be taken into account too.
     """
     while 1: # Loop forever so the generator never terminates
         samples = sklearn.utils.shuffle(samples)
@@ -59,12 +68,12 @@ def generator(samples, batch_size, isAugment = True):
                     # Left image
                     left_image, left_angle = image_and_angle(batch_sample, 1)
                     images.append(left_image)
-                    angles.append(left_angle + steering_angle_left_right)
+                    angles.append(left_angle + angle_offset)
                     
                     # Right image
                     right_image, right_angle = image_and_angle(batch_sample, 2)
                     images.append(right_image)
-                    angles.append(right_angle - steering_angle_left_right)
+                    angles.append(right_angle - angle_offset)
                     
                     # TODO: Flip image horizontally, also invert sign of steering angle
         
