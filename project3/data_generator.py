@@ -10,8 +10,8 @@ import cv2
 import numpy as np
 import sklearn
 
-angle_offset = 0.06
-#angle_offset = 0.25
+#angle_offset = 0.06
+angle_offset = 0.25
 
 # Taken from Stackoverflow:
 # http://stackoverflow.com/questions/25699439/how-to-iterate-over-consecutive-chunks-of-pandas-dataframe-efficiently
@@ -85,17 +85,18 @@ def generator(samples, batch_size, isAugment = True):
                     angles.append(right_angle - angle_offset)
                     
                     # Flip image horizontally, also invert sign of steering angle
-                    center_flipped_image, center_flipped_angle = flip_image(center_image, center_angle)
-                    images.append(center_flipped_image)
-                    angles.append(center_flipped_angle)
-                    
-                    left_flipped_image, left_flipped_angle = flip_image(left_image, left_angle)
-                    images.append(left_flipped_image)
-                    angles.append(left_flipped_angle)
-                    
-                    right_flipped_image, right_flipped_angle = flip_image(right_image, right_angle)
-                    images.append(right_flipped_image)
-                    angles.append(right_flipped_angle)
+                    if center_angle < -0.1 or 0.1 < center_angle:
+                        center_flipped_image, center_flipped_angle = flip_image(center_image, center_angle)
+                        images.append(center_flipped_image)
+                        angles.append(center_flipped_angle)
+                        
+                        left_flipped_image, left_flipped_angle = flip_image(left_image, left_angle)
+                        images.append(left_flipped_image)
+                        angles.append(left_flipped_angle)
+                        
+                        right_flipped_image, right_flipped_angle = flip_image(right_image, right_angle)
+                        images.append(right_flipped_image)
+                        angles.append(right_flipped_angle)
         
             X_train = np.array(images)
             y_train = np.array(angles)
