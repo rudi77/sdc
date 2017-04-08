@@ -41,6 +41,14 @@ def image_and_angle(sample, camera):
     
     return (image, angle)
 
+def flip_image(image, steering_angle):
+    """
+    Flips an image horizontally and inverts the given steering angle.
+    """
+    image_flipped = np.fliplr(image)
+    flipped_angle = -steering_angle
+    
+    return image_flipped, flipped_angle
 
 def generator(samples, batch_size, isAugment = True):
     """
@@ -75,7 +83,18 @@ def generator(samples, batch_size, isAugment = True):
                     images.append(right_image)
                     angles.append(right_angle - angle_offset)
                     
-                    # TODO: Flip image horizontally, also invert sign of steering angle
+                    # Flip image horizontally, also invert sign of steering angle
+                    center_flipped_image, center_flipped_angle = flip_image(center_image, center_angle)
+                    images.append(center_flipped_image)
+                    angles.append(center_flipped_angle)
+                    
+                    left_flipped_image, left_flipped_angle = flip_image(left_image, left_angle)
+                    images.append(left_flipped_image)
+                    angles.append(left_flipped_angle)
+                    
+                    right_flipped_image, right_flipped_angle = flip_image(right_image, right_angle)
+                    images.append(right_flipped_image)
+                    angles.append(right_flipped_angle)
         
             X_train = np.array(images)
             y_train = np.array(angles)
