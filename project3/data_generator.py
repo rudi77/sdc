@@ -10,8 +10,8 @@ import cv2
 import numpy as np
 import sklearn
 
-#angle_offset = 0.061
-angle_offset = 0.25
+angle_offset = 0.06
+#angle_offset = 0.25
 
 # Taken from Stackoverflow:
 # http://stackoverflow.com/questions/25699439/how-to-iterate-over-consecutive-chunks-of-pandas-dataframe-efficiently
@@ -45,6 +45,7 @@ def flip_image(image, steering_angle):
     """
     Flips an image horizontally and inverts the given steering angle.
     """
+        
     image_flipped = np.fliplr(image)
     flipped_angle = -steering_angle
     
