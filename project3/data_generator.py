@@ -85,7 +85,7 @@ def generator(samples, batch_size, isAugment = True):
                     angles.append(right_angle - angle_offset)
                     
                     # Flip image horizontally, also invert sign of steering angle
-                    if center_angle < -0.1 or 0.1 < center_angle:
+                    if center_angle != 0.0:
                         center_flipped_image, center_flipped_angle = flip_image(center_image, center_angle)
                         images.append(center_flipped_image)
                         angles.append(center_flipped_angle)
