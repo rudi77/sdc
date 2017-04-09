@@ -75,14 +75,14 @@ def generator(samples, batch_size, isAugment = True):
             
                 if isAugment:
                     # Left image
-                    left_image, left_angle = image_and_angle(batch_sample, 1)
-                    images.append(left_image)
-                    angles.append(left_angle + angle_offset)
+                    #left_image, left_angle = image_and_angle(batch_sample, 1)
+                    #images.append(left_image)
+                    #angles.append(left_angle + angle_offset)
                     
                     # Right image
-                    right_image, right_angle = image_and_angle(batch_sample, 2)
-                    images.append(right_image)
-                    angles.append(right_angle - angle_offset)
+                    #right_image, right_angle = image_and_angle(batch_sample, 2)
+                    #images.append(right_image)
+                    #angles.append(right_angle - angle_offset)
                     
                     # Flip image horizontally, also invert sign of steering angle
                     if center_angle < -0.1 or 0.1 < center_angle:
