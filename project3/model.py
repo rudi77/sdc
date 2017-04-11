@@ -20,6 +20,7 @@ from keras.layers.normalization import BatchNormalization
 from keras.callbacks import TensorBoard
 from keras.models import load_model
 from keras.models import model_from_json
+from keras import optimizers
 import h5py
 
 def nvidia_net():
@@ -127,7 +128,8 @@ def main(argv):
 
     # Mean square error function is used as loss function because this is a regression problem.
     #model_n.compile(loss='mse', optimizer='adam')
-    model_n.compile(optimizer=Adam(lr=0.0001), loss='mse')
+    adam = optimizers.Adam(lr=0.0001)
+    model_n.compile(optimizer=adam, loss='mse')
 
     model_n.fit_generator(train_generator,
                           steps_per_epoch = len(train_samples),
