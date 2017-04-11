@@ -127,8 +127,8 @@ def main(argv):
     callback_tb = TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
     
     # checkpoint
-    filepath="checkpoint-{epoch:02d}-{val_acc:.2f}.hdf5"
-    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    filepath="checkpoint-{epoch:02d}-{val_loss:.2f}.hdf5"
+    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='max')
     callbacks_list = [callback_tb, checkpoint]
 
     # Mean square error function is used as loss function because this is a regression problem.
@@ -137,7 +137,7 @@ def main(argv):
     model_n.compile(optimizer=adam, loss='mse')
 
     model_n.fit_generator(train_generator,
-                          steps_per_epoch = len(train_samples) / batches,
+                          steps_per_epoch = 2,
                           epochs = epochs,
                           validation_data=validation_generator,
                           validation_steps=len(validation_samples) / batches,
