@@ -6,6 +6,7 @@ Created on Sun Apr  2 20:22:00 2017
 """
 import os
 import re
+import random
 import cv2
 import numpy as np
 import sklearn
@@ -17,6 +18,20 @@ angle_offset = 0.25
 # http://stackoverflow.com/questions/25699439/how-to-iterate-over-consecutive-chunks-of-pandas-dataframe-efficiently
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+
+def shift_horizontal(img, angle):
+    """
+    Shifts an image in horizontal direction.
+    @image  The image to be shifted.
+    @angle  Original steering angle which is updated.
+    """
+    
+    shiftx = random.randint(-50, 50)
+    #angle_new = angle_offset * shiftx + angle_old
+    rows,cols = img.shape[:2]  
+    M = np.float32([[1, 0, shiftx], [0, 1, 0]])
+    
+    return cv2.warpAffine(img, M, (cols,rows)), angle
 
 def image_and_angle(sample, camera):
     """

@@ -61,7 +61,7 @@ def main(argv):
 
     trainingfiles = []
     batches = 128
-    epochs=2
+    epochs=5
 
     model_to_json = None
     model_n = None
@@ -126,13 +126,14 @@ def main(argv):
     callback_tb = TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
 
     # Mean square error function is used as loss function because this is a regression problem.
-    model_n.compile(loss='mse', optimizer='adam',  metrics=['accuracy'])
+    #model_n.compile(loss='mse', optimizer='adam')
+    model_n.compile(optimizer=Adam(lr=0.0001), loss='mse')
 
     model_n.fit_generator(train_generator,
-                          steps_per_epoch = len(train_samples) / batches,
+                          steps_per_epoch = len(train_samples),
                           epochs = epochs,
                           validation_data=validation_generator,
-                          validation_steps=len(validation_samples) / batches,
+                          validation_steps=len(validation_samples),
                           callbacks=[callback_tb])
     # save model
     model_n.save('./model.h5')
