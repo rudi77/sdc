@@ -17,7 +17,7 @@ from keras.layers import Cropping2D, Flatten, Dense, Lambda, Activation
 from keras.layers import Conv2D, Input
 from keras.layers.core import Dropout
 from keras.layers.normalization import BatchNormalization
-from keras.callbacks import TensorBoard
+from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.models import load_model
 from keras.models import model_from_json
 from keras import optimizers
@@ -125,6 +125,11 @@ def main(argv):
 
     # Tensorboard logging
     callback_tb = TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
+    
+    # checkpoint
+    filepath="checkpoint-{epoch:02d}-{val_acc:.2f}.hdf5"
+    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    callbacks_list = [callback_tb, checkpoint]
 
     # Mean square error function is used as loss function because this is a regression problem.
     #model_n.compile(loss='mse', optimizer='adam')
@@ -132,11 +137,11 @@ def main(argv):
     model_n.compile(optimizer=adam, loss='mse')
 
     model_n.fit_generator(train_generator,
-                          steps_per_epoch = len(train_samples),
+                          steps_per_epoch = len(train_samples) / batches,
                           epochs = epochs,
                           validation_data=validation_generator,
-                          validation_steps=len(validation_samples),
-                          callbacks=[callback_tb])
+                          validation_steps=len(validation_samples) / batches,
+                          callbacks=callbacks_list)
     # save model
     model_n.save('./model.h5')
 
