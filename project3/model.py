@@ -137,7 +137,7 @@ def main(argv):
     model_n.compile(optimizer=adam, loss='mse')
 
     model_n.fit_generator(train_generator,
-                          steps_per_epoch = 2,
+                          steps_per_epoch = len(train_samples) / batches,
                           epochs = epochs,
                           validation_data=validation_generator,
                           validation_steps=len(validation_samples) / batches,
