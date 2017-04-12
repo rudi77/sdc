@@ -24,15 +24,10 @@ def to_yuv(image):
     """
     return cv2.cvtColor(image, cv2.COLOR_RGB2YUV    )
 
-def contrast(image, cfactor=0.5):
+def brightness(image, cfactor=0.5):
     img_yuv = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
-    
-    w,h,c = image.shape
-    
-    for i in range(w):
-        for j in range(h):
-            img_yuv[i,j,0] = img_yuv[i,j,0] * cfactor if img_yuv[i,j,0] * cfactor < 255 else 255
-           
+    img_yuv[:,:,0] =  np.where(img_yuv[:,:,0] * cfactor < 255, img_yuv[:,:,0] * cfactor, 255) 
+            
     # convert the YUV image back to RGB format
     return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
 
@@ -152,8 +147,8 @@ def generator(samples, batch_size, isAugment = True):
                         angles.append(center_flipped_angle)
                         
                     # Change contrast
-                    img_contrast = contrast(center_image, random.uniform(0.4, 1.2))
-                    images.append(grayscale(img_contrast))
+                    img_brightness = brightness(center_image, random.uniform(0.4, 1.2))
+                    images.append(grayscale(img_brightness))
                     angles.append(center_angle)
                             
             X_train = np.array(images)
