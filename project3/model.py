@@ -30,7 +30,7 @@ def nvidia_net():
     model = Sequential()
 
     # Crop image, normalize it and resize it to the shape that nvidia used too.
-    model.add(Cropping2D(cropping=((70,25), (0,0)), input_shape=(160,320,3)))
+    model.add(Cropping2D(cropping=((70,25), (0,0)), input_shape=(160,320,1)))
     model.add(Lambda(lambda x: x / 255 - 0.5))
     model.add(Lambda(lambda x: K.tf.image.resize_images(x, (66,200))))
 
@@ -128,13 +128,13 @@ def main(argv):
     
     # checkpoint
     filepath="checkpoint-{epoch:02d}-{val_loss:.2f}.hdf5"
-    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='max')
+    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
     callbacks_list = [callback_tb, checkpoint]
 
     # Mean square error function is used as loss function because this is a regression problem.
     #model_n.compile(loss='mse', optimizer='adam')
-    adam = optimizers.Adam(lr=0.0001)
-    model_n.compile(optimizer=adam, loss='mse')
+    #adam = optimizers.Adam(lr=0.0001)
+    model_n.compile(optimizer="adam", loss='mse')
 
     model_n.fit_generator(train_generator,
                           steps_per_epoch = len(train_samples) / batches,

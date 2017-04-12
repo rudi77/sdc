@@ -9,15 +9,53 @@ import re
 import random
 import cv2
 import numpy as np
+from numpy import newaxis
 import sklearn
 
 #angle_offset = 0.06
 angle_offset = 0.25
 
-# Taken from Stackoverflow:
-# http://stackoverflow.com/questions/25699439/how-to-iterate-over-consecutive-chunks-of-pandas-dataframe-efficiently
-def chunker(seq, size):
-    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+def crop_image(image, x, wx, y, hy):
+    return image[y:hy, x:wx]
+
+def to_yuv(image):
+    """
+    Converts and RGB to an YUV image
+    """
+    return cv2.cvtColor(image, cv2.COLOR_RGB2YUV    )
+
+def contrast(image, cfactor=0.5):
+    img_yuv = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
+    
+    w,h,c = image.shape
+    
+    for i in range(w):
+        for j in range(h):
+            img_yuv[i,j,0] = img_yuv[i,j,0] * cfactor if img_yuv[i,j,0] * cfactor < 255 else 255
+           
+    # convert the YUV image back to RGB format
+    return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
+
+def add_shadow(image):
+    w,h,c = image.shape          
+    return image
+
+def grayscale(image):
+    """
+    Converts an image to grayscale and reshapes it to (32,32,1)
+    """
+    img_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    return img_gray[:,:,newaxis]
+
+def rotate(img, d):
+    """
+    Rotates an image for d degrees
+    @d degrees
+    """ 
+    rows,cols = img.shape[:2]
+    M = cv2.getRotationMatrix2D((cols/2,rows/2), d, 1)
+    
+    return cv2.warpAffine(img,M,(cols,rows))
 
 def shift_horizontal(img, angle):
     """
@@ -32,6 +70,17 @@ def shift_horizontal(img, angle):
     M = np.float32([[1, 0, shiftx], [0, 1, 0]])
     
     return cv2.warpAffine(img, M, (cols,rows)), angle
+
+def flip_image(image, steering_angle):
+    """
+    Flips an image horizontally and inverts the given steering angle.
+    """
+        
+    image_flipped = np.fliplr(image)
+    flipped_angle = -steering_angle
+    
+    return image_flipped, flipped_angle
+
 
 def image_and_angle(sample, camera):
     """
@@ -52,19 +101,15 @@ def image_and_angle(sample, camera):
     path = os.path.join(path, tokens[-1])
     
     image = cv2.imread(path)
+        
     angle = float(sample.iat[0,3])
     
     return (image, angle)
 
-def flip_image(image, steering_angle):
-    """
-    Flips an image horizontally and inverts the given steering angle.
-    """
-        
-    image_flipped = np.fliplr(image)
-    flipped_angle = -steering_angle
-    
-    return image_flipped, flipped_angle
+# Taken from Stackoverflow:
+# http://stackoverflow.com/questions/25699439/how-to-iterate-over-consecutive-chunks-of-pandas-dataframe-efficiently
+def chunker(seq, size):
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
 def generator(samples, batch_size, isAugment = True):
     """
@@ -83,36 +128,34 @@ def generator(samples, batch_size, isAugment = True):
             angles = []
             
             for batch_sample in chunker(batch_samples, 1):
+                
                 # Center image
-                center_image, center_angle = image_and_angle(batch_sample, 0)
-                images.append(center_image)
+                center_image, center_angle = image_and_angle(batch_sample, 0)                              
+                images.append(grayscale(center_image))
                 angles.append(center_angle)
             
                 if isAugment:
                     # Left image
                     left_image, left_angle = image_and_angle(batch_sample, 1)
-                    images.append(left_image)
+                    images.append(grayscale(left_image))
                     angles.append(left_angle + angle_offset)
                     
                     # Right image
                     right_image, right_angle = image_and_angle(batch_sample, 2)
-                    images.append(right_image)
+                    images.append(grayscale(right_image))
                     angles.append(right_angle - angle_offset)
                     
                     # Flip image horizontally, also invert sign of steering angle
                     if center_angle != 0.0:
                         center_flipped_image, center_flipped_angle = flip_image(center_image, center_angle)
-                        images.append(center_flipped_image)
+                        images.append(grayscale(center_flipped_image))
                         angles.append(center_flipped_angle)
                         
-                        #left_flipped_image, left_flipped_angle = flip_image(left_image, left_angle)
-                        #images.append(left_flipped_image)
-                        #angles.append(left_flipped_angle)
-                        
-                        #right_flipped_image, right_flipped_angle = flip_image(right_image, right_angle)
-                        #images.append(right_flipped_image)
-                        #angles.append(right_flipped_angle)
-        
+                    # Change contrast
+                    img_contrast = contrast(center_image, random.uniform(0.4, 1.2))
+                    images.append(grayscale(img_contrast))
+                    angles.append(center_angle)
+                            
             X_train = np.array(images)
             y_train = np.array(angles)
             
