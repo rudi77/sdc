@@ -6,6 +6,7 @@ Created on Thu Mar 30 21:27:38 2017
 import sys
 import getopt
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
 import data_generator as dg
 
@@ -61,7 +62,8 @@ def rudi_net():
     model = Sequential()
 
     # Crop image, normalize it and resize it to the shape that nvidia used too.
-    model.add(Cropping2D(cropping=((70,25), (0,0)), input_shape=(160,320,1)))
+    model.add(Cropping2D(cropping=((70,25), (0,0)), input_shape=(160,320,3)))
+    #model.add(Lambda(lambda x: (x - 128.) / 128.))
     model.add(Lambda(lambda x: x / 255 - 0.5))
     model.add(Lambda(lambda x: K.tf.image.resize_images(x, (66,200))))
 
@@ -71,7 +73,6 @@ def rudi_net():
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Conv2D(64, 5, strides=(2,2), padding='valid', activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-
 
     # Fully Connected Layers
     model.add(Flatten())
