@@ -12,7 +12,7 @@ import numpy as np
 from numpy import newaxis
 import sklearn
 
-angle_offset = 0.25
+import tensorflow as tf
 
 def generator(samples, batch_size, isAugment = True):
     """
@@ -22,6 +22,12 @@ def generator(samples, batch_size, isAugment = True):
     @isAugment     If set to true then the samples will be augmented, i.e. left and right camera images 
                     will be taken into account too.
     """
+    CENTER = 0
+    LEFT = 1
+    RIGHT = 2
+    
+    angle_offset = 0.25
+    
     while 1: # Loop forever so the generator never terminates
         samples = sklearn.utils.shuffle(samples)
         
@@ -33,18 +39,18 @@ def generator(samples, batch_size, isAugment = True):
             for batch_sample in chunker(batch_samples, 1):
                 
                 # Center image
-                center_image, center_angle = image_and_angle(batch_sample, 0)                              
+                center_image, center_angle = image_and_angle(batch_sample, CENTER)                              
                 images.append(center_image)
                 angles.append(center_angle)
             
                 if isAugment:
                     # Left image
-                    left_image, left_angle = image_and_angle(batch_sample, 1)
+                    left_image, left_angle = image_and_angle(batch_sample, LEFT)
                     images.append(left_image)
                     angles.append(left_angle + angle_offset)
                     
                     # Right image
-                    right_image, right_angle = image_and_angle(batch_sample, 2)
+                    right_image, right_angle = image_and_angle(batch_sample, RIGHT)
                     images.append(right_image)
                     angles.append(right_angle - angle_offset)
                     
@@ -55,7 +61,7 @@ def generator(samples, batch_size, isAugment = True):
                         angles.append(center_flipped_angle)
                         
                     # Change contrast
-                    img_brightness = brightness(center_image, random.uniform(0.4, 1.2))
+                    img_brightness = brightness(center_image, random.uniform(0.2, 1.2))
                     images.append(img_brightness)
                     angles.append(center_angle)
                             
@@ -68,7 +74,6 @@ def generator(samples, batch_size, isAugment = True):
 # http://stackoverflow.com/questions/25699439/how-to-iterate-over-consecutive-chunks-of-pandas-dataframe-efficiently
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
-
 
 def crop_image(image, x, wx, y, hy):
     return image[y:hy, x:wx]

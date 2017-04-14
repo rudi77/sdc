@@ -61,10 +61,10 @@ def rudi_net():
 
     model = Sequential()
 
-    # Crop image, normalize it and resize it to the shape that nvidia used too.
+    # Crop image, to grayscale, normalize it and resize it to the shape that nvidia used too.
     model.add(Cropping2D(cropping=((70,25), (0,0)), input_shape=(160,320,3)))
-    #model.add(Lambda(lambda x: (x - 128.) / 128.))
-    model.add(Lambda(lambda x: x / 255 - 0.5))
+    model.add(Lambda(lambda x: K.tf.image.rgb_to_grayscale(x, name=None)))
+    model.add(Lambda(lambda x: (x - 128.) / 128.))
     model.add(Lambda(lambda x: K.tf.image.resize_images(x, (66,200))))
 
     # Convolutional Layers
