@@ -34,29 +34,29 @@ def generator(samples, batch_size, isAugment = True):
                 
                 # Center image
                 center_image, center_angle = image_and_angle(batch_sample, 0)                              
-                images.append(grayscale(center_image))
+                images.append(center_image)
                 angles.append(center_angle)
             
                 if isAugment:
                     # Left image
                     left_image, left_angle = image_and_angle(batch_sample, 1)
-                    images.append(grayscale(left_image))
+                    images.append(left_image)
                     angles.append(left_angle + angle_offset)
                     
                     # Right image
                     right_image, right_angle = image_and_angle(batch_sample, 2)
-                    images.append(grayscale(right_image))
+                    images.append(right_image)
                     angles.append(right_angle - angle_offset)
                     
                     # Flip image horizontally, also invert sign of steering angle
                     if center_angle != 0.0:
                         center_flipped_image, center_flipped_angle = flip_image(center_image, center_angle)
-                        images.append(grayscale(center_flipped_image))
+                        images.append(center_flipped_image)
                         angles.append(center_flipped_angle)
                         
                     # Change contrast
                     img_brightness = brightness(center_image, random.uniform(0.4, 1.2))
-                    images.append(grayscale(img_brightness))
+                    images.append(img_brightness)
                     angles.append(center_angle)
                             
             X_train = np.array(images)
