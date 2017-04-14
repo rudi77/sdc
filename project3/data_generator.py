@@ -12,8 +12,63 @@ import numpy as np
 from numpy import newaxis
 import sklearn
 
-#angle_offset = 0.06
 angle_offset = 0.25
+
+def generator(samples, batch_size, isAugment = True):
+    """
+    Generates batches of training sets.
+    @samples       The samples, as a pandas dataframe, which shall be split into batches
+    @batch_size    The size of one batch.
+    @isAugment     If set to true then the samples will be augmented, i.e. left and right camera images 
+                    will be taken into account too.
+    """
+    while 1: # Loop forever so the generator never terminates
+        samples = sklearn.utils.shuffle(samples)
+        
+        for batch_samples in chunker(samples,batch_size):
+           
+            images = []
+            angles = []
+            
+            for batch_sample in chunker(batch_samples, 1):
+                
+                # Center image
+                center_image, center_angle = image_and_angle(batch_sample, 0)                              
+                images.append(grayscale(center_image))
+                angles.append(center_angle)
+            
+                if isAugment:
+                    # Left image
+                    left_image, left_angle = image_and_angle(batch_sample, 1)
+                    images.append(grayscale(left_image))
+                    angles.append(left_angle + angle_offset)
+                    
+                    # Right image
+                    right_image, right_angle = image_and_angle(batch_sample, 2)
+                    images.append(grayscale(right_image))
+                    angles.append(right_angle - angle_offset)
+                    
+                    # Flip image horizontally, also invert sign of steering angle
+                    if center_angle != 0.0:
+                        center_flipped_image, center_flipped_angle = flip_image(center_image, center_angle)
+                        images.append(grayscale(center_flipped_image))
+                        angles.append(center_flipped_angle)
+                        
+                    # Change contrast
+                    img_brightness = brightness(center_image, random.uniform(0.4, 1.2))
+                    images.append(grayscale(img_brightness))
+                    angles.append(center_angle)
+                            
+            X_train = np.array(images)
+            y_train = np.array(angles)
+            
+            yield X_train, y_train
+
+# Taken from Stackoverflow:
+# http://stackoverflow.com/questions/25699439/how-to-iterate-over-consecutive-chunks-of-pandas-dataframe-efficiently
+def chunker(seq, size):
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+
 
 def crop_image(image, x, wx, y, hy):
     return image[y:hy, x:wx]
@@ -96,62 +151,6 @@ def image_and_angle(sample, camera):
     path = os.path.join(path, tokens[-1])
     
     image = cv2.imread(path)
-        
     angle = float(sample.iat[0,3])
     
     return (image, angle)
-
-# Taken from Stackoverflow:
-# http://stackoverflow.com/questions/25699439/how-to-iterate-over-consecutive-chunks-of-pandas-dataframe-efficiently
-def chunker(seq, size):
-    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
-
-def generator(samples, batch_size, isAugment = True):
-    """
-    Generates batches of training sets.
-    @samples       The samples, as a pandas dataframe, which shall be split into batches
-    @batch_size    The size of one batch.
-    @isAugment     If set to true then the samples will be augmented, i.e. left and right camera images 
-                    will be taken into account too.
-    """
-    while 1: # Loop forever so the generator never terminates
-        samples = sklearn.utils.shuffle(samples)
-        
-        for batch_samples in chunker(samples,batch_size):
-           
-            images = []
-            angles = []
-            
-            for batch_sample in chunker(batch_samples, 1):
-                
-                # Center image
-                center_image, center_angle = image_and_angle(batch_sample, 0)                              
-                images.append(grayscale(center_image))
-                angles.append(center_angle)
-            
-                if isAugment:
-                    # Left image
-                    left_image, left_angle = image_and_angle(batch_sample, 1)
-                    images.append(grayscale(left_image))
-                    angles.append(left_angle + angle_offset)
-                    
-                    # Right image
-                    right_image, right_angle = image_and_angle(batch_sample, 2)
-                    images.append(grayscale(right_image))
-                    angles.append(right_angle - angle_offset)
-                    
-                    # Flip image horizontally, also invert sign of steering angle
-                    if center_angle != 0.0:
-                        center_flipped_image, center_flipped_angle = flip_image(center_image, center_angle)
-                        images.append(grayscale(center_flipped_image))
-                        angles.append(center_flipped_angle)
-                        
-                    # Change contrast
-                    img_brightness = brightness(center_image, random.uniform(0.4, 1.2))
-                    images.append(grayscale(img_brightness))
-                    angles.append(center_angle)
-                            
-            X_train = np.array(images)
-            y_train = np.array(angles)
-            
-            yield X_train, y_train
