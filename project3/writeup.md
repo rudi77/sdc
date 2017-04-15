@@ -27,6 +27,9 @@ The goals / steps of this project are the following:
 [data_generator.py]: ./data_generator.py
 [drive.py]: ./drive.py
 
+[//]: # (Literature References)
+[adam]: https://arxiv.org/pdf/1412.6980.pdf
+[optimizers]: http://sebastianruder.com/optimizing-gradient-descent/
 
 ## Rubric Points
 Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
@@ -51,7 +54,25 @@ python drive.py model.h5
 
 #### 3. Submission code is usable and readable
 
-The [model.py][model.py] file contains the code for training and saving the convolution neural network. The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works. Training the model is done as follows.
+The [model.py][model.py] file contains the code for training and saving the convolution neural network. 
+I have also added some useful command line options. The different options can be listed by calling the model.py with the help option.
+```
+python model.py -h
+```
+```
+usage: python model.py -i training_log.csv
+optional arguments
+-h                   Help
+-s, --summary=       Model layer and parameter summary for a certain model, either 'nvidia' or 'rudi'
+-a, --arch=          The model that shall be used. Either 'nvidia' or 'rudi'. Default is 'nvidia'
+-b, --batch_size=    Batch size
+-e, --epochs=        Number of epochs
+-m, --model=         Load a stored model
+-j, --model_to_json= Write architecture to a json file
+-p, --initial_epoch= Set the initial epoch. Useful when restoring a saved model
+```
+
+The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works. Training the model is done as follows.
 ```sh
 python model.py -i ./data/driving_log.csv
 ```
@@ -77,7 +98,7 @@ After that I instantiate Kera's ModelCheckpoint class. It can be used to save th
   checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
   callbacks_list = [callback_tb, checkpoint]
 ```
-Finally, the model is configured and training is started.
+Finally, the model is configured and training is started. I used the [adam][adam] optimizer with its default settings and as a loss function mean_squared_error is used. (Note: In the previous project we had to recognize different traffic signs which is a typical classification problem and therefore softmax can be used whereas this problem deals with the prediction of numerical values and therefore something like mean squared error has to be used.)
 ```python
   ...
   settings.model.compile(optimizer="adam", loss='mse')
@@ -90,23 +111,6 @@ Finally, the model is configured and training is started.
                         validation_steps=len(validation_samples) / settings.batches,
                         callbacks=callbacks_list,
                         initial_epoch=settings.initial_epoch)
-```
-
-I have also added some useful command line options.
-```
-python model.py -h
-```
-```
-usage: python model.py -i training_log.csv
-optional arguments
--h                   Help
--s, --summary=       Model layer and parameter summary for a certain model, either 'nvidia' or 'rudi'
--a, --arch=          The model that shall be used. Either 'nvidia' or 'rudi'. Default is 'nvidia'
--b, --batch_size=    Batch size
--e, --epochs=        Number of epochs
--m, --model=         Load a stored model
--j, --model_to_json= Write architecture to a json file
--p, --initial_epoch= Set the initial epoch. Useful when restoring a saved model
 ```
 
 ### Model Architecture and Training Strategy
