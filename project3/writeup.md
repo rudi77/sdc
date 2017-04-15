@@ -76,7 +76,7 @@ The file shows the pipeline I used for training and validating the model, and it
 ```sh
 python model.py -i ./data/driving_log.csv
 ```
-The trainings samples are read into a [pandas](http://pandas.pydata.org/) data frame. The samples are split into a training and validation set using a split value of 0.2.
+The trainings samples are read into a [pandas](http://pandas.pydata.org/) data frame. The samples are split into a training and validation set using a split value of 0.2, i.e. 80% will be used for training and 20% for model validation. I have not created an extra test set. The model's real performance will be tested with the simulator.
 ```python
   ...
   tf_frames = [pd.read_csv(trainfile) for trainfile in settings.trainingfiles]
