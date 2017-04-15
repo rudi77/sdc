@@ -12,7 +12,6 @@ The goals / steps of this project are the following:
 * Test that the model successfully drives around track one without leaving the road
 * Summarize the results with a written report
 
-
 [//]: # (Image References)
 
 [image1]: ./examples/placeholder.png "Model Visualization"
@@ -22,6 +21,12 @@ The goals / steps of this project are the following:
 [image5]: ./examples/placeholder_small.png "Recovery Image"
 [image6]: ./examples/placeholder_small.png "Normal Image"
 [image7]: ./examples/placeholder_small.png "Flipped Image"
+
+[//]: # (File References)
+[model.py]: ./model.py
+[data_generator.py]: ./data_generator.py
+[drive.py]: ./drive.py
+
 
 ## Rubric Points
 Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
@@ -39,14 +44,70 @@ My project includes the following files:
 * writeup.md My report summarizing the results
 
 #### 2. Submission includes functional code
-Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
+Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing. This file has not been adapted by me.
 ```sh
 python drive.py model.h5
 ```
 
 #### 3. Submission code is usable and readable
 
-The model.py file contains the code for training and saving the convolution neural network. The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works.
+The [model.py][model.py] file contains the code for training and saving the convolution neural network. The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works. Training the model is done as follows.
+```sh
+python model.py -i ./data/driving_log.csv
+```
+The trainings samples are read into a [pandas](http://pandas.pydata.org/) data frame. The samples are split into a training and validation set using a split value of 0.2.
+```python
+  ...
+  tf_frames = [pd.read_csv(trainfile) for trainfile in settings.trainingfiles]
+  # merge all frames into one
+  dataframe = pd.concat(tf_frames)
+  # split samples into training and validation samples.
+  train_samples, validation_samples = train_test_split(dataframe, test_size=0.2)
+```
+Then I create two data generators - one for the training data and one for the validation data. Keras uses these generators to retrieve data for fitting and validating the model. The data generator is implemented in the [data_generator.py][data_generator.py] file. The training generator provides the training samples as well as augmented samples which are generated at runtime. Data augmentation is explained in detail in a subsequent section.
+```python
+  ...
+  train_generator = dg.generator(train_samples, batch_size=settings.batches)
+  validation_generator = dg.generator(validation_samples, batch_size=settings.batches, isAugment=False)
+```
+After that I instantiate Kera's ModelCheckpoint class. It can be used to save the model's after every epoch or when a certain condition is met, e.g. current validation loss is smaller then the previous one. The ModelCheckpoint instance must be registered at Kera's callback system, otherwise checkpointing won't be carried out. Therefore I add the ModelCheckpoint instance to my callbacks_list which is passed to the model's fit_generator method.
+```python
+  ...
+  filepath="checkpoint-{epoch:02d}-{val_loss:.2f}.hdf5"
+  checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+  callbacks_list = [callback_tb, checkpoint]
+```
+Finally, the model is configured and training is started.
+```python
+  ...
+  settings.model.compile(optimizer="adam", loss='mse')
+
+  print("start training")
+  settings.model.fit_generator(train_generator,
+                        steps_per_epoch = len(train_samples) / settings.batches,
+                        epochs = settings.epochs,
+                        validation_data=validation_generator,
+                        validation_steps=len(validation_samples) / settings.batches,
+                        callbacks=callbacks_list,
+                        initial_epoch=settings.initial_epoch)
+```
+
+I have also added some useful command line options.
+```
+python model.py -h
+```
+```
+usage: python model.py -i training_log.csv
+optional arguments
+-h                   Help
+-s, --summary=       Model layer and parameter summary for a certain model, either 'nvidia' or 'rudi'
+-a, --arch=          The model that shall be used. Either 'nvidia' or 'rudi'. Default is 'nvidia'
+-b, --batch_size=    Batch size
+-e, --epochs=        Number of epochs
+-m, --model=         Load a stored model
+-j, --model_to_json= Write architecture to a json file
+-p, --initial_epoch= Set the initial epoch. Useful when restoring a saved model
+```
 
 ### Model Architecture and Training Strategy
 
