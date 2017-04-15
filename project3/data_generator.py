@@ -16,7 +16,7 @@ import tensorflow as tf
 
 def generator(samples, batch_size, isAugment = True):
     """
-    Generates batches of training sets.
+    Generates batches of data sets.
     @samples       The samples, as a pandas dataframe, which shall be split into batches
     @batch_size    The size of one batch.
     @isAugment     If set to true then the samples will be augmented, i.e. left and right camera images 
@@ -64,6 +64,11 @@ def generator(samples, batch_size, isAugment = True):
                     img_brightness = brightness(center_image, random.uniform(0.2, 1.2))
                     images.append(img_brightness)
                     angles.append(center_angle)
+                    
+                    # Shift image horizontally
+                    img_shifted, angle_shifted = shift_horizontal(center_image, center_angle)
+                    images.append(img_shifted)
+                    angles.append(angle_shifted)
                             
             X_train = np.array(images)
             y_train = np.array(angles)
@@ -74,15 +79,6 @@ def generator(samples, batch_size, isAugment = True):
 # http://stackoverflow.com/questions/25699439/how-to-iterate-over-consecutive-chunks-of-pandas-dataframe-efficiently
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
-
-def crop_image(image, x, wx, y, hy):
-    return image[y:hy, x:wx]
-
-def to_yuv(image):
-    """
-    Converts and RGB to an YUV image
-    """
-    return cv2.cvtColor(image, cv2.COLOR_RGB2YUV    )
 
 def brightness(image, cfactor=0.5):
     img_yuv = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
@@ -95,32 +91,26 @@ def add_shadow(image):
     w,h,c = image.shape          
     return image
 
-def grayscale(image):
-    """
-    Converts an image to grayscale and reshapes it to (32,32,1)
-    """
-    img_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    return img_gray[:,:,newaxis]
-
-def rotate(img, d):
-    """
-    Rotates an image for d degrees
-    @d degrees
-    """ 
-    rows,cols = img.shape[:2]
-    M = cv2.getRotationMatrix2D((cols/2,rows/2), d, 1)
-    
-    return cv2.warpAffine(img,M,(cols,rows))
-
 def shift_horizontal(img, angle):
     """
     Shifts an image in horizontal direction.
     @image  The image to be shifted.
     @angle  Original steering angle which is updated.
     """
+    # Linear equation is used to calculate the offset that shall
+    # be added to the original angle.
+    # offset = k * shiftx + d
+    k = 0.005
     
     shiftx = random.randint(-50, 50)
-    #angle_new = angle_offset * shiftx + angle_old
+    angle_new = k * shiftx + angle
+
+    # check value of new angle. must be in the interval -1 and 1
+    if angle_new < -1.0:
+        angle_new = -1.0
+    if angle_new > 1.0:
+        angle_new = 1.0
+    
     rows,cols = img.shape[:2]  
     M = np.float32([[1, 0, shiftx], [0, 1, 0]])
     
@@ -148,7 +138,7 @@ def image_and_angle(sample, camera):
     """
     
     # Assumption: On the ec2 instance all images are placed into the ./data/IMG folder.
-    # The path is split into tokens and only the file name of the image as used as the path
+    # The path is split into tokens and only the file name of the image is used as the path
     # to the image may differ on your host machine. This should work for windows as well as
     # linux paths.
     tokens = re.split('[\\,\\\\,/]', sample.iat[0,camera])
