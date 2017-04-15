@@ -1,19 +1,6 @@
-### Under Construction...
-
-### Behavioral Cloning
-
-This is my third project of the sdc course. The overall objective of this project was to build a convolutional network that is
-able to predict steering angles from images coming from Udactity's sdc simualtor. Finally we must show that our model is able to keep the car on track for one round on the lake track.
-
-The goals / steps of this project are the following:
-* Use the simulator to collect data of good driving behavior
-* Build, a convolution neural network in Keras that predicts steering angles from images
-* Train and validate the model with a training and validation set
-* Test that the model successfully drives around track one without leaving the road
-* Summarize the results with a written report
-
 [//]: # (Image References)
 
+[imgsim]: ./images/simulator.png "Simulator Image"
 [image1]: ./examples/placeholder.png "Model Visualization"
 [image2]: ./examples/placeholder.png "Grayscaling"
 [image3]: ./examples/placeholder_small.png "Recovery Image"
@@ -30,6 +17,22 @@ The goals / steps of this project are the following:
 [//]: # (Literature References)
 [adam]: https://arxiv.org/pdf/1412.6980.pdf
 [optimizers]: http://sebastianruder.com/optimizing-gradient-descent/
+
+### Under Construction...
+
+![][imgsim]
+
+### Behavioral Cloning
+
+This is my third project of the sdc course. The overall objective of this project was to build a convolutional network that is
+able to predict steering angles from images coming from Udactity's sdc simualtor. Finally we must show that our model is able to keep the car on track for one round on the lake track.
+
+The goals / steps of this project are the following:
+* Use the simulator to collect data of good driving behavior
+* Build, a convolution neural network in Keras that predicts steering angles from images
+* Train and validate the model with a training and validation set
+* Test that the model successfully drives around track one without leaving the road
+* Summarize the results with a written report
 
 ## Rubric Points
 Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
