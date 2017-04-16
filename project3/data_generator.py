@@ -64,11 +64,6 @@ def generator(samples, batch_size, isAugment = True):
                     img_brightness = brightness(center_image, random.uniform(0.2, 1.2))
                     images.append(img_brightness)
                     angles.append(center_angle)
-                    
-                    # Shift image horizontally
-                    img_shifted, angle_shifted = shift_horizontal(center_image, center_angle)
-                    images.append(img_shifted)
-                    angles.append(angle_shifted)
                             
             X_train = np.array(images)
             y_train = np.array(angles)
@@ -80,7 +75,52 @@ def generator(samples, batch_size, isAugment = True):
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
+
+def image_and_angle(sample, camera):
+    """
+    Reads image with its corresponding steering angle and returns
+    it as a tuple (image, steering_angle)
+    @sample represents one row in the csv file from the image path and steering angle 
+            is extracted.
+    @camera an int [0,1,2] representing the camera image that shall be loaded.
+            Where 0...center, 1...left and 2...right camera image.                   
+    """
+    
+    # Assumption: On the ec2 instance all images are placed into the ./data_xxx/IMG folder.
+    # The path is split into tokens and only the file name of the image is used as the path
+    # to the image may differ on your host machine. This should work for windows as well as
+    # linux paths.
+
+    # Get the relative path to the image.    
+    relpath = sample.iat[0,camera].split('data')[-1].strip()
+    relpath = 'data_base\\' + relpath if relpath.startswith("IMG") else 'data' + relpath
+    
+    # Split relative path and rejoin them again. With this approach
+    # we should be able to handle windows as well as linux path strings.
+    tokens = re.split('[\\,\\\\,/]', relpath)
+    path = os.path.join(*tokens)
+    
+    image = cv2.imread(path)
+    angle = float(sample.iat[0,3])
+    
+    return (image, angle)
+
+def flip_image(image, steering_angle):
+    """
+    Flips an image horizontally and inverts the given steering angle.
+    """
+        
+    image_flipped = np.fliplr(image)
+    flipped_angle = -steering_angle
+    
+    return image_flipped, flipped_angle
+
 def brightness(image, cfactor=0.5):
+    """
+    Changes the brightness of every pixel of the image by a certain factor
+    @image      the images whose brightness is changed
+    @cfactor    brightness factor
+    """
     img_yuv = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
     img_yuv[:,:,0] =  np.where(img_yuv[:,:,0] * cfactor < 255, img_yuv[:,:,0] * cfactor, 255) 
             
@@ -116,36 +156,3 @@ def shift_horizontal(img, angle):
     
     return cv2.warpAffine(img, M, (cols,rows)), angle
 
-def flip_image(image, steering_angle):
-    """
-    Flips an image horizontally and inverts the given steering angle.
-    """
-        
-    image_flipped = np.fliplr(image)
-    flipped_angle = -steering_angle
-    
-    return image_flipped, flipped_angle
-
-
-def image_and_angle(sample, camera):
-    """
-    Reads image with its corresponding steering angle and returns
-    it as a tuple (image, steering_angle)
-    @sample represents one row in the csv file from the image path and steering angle 
-            is extracted.
-    @camera an int [0,1,2] representing the camera image that shall be loaded.
-            Where 0...center, 1...left and 2...right camera image.                   
-    """
-    
-    # Assumption: On the ec2 instance all images are placed into the ./data/IMG folder.
-    # The path is split into tokens and only the file name of the image is used as the path
-    # to the image may differ on your host machine. This should work for windows as well as
-    # linux paths.
-    tokens = re.split('[\\,\\\\,/]', sample.iat[0,camera])
-    path = os.path.join('data', 'IMG')
-    path = os.path.join(path, tokens[-1])
-    
-    image = cv2.imread(path)
-    angle = float(sample.iat[0,3])
-    
-    return (image, angle)

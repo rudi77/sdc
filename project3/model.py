@@ -32,7 +32,7 @@ def nvidia_net():
     model = Sequential()
 
     # Crop image, normalize it and resize it to the shape that nvidia used too.
-    model.add(Cropping2D(cropping=((70,25), (0,0)), input_shape=(160,320,1)))
+    model.add(Cropping2D(cropping=((70,25), (0,0)), input_shape=(160,320,3)))
     model.add(Lambda(lambda x: K.tf.image.rgb_to_grayscale(x, name=None)))
     model.add(Lambda(lambda x: (x - 128.) / 128.))
     #model.add(Lambda(lambda x: x / 255 - 0.5))
@@ -78,18 +78,47 @@ def rudi_net():
     # Convolutional Layers
     model.add(Conv2D(24, 5, strides=(2,2), padding='valid', activation='relu'))
     model.add(Conv2D(36, 5, strides=(2,2), padding='valid', activation='relu'))
+    model.add(Conv2D(64, 3, strides=(2,2), padding='valid', activation='relu'))
     model.add(Conv2D(64, 3, padding='valid', activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     # Fully Connected Layers
     model.add(Flatten())
-    model.add(Dense(70))
+    model.add(Dense(100))
     model.add(Dropout(keep_prob))
-    model.add(Dense(10))
+    model.add(Dense(50))
     model.add(Dropout(keep_prob))
     model.add(Dense(1))
     
     return model
+
+def split_samples(trainingfiles, test_size=0.2):
+    """
+    Reads all training_log.csv files into dataframe and finally creates
+    a training and validation set.
+    @trainingfiles  a list of all training_log.csv files which shall be used for data sets generation.
+    @test_size      
+    """
+    header = ["center","left", "right", "steering", "throttle", "brake", "speed"]
+    
+    dataframe = None
+    
+    for trainfile in trainingfiles:
+        # driving_log.csv in data_base contains a header. The others do not. Therefore, add
+        # a header otherwise dataframe.append(df) does not work - at least I do not know how I could append
+        # a dataframe to an existing one without a header.
+        df = pd.read_csv(trainfile) if "data_base" in trainfile else pd.read_csv(trainfile, names=header)
+
+        if dataframe is None:
+            dataframe = df
+        else:
+            dataframe = dataframe.append(df)
+    
+    # split samples into training and validation samples.
+    train_samples, validation_samples = train_test_split(dataframe, test_size=test_size)
+    
+    return train_samples, validation_samples
+    
 
 def usage():
     print("usage: python model.py -i training_log.csv")
@@ -98,10 +127,10 @@ def usage():
     print("-s, --summary=       Model layer and parameter summary for a certain model, either 'nvidia' or 'rudi'")
     print("-a, --arch=          The model that shall be used. Either 'nvidia' or 'rudi'. Default is 'nvidia'")    
     print("-b, --batch_size=    Batch size")
+    print("-p, --initial_epoch= Set the initial epoch. Useful when restoring a saved model.")    
     print("-e, --epochs=        Number of epochs")
     print("-m, --model=         Load a stored model")
     print("-j, --model_to_json= Write architecture to a json file")
-    print("-p, --initial_epoch= Set the initial epoch. Useful when restoring a saved model")
     
 
 class Settings:
@@ -147,9 +176,6 @@ def parse_options(opts):
         elif opt in ('-i', '--ifile'):
             settings.trainingfiles = arg.split(',')            
         elif opt in ('-a', '--arch'):
-            if arg != "nvidia" and arg != "rudi":
-                print("network architecture {} not supported".format(settings.architecture))
-                sys.exit(0)
             settings.architecture = arg            
         elif opt in ('-b', '--batch_size'):
             settings.batches = int(arg)
@@ -166,8 +192,26 @@ def parse_options(opts):
             sys.exit(0)
             
     settings.show_summary()
-    
+        
     return settings
+
+def check_settings(settings):
+    if len(settings.trainingfiles) == 0:
+        print("No training files set")
+        sys.exit(0)
+
+    if settings.architecture != "nvidia" and settings.architecture != "rudi":
+        print("network architecture {} not supported".format(settings.architecture))
+        sys.exit(0)
+        
+def create_model(settings):
+    # create the model
+    if settings.model == None:
+        if settings.architecture == "nvidia":
+            settings.model = nvidia_net()
+        elif settings.architecture == "rudi":
+            settings.model = rudi_net()
+        print("Created new model: {}".format(settings.architecture))
     
 def main(argv):
     try:
@@ -177,32 +221,13 @@ def main(argv):
         sys.exit(2)
 
     settings = parse_options(opts)
+    check_settings(settings)
             
-
-    if len(settings.trainingfiles) == 0:
-        print("No training files set")
-        sys.exit(0)
-
-    tf_frames = [pd.read_csv(trainfile) for trainfile in settings.trainingfiles]
-
-    # merge all frames into one
-    dataframe = pd.concat(tf_frames)
-    # split samples into training and validation samples.
-    train_samples, validation_samples = train_test_split(dataframe, test_size=0.2)
-
-    # create training and validation generators.
-    # only training samples will be augmented
+    train_samples, validation_samples = split_samples(settings.trainingfiles)
+    
+    # create training and validation generators - only training samples will be augmented
     train_generator = dg.generator(train_samples, batch_size=settings.batches)
     validation_generator = dg.generator(validation_samples, batch_size=settings.batches, isAugment=False)
-
-    # create the model
-    if settings.model == None:
-        if settings.architecture == "nvidia":
-            settings.model = nvidia_net()
-        elif settings.architecture == "rudi":
-            settings.model = rudi_net()
-
-        print("Created new model")
 
     # Tensorboard logging
     callback_tb = TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
@@ -211,6 +236,9 @@ def main(argv):
     filepath="checkpoint-{epoch:02d}-{val_loss:.2f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
     callbacks_list = [callback_tb, checkpoint]
+
+    # create model
+    create_model(settings)
 
     # Mean square error function is used as loss function because this is a regression problem.
     settings.model.compile(optimizer="adam", loss='mse')
