@@ -189,7 +189,7 @@ The data_generator.py module does also contain several other functions which are
 
 My model is based on [nvidia's paper][nvidia]. The model is implemented in [model.py][model.py] in the ```create_model()``` function. The next figure shows the layers that my model consists of: 
 ![][convmodel]
-The first layer crops the original image to 65x320 pixels. The second layer converts the color images to grayscale. I used tensorflow's conversion method ```tf.image.rgb_to_grayscale```. Images are normalized in the third layer using one more Lambda. The last Lambda resizes the images to 66x200 pixels. These pre-processing layers are followed by five conv layers
+The first layer crops the original images to 65x320 pixels. The second layer converts the color images to grayscale. I used tensorflow's conversion method ```tf.image.rgb_to_grayscale```. Images are normalized in the third layer and resized to 66x200 pixels in the fourth layer. The resized images are fed into five convolutional layer with 24, 36, 48, 64 and 64 feature maps respectively. Moreover the first, second and third conv layer use 5x5 kernels whereas the last two conv layers use 3x3 kernels. The final conv layer is then flattened and used as the input for three fully connected layers. The last layer outputs a single value - the steering angle.
 
 
 A nice summary of the layers can be written to a console using the following command.
