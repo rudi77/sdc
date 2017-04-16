@@ -186,25 +186,9 @@ The data_generator.py module does also contain several other functions which are
 
 #### 1. An appropriate model architecture has been employed
 
-My model is based on [nvidia's paper][nvidia]. The model is implemented in [model.py][model.py] in the ```create_model()``` function. The first layer crops the original image to 65x320 pixels.
-```python
-model.add(Cropping2D(cropping=((70,25), (0,0)), input_shape=(160,320,3)))
-```
-The second layer converts the color- to grayscale images. I use tensorflow's conversion method ```tf.image.rgb_to_grayscale```.
-```python
-model.add(Lambda(lambda x: K.tf.image.rgb_to_grayscale(x, name=None)))
-```
-Images are normalized in the third layer using one more Lambda.
-```python
-model.add(Lambda(lambda x: (x - 128.) / 128.))
-```
-The last Lambda resizes the images to 66x200 pixels.
-```pyhton
-model.add(Lambda(lambda x: K.tf.image.resize_images(x, (66,200))))
-```
-
-
-```
+My model is based on [nvidia's paper][nvidia]. The model is implemented in [model.py][model.py] in the ```create_model()``` function. A nice summary of the layers can be written to a console using the following command.
+```sh
+python.exe model.py -s
 Layer (type)                 Output Shape              Param #
 =================================================================
 cropping2d_1 (Cropping2D)    (None, 65, 320, 3)        0
@@ -246,6 +230,8 @@ Trainable params: 251,019.0
 Non-trainable params: 0.0
 _________________________________________________________________
 ```
+The first layer crops the original image to 65x320 pixels. The second layer converts the color images to grayscale. I used tensorflow's conversion method ```tf.image.rgb_to_grayscale```. Images are normalized in the third layer using one more Lambda. The last Lambda resizes the images to 66x200 pixels. These pre-processing layers are followed by five conv layers
+
 
 #### 2. Attempts to reduce overfitting in the model
 
