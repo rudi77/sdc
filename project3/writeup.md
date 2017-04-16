@@ -18,6 +18,7 @@
 [//]: # (Literature References)
 [adam]: https://arxiv.org/pdf/1412.6980.pdf
 [optimizers]: http://sebastianruder.com/optimizing-gradient-descent/
+[nvidia]: https://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf
 
 ### Under Construction...
 
@@ -63,18 +64,15 @@ The [model.py][model.py] file contains the code for training and saving the conv
 I have also added some useful command line options. The different options can be listed by calling the model.py with the help option.
 ```
 python model.py -h
-```
-```
-usage: python model.py -i training_log.csv
+
 optional arguments
 -h                   Help
--s, --summary=       Model layer and parameter summary for a certain model, either 'nvidia' or 'rudi'
--a, --arch=          The model that shall be used. Either 'nvidia' or 'rudi'. Default is 'nvidia'
+-s, --summary        Model layer and parameter summary
 -b, --batch_size=    Batch size
+-p, --initial_epoch= Set the initial epoch. Useful when restoring a saved model.
 -e, --epochs=        Number of epochs
 -m, --model=         Load a stored model
 -j, --model_to_json= Write architecture to a json file
--p, --initial_epoch= Set the initial epoch. Useful when restoring a saved model
 ```
 
 The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works. Training the model is done as follows.
@@ -128,15 +126,44 @@ Finally, the model is created, configured and training is started.
                         initial_epoch=settings.initial_epoch)
 ```
 
-The [data_generator.py][data_generator.py] is used to generate batches of data sets. The data generator is implemented in the ```generator(...)``` function. The function takes as input a list of all samples, the batch_size and a boolean isAugment which indicates whether augmented samples shall be derived from a real sample. The data_generator.py module does also contain several other functions which are used for image augmentation.
+The actual model is defined in the ```create_model()``` functions. Keras is used to create the convnet. First a __model__ is instantiated and then conv and fc layers are added. The model's architecture is explained in more detail in the next section. 
+```python
+def create_model():
+    keep_prob = 0.7
+
+    model = Sequential()
+    
+    model.add(Cropping2D(cropping=((70,25), (0,0)), input_shape=(160,320,3)))
+    model.add(Lambda(lambda x: K.tf.image.rgb_to_grayscale(x, name=None)))
+    model.add(Lambda(lambda x: (x - 128.) / 128.))
+    #model.add(Lambda(lambda x: x / 255 - 0.5))
+    model.add(Lambda(lambda x: K.tf.image.resize_images(x, (66,200))))
+
+    model.add(Conv2D(24, 5, strides=(2,2), padding='valid', activation='relu'))
+    model.add(Conv2D(36, 5, strides=(2,2), padding='valid', activation='relu'))
+    model.add(Conv2D(48, 5, strides=(2,2), padding='valid', activation='relu'))
+    model.add(Conv2D(64, 3, activation='relu'))
+    model.add(Conv2D(64, 3, activation='relu'))
+
+    model.add(Flatten())
+    model.add(Dense(100))
+    model.add(Dropout(keep_prob))
+    model.add(Dense(50))
+    model.add(Dropout(keep_prob))
+    model.add(Dense(10))
+    model.add(Dropout(keep_prob))
+    model.add(Dense(1))
+
+    return model
+```
+
+The [data_generator.py][data_generator.py] is used to generate batches of data sets. The data generator is implemented in the ```generator(...)``` function. The function takes as input a list of all samples, the batch_size and a boolean isAugment which indicates whether augmented samples shall be derived from a real sample. The code snippet below shows one while loop which runs forever and an inner loop which iterates over generated samples chunks. The __yield__ keyword indicates that this function does not really return the requested result but a generator. 
+
+[//]: # (https://pythontips.com/2013/09/29/the-python-yield-keyword-explained/)
+
 ```python
 def generator(samples, batch_size, isAugment = True):
-    CENTER = 0
-    LEFT = 1
-    RIGHT = 2
-    
-    angle_offset = 0.25
-    
+    ...    
     while 1:
         samples = sklearn.utils.shuffle(samples)
         
@@ -146,41 +173,65 @@ def generator(samples, batch_size, isAugment = True):
             angles = []
             
             for batch_sample in chunker(batch_samples, 1):
-             
-                center_image, center_angle = image_and_angle(batch_sample, CENTER)                              
-                images.append(center_image)
-                angles.append(center_angle)
-            
-                if isAugment:
-                    left_image, left_angle = image_and_angle(batch_sample, LEFT)
-                    images.append(left_image)
-                    angles.append(left_angle + angle_offset)
-                    
-                    right_image, right_angle = image_and_angle(batch_sample, RIGHT)
-                    images.append(right_image)
-                    angles.append(right_angle - angle_offset)
-                    
-                    if center_angle != 0.0:
-                        center_flipped_image, center_flipped_angle = flip_image(center_image, center_angle)
-                        images.append(center_flipped_image)
-                        angles.append(center_flipped_angle)
-
-                    img_brightness = brightness(center_image, random.uniform(0.2, 1.2))
-                    images.append(img_brightness)
-                    angles.append(center_angle)
+                ...
                             
             X_train = np.array(images)
             y_train = np.array(angles)
             
             yield X_train, y_train
 ```
+The data_generator.py module does also contain several other functions which are used for image augmentation.
+
 ### Model Architecture and Training Strategy
 
 #### 1. An appropriate model architecture has been employed
 
-My model consists of a convolution neural network with 3x3 filter sizes and depths between 32 and 128 (model.py lines 18-24) 
+My model is based on [nvidia's paper][nvidia]. The model is implemented in [model.py][model.py] in the ```create_model()``` function. A nice summary of the layers can be written to a console using the following command.
+```sh
+python.exe model.py -s
+Layer (type)                 Output Shape              Param #
+=================================================================
+cropping2d_1 (Cropping2D)    (None, 65, 320, 3)        0
+_________________________________________________________________
+lambda_1 (Lambda)            (None, 65, 320, 1)        0
+_________________________________________________________________
+lambda_2 (Lambda)            (None, 65, 320, 1)        0
+_________________________________________________________________
+lambda_3 (Lambda)            (None, 66, 200, 1)        0
+_________________________________________________________________
+conv2d_1 (Conv2D)            (None, 31, 98, 24)        624
+_________________________________________________________________
+conv2d_2 (Conv2D)            (None, 14, 47, 36)        21636
+_________________________________________________________________
+conv2d_3 (Conv2D)            (None, 5, 22, 48)         43248
+_________________________________________________________________
+conv2d_4 (Conv2D)            (None, 3, 20, 64)         27712
+_________________________________________________________________
+conv2d_5 (Conv2D)            (None, 1, 18, 64)         36928
+_________________________________________________________________
+flatten_1 (Flatten)          (None, 1152)              0
+_________________________________________________________________
+dense_1 (Dense)              (None, 100)               115300
+_________________________________________________________________
+dropout_1 (Dropout)          (None, 100)               0
+_________________________________________________________________
+dense_2 (Dense)              (None, 50)                5050
+_________________________________________________________________
+dropout_2 (Dropout)          (None, 50)                0
+_________________________________________________________________
+dense_3 (Dense)              (None, 10)                510
+_________________________________________________________________
+dropout_3 (Dropout)          (None, 10)                0
+_________________________________________________________________
+dense_4 (Dense)              (None, 1)                 11
+=================================================================
+Total params: 251,019.0
+Trainable params: 251,019.0
+Non-trainable params: 0.0
+_________________________________________________________________
+```
+The first layer crops the original image to 65x320 pixels. The second layer converts the color images to grayscale. I used tensorflow's conversion method ```tf.image.rgb_to_grayscale```. Images are normalized in the third layer using one more Lambda. The last Lambda resizes the images to 66x200 pixels. These pre-processing layers are followed by five conv layers
 
-The model includes RELU layers to introduce nonlinearity (code line 20), and the data is normalized in the model using a Keras lambda layer (code line 18). 
 
 #### 2. Attempts to reduce overfitting in the model
 
