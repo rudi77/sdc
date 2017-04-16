@@ -25,7 +25,7 @@ from keras.models import model_from_json
 from keras import optimizers
 import h5py
 
-def nvidia_net():
+def create_model():
     # Dropout is used in every FC to prevent the net from overfitting
     keep_prob = 0.7
 
@@ -55,41 +55,6 @@ def nvidia_net():
     model.add(Dropout(keep_prob))
     model.add(Dense(1))
 
-    return model
-
-def rudi_net():
-    """
-    This model is derived from nvidia's one. But instead of having five consecutive
-    conv layers it consists of two conv layers following by a pooling layer, following
-    by a conv layer and a pooling layer and finally following by three FC layers and
-    the final one.
-    """
-    # Dropout is used in every FC to prevent the net from overfitting
-    keep_prob = 0.7
-
-    model = Sequential()
-
-    # Crop image, to grayscale, normalize it and resize it to the shape that nvidia used too.
-    model.add(Cropping2D(cropping=((70,25), (0,0)), input_shape=(160,320,3)))
-    model.add(Lambda(lambda x: K.tf.image.rgb_to_grayscale(x, name=None)))
-    model.add(Lambda(lambda x: (x - 128.) / 128.))
-    model.add(Lambda(lambda x: K.tf.image.resize_images(x, (66,200))))
-
-    # Convolutional Layers
-    model.add(Conv2D(24, 5, strides=(2,2), padding='valid', activation='relu'))
-    model.add(Conv2D(36, 5, strides=(2,2), padding='valid', activation='relu'))
-    model.add(Conv2D(64, 3, strides=(2,2), padding='valid', activation='relu'))
-    model.add(Conv2D(64, 3, padding='valid', activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    # Fully Connected Layers
-    model.add(Flatten())
-    model.add(Dense(100))
-    model.add(Dropout(keep_prob))
-    model.add(Dense(50))
-    model.add(Dropout(keep_prob))
-    model.add(Dense(1))
-    
     return model
 
 def split_samples(trainingfiles, test_size=0.2):
@@ -124,8 +89,7 @@ def usage():
     print("usage: python model.py -i training_log.csv")
     print("optional arguments")
     print("-h                   Help")
-    print("-s, --summary=       Model layer and parameter summary for a certain model, either 'nvidia' or 'rudi'")
-    print("-a, --arch=          The model that shall be used. Either 'nvidia' or 'rudi'. Default is 'nvidia'")    
+    print("-s, --summary        Model layer and parameter summary")   
     print("-b, --batch_size=    Batch size")
     print("-p, --initial_epoch= Set the initial epoch. Useful when restoring a saved model.")    
     print("-e, --epochs=        Number of epochs")
@@ -144,7 +108,6 @@ class Settings:
         self.initial_epoch = 0
         self.model_to_json = None
         self.model = None
-        self.architecture = "nvidia"
         
     def show_summary(self):
         print('Training files: {}'.format(self.trainingfiles))
@@ -152,7 +115,6 @@ class Settings:
         print('Epochs: {}'.format(self.epochs))
         print('Initial epoch: {}'.format(self.initial_epoch))
         print('model_to_json: {}'.format(self.model_to_json))
-        print('architecture: {}'.format(self.architecture))
     
 def parse_options(opts):
     """
@@ -166,11 +128,7 @@ def parse_options(opts):
             usage()
             sys.exit()
         elif opt in ('-s', '--summary'):
-            model = None
-            if arg == 'nvidia':
-                model = nvidia_net()
-            else:
-                model = rudi_net()
+            model = create_model()
             model.summary()
             sys.exit(0)
         elif opt in ('-i', '--ifile'):
@@ -187,7 +145,7 @@ def parse_options(opts):
             settings.model = load_model(arg)
         elif opt in ('-j', 'model_to_json'):
             with open(arg, 'w') as file:
-                model = nvidia_net()
+                model = create_model()
                 file.write(model.to_json())
             sys.exit(0)
             
@@ -200,19 +158,6 @@ def check_settings(settings):
         print("No training files set")
         sys.exit(0)
 
-    if settings.architecture != "nvidia" and settings.architecture != "rudi":
-        print("network architecture {} not supported".format(settings.architecture))
-        sys.exit(0)
-        
-def create_model(settings):
-    # create the model
-    if settings.model == None:
-        if settings.architecture == "nvidia":
-            settings.model = nvidia_net()
-        elif settings.architecture == "rudi":
-            settings.model = rudi_net()
-        print("Created new model: {}".format(settings.architecture))
-    
 def main(argv):
     try:
         opts, args = getopt.getopt(argv,"hi:s:b:e:m:j:p:a:",["ifile=", "summary=", "batch_size=", "epochs=", "model=", "model_to_json=", "initial_epoch=", "arch="])
@@ -238,7 +183,7 @@ def main(argv):
     callbacks_list = [callback_tb, checkpoint]
 
     # create model
-    create_model(settings)
+    settings.model = create_model() if settings.model == None else settings.model
 
     # Mean square error function is used as loss function because this is a regression problem.
     settings.model.compile(optimizer="adam", loss='mse')
