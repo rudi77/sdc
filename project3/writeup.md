@@ -13,6 +13,7 @@
 [model.py]: ./model.py
 [data_generator.py]: ./data_generator.py
 [drive.py]: ./drive.py
+[writeup.md]: ./writeup.md
 
 [//]: # (Literature References)
 [adam]: https://arxiv.org/pdf/1412.6980.pdf
@@ -43,17 +44,18 @@ Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/4
 #### 1. Submission includes all required files and can be used to run the simulator in autonomous mode
 
 My project includes the following files:
-* model.py containing the script to create and train the model
-* data_generator.py containing a samples generator and several helper functions used to augment training data
-* drive.py for driving the car in autonomous mode
+* [model.py][model.py] containing the script to create and train the model
+* [data_generator.py][data_generator.py] containing a samples generator and several helper functions used to augment training data
+* [drive.py][drive.py] for driving the car in autonomous mode
 * model.h5 containing a trained convolution neural network 
 * writeup.md My report summarizing the results
 
 #### 2. Submission includes functional code
-Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing. This file has not been adapted by me.
+Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing. 
 ```sh
-python drive.py model.h5
+python drive.py model.h5 [image_path]
 ```
+The drive.py module takes as input the saved model h5 file and optionally an image path where images from the run will be stored. 
 
 #### 3. Submission code is usable and readable
 
@@ -79,7 +81,7 @@ The file shows the pipeline I used for training and validating the model, and it
 ```sh
 python model.py -i ./data/driving_log.csv
 ```
-The trainings samples are read into a [pandas](http://pandas.pydata.org/) data frame. The samples are split into a training and validation set using a split value of 0.2, i.e. 80% will be used for training and 20% for model validation. I have not created an extra test set. The model's real performance will be tested with the simulator.
+The trainings samples are read into a [pandas](http://pandas.pydata.org/) data frame. The samples are split into a training and validation set. I have not created an extra test set. The model's real performance will be tested with the simulator.
 ```python
   ...
   tf_frames = [pd.read_csv(trainfile) for trainfile in settings.trainingfiles]
@@ -101,7 +103,7 @@ After that I instantiate Kera's ModelCheckpoint class. It can be used to save th
   checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
   callbacks_list = [callback_tb, checkpoint]
 ```
-Finally, the model is configured and training is started. I used the [adam][adam] optimizer with its default settings and as a loss function mean_squared_error is used. (Note: In the previous project we had to recognize different traffic signs which is a typical classification problem and therefore softmax can be used whereas this problem deals with the prediction of numerical values and therefore something like mean squared error has to be used.)
+Finally, the model is configured and training is started. 
 ```python
   ...
   settings.model.compile(optimizer="adam", loss='mse')
@@ -115,6 +117,8 @@ Finally, the model is configured and training is started. I used the [adam][adam
                         callbacks=callbacks_list,
                         initial_epoch=settings.initial_epoch)
 ```
+
+The [data_generator.py][data_generator.py] is used to generate batches of data sets.
 
 ### Model Architecture and Training Strategy
 
