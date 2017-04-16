@@ -79,6 +79,8 @@ def split_samples(trainingfiles, test_size=0.2):
         else:
             dataframe = dataframe.append(df)
     
+    print("Total number of sample rows {}".format(len(dataframe)))
+    
     # split samples into training and validation samples.
     train_samples, validation_samples = train_test_split(dataframe, test_size=test_size)
     
@@ -160,7 +162,7 @@ def check_settings(settings):
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"hi:s:b:e:m:j:p:a:",["ifile=", "summary=", "batch_size=", "epochs=", "model=", "model_to_json=", "initial_epoch=", "arch="])
+        opts, args = getopt.getopt(argv,"hi:sb:e:m:j:p:a:",["ifile=", "summary", "batch_size=", "epochs=", "model=", "model_to_json=", "initial_epoch=", "arch="])
     except getopt.GetoptError:
         usage()
         sys.exit(2)
