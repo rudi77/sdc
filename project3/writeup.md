@@ -81,14 +81,22 @@ The file shows the pipeline I used for training and validating the model, and it
 ```sh
 python model.py -i ./data/driving_log.csv
 ```
-The trainings samples are read into a [pandas](http://pandas.pydata.org/) data frame. The samples are split into a training and validation set. I have not created an extra test set. The model's real performance will be tested with the simulator.
+Training and validation samples are generated in the ```split_samples(...)``` function. The trainings samples are read into a [pandas](http://pandas.pydata.org/) data frame. The samples are split into a training and validation set. I have not created an extra test set. The model's real performance will be tested with the simulator.
 ```python
-  ...
-  tf_frames = [pd.read_csv(trainfile) for trainfile in settings.trainingfiles]
-  # merge all frames into one
-  dataframe = pd.concat(tf_frames)
-  # split samples into training and validation samples.
-  train_samples, validation_samples = train_test_split(dataframe, test_size=0.2)
+def split_samples(trainingfiles, test_size=0.2):
+    header = ["center","left", "right", "steering", "throttle", "brake", "speed"]
+    dataframe = None
+    
+    for trainfile in trainingfiles:
+        df = pd.read_csv(trainfile) if "data_base" in trainfile else pd.read_csv(trainfile, names=header)
+
+        if dataframe is None:
+            dataframe = df
+        else:
+            dataframe = dataframe.append(df)
+    train_samples, validation_samples = train_test_split(dataframe, test_size=test_size)
+    
+    return train_samples, validation_samples
 ```
 Then I create two data generators - one for the training data and one for the validation data. Keras uses these generators to retrieve data for fitting and validating the model. The data generator is implemented in the [data_generator.py][data_generator.py] file. The training generator provides the training samples as well as augmented samples which are generated at runtime. Data augmentation is explained in detail in a subsequent section.
 ```python
@@ -103,9 +111,11 @@ After that I instantiate Kera's ModelCheckpoint class. It can be used to save th
   checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
   callbacks_list = [callback_tb, checkpoint]
 ```
-Finally, the model is configured and training is started. 
+Finally, the model is created, configured and training is started. 
 ```python
   ...
+  settings.model = create_model() if settings.model == None else settings.model  
+  
   settings.model.compile(optimizer="adam", loss='mse')
 
   print("start training")
@@ -118,8 +128,52 @@ Finally, the model is configured and training is started.
                         initial_epoch=settings.initial_epoch)
 ```
 
-The [data_generator.py][data_generator.py] is used to generate batches of data sets.
+The [data_generator.py][data_generator.py] is used to generate batches of data sets. The data generator is implemented in the ```generator(...)``` function. The function takes as input a list of all samples, the batch_size and a boolean isAugment which indicates whether augmented samples shall be derived from a real sample. The data_generator.py module does also contain several other functions which are used for image augmentation.
+```python
+def generator(samples, batch_size, isAugment = True):
+    CENTER = 0
+    LEFT = 1
+    RIGHT = 2
+    
+    angle_offset = 0.25
+    
+    while 1:
+        samples = sklearn.utils.shuffle(samples)
+        
+        for batch_samples in chunker(samples,batch_size):
+           
+            images = []
+            angles = []
+            
+            for batch_sample in chunker(batch_samples, 1):
+             
+                center_image, center_angle = image_and_angle(batch_sample, CENTER)                              
+                images.append(center_image)
+                angles.append(center_angle)
+            
+                if isAugment:
+                    left_image, left_angle = image_and_angle(batch_sample, LEFT)
+                    images.append(left_image)
+                    angles.append(left_angle + angle_offset)
+                    
+                    right_image, right_angle = image_and_angle(batch_sample, RIGHT)
+                    images.append(right_image)
+                    angles.append(right_angle - angle_offset)
+                    
+                    if center_angle != 0.0:
+                        center_flipped_image, center_flipped_angle = flip_image(center_image, center_angle)
+                        images.append(center_flipped_image)
+                        angles.append(center_flipped_angle)
 
+                    img_brightness = brightness(center_image, random.uniform(0.2, 1.2))
+                    images.append(img_brightness)
+                    angles.append(center_angle)
+                            
+            X_train = np.array(images)
+            y_train = np.array(angles)
+            
+            yield X_train, y_train
+```
 ### Model Architecture and Training Strategy
 
 #### 1. An appropriate model architecture has been employed
