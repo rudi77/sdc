@@ -158,9 +158,7 @@ def create_model():
     return model
 ```
 
-The [data_generator.py][data_generator.py] is used to generate batches of data sets. The data generator is implemented in the ```generator(...)``` function. The function takes as input a list of all samples, the batch_size and a boolean isAugment which indicates whether augmented samples shall be derived from a real sample. The code snippet below shows one while loop which runs forever and an inner loop which iterates over generated samples chunks. The __yield__ keyword indicates that this function does not really return the requested result but a generator. 
-
-[//]: # (https://pythontips.com/2013/09/29/the-python-yield-keyword-explained/)
+The [data_generator.py][data_generator.py] is used to generate batches of data sets. The data generator is implemented in the ```generator(...)``` function. The function takes as input a list of all samples, the batch_size and a boolean isAugment which indicates whether augmented samples shall be derived from a real sample. The code snippet below shows one while loop which runs forever and an inner loop which iterates over generated samples chunks. The __yield__ keyword indicates that this function does not really return the requested result but a generator. Follow this [link](https://pythontips.com/2013/09/29/the-python-yield-keyword-explained/) for a more detailed explanation on generators and the __yield__ keyword.
 
 ```python
 def generator(samples, batch_size, isAugment = True):
@@ -192,7 +190,7 @@ My model is based on [nvidia's paper][nvidia]. The model is implemented in [mode
 The first layer crops the original images to 65x320 pixels. The second layer converts the color images to grayscale. I used tensorflow's conversion method ```tf.image.rgb_to_grayscale```. Images are normalized in the third layer and resized to 66x200 pixels in the fourth layer. The resized images are fed into five convolutional layer with 24, 36, 48, 64 and 64 feature maps respectively. Moreover the first, second and third conv layer use 5x5 kernels whereas the last two conv layers use 3x3 kernels. The final conv layer is then flattened and used as the input for three fully connected layers. The last layer outputs a single value - the steering angle.
 
 
-A nice summary of the layers can be written to a console using the following command.
+A nice summary of the layers can also be written to a console using the following command.
 ```sh
 python.exe model.py -s
 Layer (type)                 Output Shape              Param #
@@ -244,8 +242,7 @@ The model contains dropout layers in order to reduce overfitting (model.py lines
 The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 10-16). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
 
 #### 3. Model parameter tuning
-
-The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25).
+I used the [adam][adam] optimizer with its default settings and as a loss function mean_squared_error is used. (Note: In the previous project we had to recognize different traffic signs which is a typical classification problem and therefore softmax can be used whereas this problem deals with the prediction of numerical values and therefore something like mean squared error has to be used.
 
 #### 4. Appropriate training data
 
