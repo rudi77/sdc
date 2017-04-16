@@ -1,6 +1,7 @@
 [//]: # (Image References)
 
 [imgsim]: ./images/simulator.png "Simulator Image"
+[convmodel]: ./images/model_architecture.png "My conv model"
 [image1]: ./examples/placeholder.png "Model Visualization"
 [image2]: ./examples/placeholder.png "Grayscaling"
 [image3]: ./examples/placeholder_small.png "Recovery Image"
@@ -186,7 +187,12 @@ The data_generator.py module does also contain several other functions which are
 
 #### 1. An appropriate model architecture has been employed
 
-My model is based on [nvidia's paper][nvidia]. The model is implemented in [model.py][model.py] in the ```create_model()``` function. A nice summary of the layers can be written to a console using the following command.
+My model is based on [nvidia's paper][nvidia]. The model is implemented in [model.py][model.py] in the ```create_model()``` function. The next figure shows the layers that my model consists of: 
+![][convmodel]
+The first layer crops the original image to 65x320 pixels. The second layer converts the color images to grayscale. I used tensorflow's conversion method ```tf.image.rgb_to_grayscale```. Images are normalized in the third layer using one more Lambda. The last Lambda resizes the images to 66x200 pixels. These pre-processing layers are followed by five conv layers
+
+
+A nice summary of the layers can be written to a console using the following command.
 ```sh
 python.exe model.py -s
 Layer (type)                 Output Shape              Param #
@@ -230,8 +236,6 @@ Trainable params: 251,019.0
 Non-trainable params: 0.0
 _________________________________________________________________
 ```
-The first layer crops the original image to 65x320 pixels. The second layer converts the color images to grayscale. I used tensorflow's conversion method ```tf.image.rgb_to_grayscale```. Images are normalized in the third layer using one more Lambda. The last Lambda resizes the images to 66x200 pixels. These pre-processing layers are followed by five conv layers
-
 
 #### 2. Attempts to reduce overfitting in the model
 
