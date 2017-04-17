@@ -21,11 +21,12 @@
 [optimizers]: http://sebastianruder.com/optimizing-gradient-descent/
 [nvidia]: https://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf
 
-### Under Construction...
+## Under Construction...
+
+
+## Behavioral Cloning
 
 ![][imgsim]
-
-### Behavioral Cloning
 
 This is my third project of the sdc course. The overall objective of this project was to build a convolutional network that is
 able to predict steering angles from images coming from Udactity's sdc simualtor. Finally we must show that our model is able to keep the car on track for one round on the lake track.
@@ -36,31 +37,27 @@ The goals / steps of this project are the following:
 * Train and validate the model with a training and validation set
 * Test that the model successfully drives around track one without leaving the road
 * Summarize the results with a written report
-
-## Rubric Points
-Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
-
+  
 ---
-### Files Submitted & Code Quality
+### Files Submitted 
 
-#### 1. Submission includes all required files and can be used to run the simulator in autonomous mode
+#### Submission includes all required files and can be used to run the simulator in autonomous mode
 
 My project includes the following files:
+* [drive.py][drive.py] for driving the car in autonomous mode
 * [model.py][model.py] containing the script to create and train the model
 * [data_generator.py][data_generator.py] containing a samples generator and several helper functions used to augment training data
-* [drive.py][drive.py] for driving the car in autonomous mode
 * model.h5 containing a trained convolution neural network 
 * writeup.md My report summarizing the results
 
-#### 2. Submission includes functional code
+#### drive.py
 Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing. 
 ```sh
 python drive.py model.h5 [image_path]
 ```
 The drive.py module takes as input the saved model h5 file and optionally an image path where images from the run will be stored. 
 
-#### 3. Submission code is usable and readable
-
+#### model.py
 The [model.py][model.py] file contains the code for training and saving the convolution neural network. 
 I have also added some useful command line options. The different options can be listed by calling the model.py with the help option.
 ```
@@ -82,20 +79,8 @@ python model.py -i ./data/driving_log.csv
 ```
 Training and validation samples are generated in the ```split_samples(...)``` function. The trainings samples are read into a [pandas](http://pandas.pydata.org/) data frame. The samples are split into a training and validation set. I have not created an extra test set. The model's real performance will be tested with the simulator.
 ```python
-def split_samples(trainingfiles, test_size=0.2):
-    header = ["center","left", "right", "steering", "throttle", "brake", "speed"]
-    dataframe = None
-    
-    for trainfile in trainingfiles:
-        df = pd.read_csv(trainfile) if "data_base" in trainfile else pd.read_csv(trainfile, names=header)
-
-        if dataframe is None:
-            dataframe = df
-        else:
-            dataframe = dataframe.append(df)
+    ...
     train_samples, validation_samples = train_test_split(dataframe, test_size=test_size)
-    
-    return train_samples, validation_samples
 ```
 Then I create two data generators - one for the training data and one for the validation data. Keras uses these generators to retrieve data for fitting and validating the model. The data generator is implemented in the [data_generator.py][data_generator.py] file. The training generator provides the training samples as well as augmented samples which are generated at runtime. Data augmentation is explained in detail in a subsequent section.
 ```python
@@ -158,6 +143,7 @@ def create_model():
     return model
 ```
 
+#### data_generator.py
 The [data_generator.py][data_generator.py] is used to generate batches of data sets. The data generator is implemented in the ```generator(...)``` function. The function takes as input a list of all samples, the batch_size and a boolean isAugment which indicates whether augmented samples shall be derived from a real sample. The code snippet below shows one while loop which runs forever and an inner loop which iterates over generated samples chunks. The __yield__ keyword indicates that this function does not really return the requested result but a generator. Follow this [link](https://pythontips.com/2013/09/29/the-python-yield-keyword-explained/) for a more detailed explanation on generators and the __yield__ keyword.
 
 ```python
