@@ -22,12 +22,12 @@
 [optimizers]: http://sebastianruder.com/optimizing-gradient-descent/
 [nvidia]: https://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf
 
-# Behavioral Cloning
+## Behavioral Cloning
 
 ![][imgsim]
 
 This is my third project of the sdc course. The overall objective of this project was to build a convolutional network that is
-able to predict steering angles from images coming from Udactity's sdc simualtor. Finally we must show that our model is able to keep the car on track for one round on the lake track.
+able to predict steering angles from images coming from Udactity's sdc simualtor. Finally we must show that our model is able to keep the car on track for one round on track one.
 
 The goals / steps of this project are the following:
 * Use the simulator to collect data of good driving behavior
@@ -37,9 +37,9 @@ The goals / steps of this project are the following:
 * Summarize the results with a written report
   
 ---
-## Files Submitted 
+### Files Submitted 
 
-### Submission includes all required files and can be used to run the simulator in autonomous mode
+#### Submission includes all required files and can be used to run the simulator in autonomous mode
 
 My project includes the following files:
 * [drive.py][drive.py] for driving the car in autonomous mode
@@ -165,14 +165,14 @@ def generator(samples, batch_size, isAugment = True):
 ```
 The data_generator.py module does also contain several other functions which are used for image augmentation.
 
-## Model Architecture and Training Strategy
+### Model Architecture and Training Strategy
 
-### 1. An appropriate model architecture has been employed
+#### 1. An appropriate model architecture has been employed
 
-My model is based on [nvidia's paper][nvidia]. The model is implemented in [model.py][model.py] in the ```create_model()``` function. The next figure shows the layers that my model consists of: 
+My final model is based on nvida's model which is descibed in this [paper][nvidia]. Convolutional and fully connected layers are the same. Dropout layers, which are missing in the original model (at least have not been mentioned in the paper), have been added to the fully connected layers. 
+The model is implemented in [model.py][model.py] in the ```create_model()``` function. The next figure shows the layers that my model consists of: 
 ![][convmodel]
 The first layer crops the original images to 65x320 pixels. The second layer converts the color images to grayscale. I used tensorflow's conversion method ```tf.image.rgb_to_grayscale```. Images are normalized in the third layer and resized to 66x200 pixels in the fourth layer. The resized images are fed into five convolutional layer with 24, 36, 48, 64 and 64 feature maps respectively. Moreover the first, second and third conv layer use 5x5 kernels whereas the last two conv layers use 3x3 kernels. The final conv layer is then flattened and used as the input for three fully connected layers. The last layer outputs a single value - the steering angle.
-
 
 A nice summary of the layers can also be written to a console using the following command.
 ```sh
@@ -219,7 +219,7 @@ Non-trainable params: 0.0
 _________________________________________________________________
 ```
 
-### 2. Attempts to reduce overfitting in the model
+#### 2. Attempts to reduce overfitting in the model
 
 In order to prevent the model from overfitting I introduced dropout layers. After every fully connected layer a dropout layer was added but the last one, the output layer. A dropout rate of 0.2 is used. 
 ```python
@@ -236,44 +236,28 @@ In order to prevent the model from overfitting I introduced dropout layers. Afte
 Furthermore, I've splitted the data set into a training and validation set. The training set was extended at runtime with further samples using different augmentation methods. The augmentation methods are described in detail below in another section.
 
 #### 3. Model parameter tuning
-
-I used the [adam][adam] optimizer with its default settings and mean_squared_error as loss function. (Note: In the previous project we had to recognize different traffic signs which is a typical classification problem and therefore softmax can be used whereas this problem deals with the prediction of numerical values and therefore something like mean squared error has to be used.
+- Optimizere: I used the [adam][adam] optimizer with its default settings.
+- Loss functions: mean_squared_error is used as loss function. (Note: In the previous project we had to recognize different traffic signs which is a typical classification problem and therefore softmax can be used whereas this problem deals with the prediction of numerical values and therefore something like mean squared error has to be used.
+- Dropout rate: 0.3 is used for dropout rate.
 
 #### 4. Appropriate training data
 
-Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road ... 
+I trained my model with data recorded from the first as well as the second track. I recorded several rounds of center line driving, recovering from off-track situations and curves only driving which means that I've only captured data when I was driving a left or right curve.
 
 For details about how I created the training data, see the next section. 
 
-### Model Architecture and Training Strategy
+### Solution Design Approach
 
-#### 1. Solution Design Approach
+#### 1. Finding an appropriate Model
 
-The overall strategy for deriving a model architecture was to ...
+My strategy for deriving a model architecture can be described as follows: 
+I started to read and tried to understanding [nvidia's paper][nvidia] on their end-to-end solution for a self driving car. Nvidia had a working solution for my problem. So I decided to I implemented their model. In addition I added dropout layers to every fully connected layer to avoid overfitting.
 
-My first step was to use a convolution neural network model similar to the ... I thought this model might be appropriate because ...
+Then I trained my model with the training set provided by Udacity. At the beginning the model performed not very well but after collecting more and more training data it performed better and better, especially after adding more recovey and curves only records.
+Varying the brightness of the images also improved the model's capability to drive the car safely around the track.
+After some trail and error and several hours behind my "WingMan" my model was finally able to drive the car around track "One" without leaving the road. 
 
-In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. I found that my first model had a low mean squared error on the training set but a high mean squared error on the validation set. This implied that the model was overfitting. 
-
-To combat the overfitting, I modified the model so that ...
-
-Then I ... 
-
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track... to improve the driving behavior in these cases, I ....
-
-At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
-
-#### 2. Final Model Architecture
-
-The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
-
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
-
-![alt text][image1]
-
----
-
-#### 3. Creation of the Training Set & Training Process
+#### 2. Creation of the Training Set & Training Process
 Having good and lots of training samples is the meat and potatoes for all machine learning algorithms. This is even more true for deep networks. I downloaded the Udacity's [training set](https://d17h27t6h515a5.cloudfront.net/topher/2016/December/584f6edd_data/data.zip). The downloaded data.zip file contains a driving_log.csv file and an IMG folder full of recorded images from the car's cameras. Both, the csv file and the images are generated by the simulator.
 The csv file consists of the following entries:
 - center: Path to the center image
@@ -372,3 +356,6 @@ This is an example of an cropped and grayscaled image.
 
 #### Training Process
 Collecting data, testing augmentation methods and experimenting with different model architectures was done locally on my laptop. Training the model was carried out on an EC2 instance with GPU support. The trained model was then tested again on my local machine.
+
+### Conclusion
+At the end my model is able to drive the car around track one. I haven't managed to improve my model such that it is also able to successfully drive the car on track two. In my mind I have to increase my data set. Improving data augmentation techniques should also have an impact on the model's performance.
