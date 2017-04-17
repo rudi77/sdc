@@ -2,6 +2,7 @@
 
 [imgsim]: ./images/simulator.png "Simulator Image"
 [convmodel]: ./images/model_architecture.png "My conv model"
+[angledist]: ./images/distribution_orig_new_data.png "Steering angle distribution"
 [image1]: ./examples/placeholder.png "Model Visualization"
 [image2]: ./examples/placeholder.png "Grayscaling"
 [image3]: ./examples/placeholder_small.png "Recovery Image"
@@ -277,8 +278,13 @@ For this project the center, left, right and steering values were taken into acc
 Looking at the steering value distribution of the provided training set indicates two things:
 - The data set is small. There are about 8036 sample rows in the training_log.csv file
 - The data set is unbalanced most steering values are distributed around 0.0.
+A model that is trained with a small, unbalanced data set could be biased and underfitted. Therfore I started to collect more data. My final data set consists of 46632 samples - one samples comprises the left, center and right image. I tried to out balance my data set using different techniques. The original and final steering angle distribution are visualized in the following plot.
 
+![alt  text][angledist]
 
+My data set is still normal distributed around 0.0 but variance is greater than in the original data set.
+
+##### Data collection Strategies 
 
 
 To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
