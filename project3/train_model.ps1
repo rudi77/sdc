@@ -7,4 +7,4 @@ $data_straightahead = '.\data_straightahead\driving_log.csv'
 
 [string]$logfiles = "$data_base,$data_curves,$data_recovery,$data_smooth_jungle,$data_smooth_lake,$data_straightahead"
 
-python.exe ./model.py -i $logfiles -e 10
+python.exe ./model.py -i $logfiles -e 4
