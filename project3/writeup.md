@@ -7,6 +7,7 @@
 [curvesonly_image]: ./images/curve_driving.png "Curves only"
 [recovery_image]: ./images/recovery_driving.png "Recovery mode"
 [flipped_image]: ./images/flipped_image.png "Flipped images"
+[brightness_changes]: ./images/brightness_changes.png "Brightness variations"
 [image1]: ./examples/placeholder.png "Model Visualization"
 [image2]: ./examples/placeholder.png "Grayscaling"
 [image3]: ./examples/placeholder_small.png "Recovery Image"
@@ -342,7 +343,7 @@ This is an example of an flipped image.
 
 ![text alt][flipped_image]
 
-- Brightness: The brightness of an image is randomly varied. An image is first converted into the YUV colorspace. Then every value of the y channel is multiplied with a certain factor. The factor is a value between 0.2 and 1.2 generated from uniform distribtion generator. If the new value is greater then 255 then I set it to 255. Finally the image is converted back to the BGR color space and returned.
+- Brightness: The brightness of an image is randomly varied. An image is first converted into the YUV colorspace. Then every value of the y channel is multiplied with a certain factor. The factor is a value between 0.2 and 1.2 generated from uniform distribution generator. If the new value is greater then 255 then I set it to 255. Finally the image is converted back to the BGR color space and returned.
 ```python
 def brightness(image, cfactor=0.5):
     img_yuv = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
@@ -351,7 +352,9 @@ def brightness(image, cfactor=0.5):
     # convert the YUV image back to RGB format
     return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
 ```
+Variations in the brightness of images is shown in the next example.
 
+![text alt][brightness_changes]
 
 After the collection process, I had X number of data points. I then preprocessed this data by ...
 
