@@ -48,7 +48,7 @@ My project includes the following files:
 * [model.py][model.py] containing the script to create and train the model.
 * [data_generator.py][data_generator.py] containing a samples generator and several helper functions used to augment training data.
 * [model.h5][model.h5] containing the final trained convolution neural network.
-* [trackone_video.mp4][track_one.mp4] contains the video show the car driving around track one.
+* [track_one.mp4][track_one.mp4] contains the video show the car driving around track one.
 * writeup.md My report summarizing the results
 
 #### drive.py
@@ -224,7 +224,7 @@ _________________________________________________________________
 
 #### 2. Attempts to reduce overfitting in the model
 
-In order to prevent the model from overfitting I introduced dropout layers. After every fully connected layer a dropout layer was added but the last one, the output layer. A dropout rate of 0.2 is used. 
+In order to prevent the model from overfitting I introduced dropout layers. After every fully connected layer a dropout layer was added but the last one, the output layer. A dropout rate of 0.3 is used. 
 ```python
     # Fully Connected Layers
     model.add(Flatten())
@@ -236,11 +236,11 @@ In order to prevent the model from overfitting I introduced dropout layers. Afte
     model.add(Dropout(keep_prob))
     model.add(Dense(1))
 ```
-Furthermore, I've splitted the data set into a training and validation set. The training set was extended at runtime with further samples using different augmentation methods. The augmentation methods are described in detail below in another section.
+Furthermore, I've splitted the data set into a training and validation set. The training set is extended at runtime with further samples using different augmentation methods. The augmentation methods are described in detail below in another section.
 
 #### 3. Model parameter tuning
-- Optimizere: I used the [adam][adam] optimizer with its default settings.
-- Loss functions: mean_squared_error is used as loss function. (Note: In the previous project we had to recognize different traffic signs which is a typical classification problem and therefore softmax can be used whereas this problem deals with the prediction of numerical values and therefore something like mean squared error has to be used.
+- Optimizer: I used the [adam][adam] optimizer with its default settings.
+- Loss functions: Mean squared error is used as loss function. (Note: In the previous project we had to recognize different traffic signs which is a typical classification problem and therefore softmax can be used whereas this problem deals with the prediction of numerical values and therefore something like mean squared error has to be used.
 - Dropout rate: 0.3 is used for dropout rate.
 
 #### 4. Appropriate training data
@@ -254,15 +254,15 @@ For details about how I created the training data, see the next section.
 #### 1. Finding an appropriate Model
 
 My strategy for deriving a model architecture can be described as follows: 
-I started to read and tried to understanding [nvidia's paper][nvidia] on their end-to-end solution for a self driving car. Nvidia had a working solution for my problem. So I decided to I implemented their model. In addition I added dropout layers to every fully connected layer to avoid overfitting.
+I started to read and tried to understand [nvidia's paper][nvidia] on their end-to-end solution for a self driving car. Nvidia had a working solution for my problem. So I decided to I implemented their model. In addition I added dropout layers to every fully connected layer to avoid overfitting.
 
-Then I trained my model with the training set provided by Udacity. At the beginning the model performed not very well but after collecting more and more training data it performed better and better, especially after adding more recovey and curves only records.
+Then I trained my model with the training set provided by Udacity. At the beginning the model performed not very well but after collecting more and more training data it performed better and better, especially after adding more recovery and curves-only records.
 Varying the brightness of the images also improved the model's capability to drive the car safely around the track.
 I have also tried color as well as grayscale images. Finally, I decided to use grayscale images.
-I experimented with different dropout rates. At the end I used a dropout rate of 0.3. If your training loss rate is greater than the validation rate and does never converge than your dropout rate is probably to high! 
+I experimented with different dropout rates. At the end I used a dropout rate of 0.3. If your training loss rate is greater than the validation rate then your dropout rate is probably to high! 
 
 After some trail and error and several hours behind my "WingMan" my model was finally able to drive the car around track "One" without leaving the road. 
-My final [model][model.h5] had a mean squared error of 0.015 on the validation set and an error rate of 0.0201 on the training set.
+My final [model][model.h5] had a mean squared error of 0.015 on the validation set and an error rate of 0.0201 on the training set. This validation loss was accomplished after epoch 11. I stopped most of my experiments after ten 10 epochs.
 
 #### 2. Creation of the Training Set & Training Process
 Having good and lots of training samples is the meat and potatoes for all machine learning algorithms. This is even more true for deep networks. I downloaded the Udacity's [training set](https://d17h27t6h515a5.cloudfront.net/topher/2016/December/584f6edd_data/data.zip). The downloaded data.zip file contains a driving_log.csv file and an IMG folder full of recorded images from the car's cameras. Both, the csv file and the images are generated by the simulator.
@@ -275,12 +275,12 @@ The csv file consists of the following entries:
 - brake: The brake value
 - speed: The actual speed
 
-For this project the center, left, right and steering values were taken into account. I started to train my model with these data only which did not lead to the desired result - my model was not able to keep the car on track but instead it directly guided the car into the lake. Well done model.
+For this project the center, left, right and steering values were taken into account. I started to train my model with the Udacity data set  which did not lead to the desired result - my model was not able to keep the car on track but instead it directly guided the car into the lake. Well done model.
 Looking at the steering value distribution of the provided training set indicates two things:
 - The data set is small. There are about 8036 sample rows in the training_log.csv file
 - The data set is unbalanced. Most steering values are distributed around 0.0. A steering value of 0.0 means that the car is driving straight ahead.
 
-A model that is trained with a small, unbalanced data set could be biased and underfitted. Therefore, I started to collect more data. My final data set consists of 46632 samples - one samples comprises the left, center and right image. I tried to balance out my data set using different techniques. The original and final steering angle distributions are visualized in the following plot.
+A model that is trained with a small, unbalanced data set could be biased and underfitted. Therefore, I started to collect more data. My final data set consists of 46632 samples - one sample comprises the left, center and right camera images. I tried to balance out my data set using different techniques. The original and final steering angle distributions are visualized in the following plot.
 
 ![alt  text][angledist]
 
@@ -295,7 +295,7 @@ To capture good driving behavior, I recorded several laps on track one and two u
 ![alt text][centerline_image]
 
 - Curves only tracking:
-To get more curve samples I recorded only when the steering angle was greater or less 0.0. These are example images from curve driving.
+To get more curve samples, which I definitely needed, I recorded only the acutal state of the car + images from the cameras when the steering angle was greater or less 0.0. These are example images from curve driving.
 
 ![alt text][curvesonly_image]
 
@@ -312,7 +312,7 @@ These images show what a recovery looks like starting from right side of the roa
 ##### Data Augmentation
 My training set is augmented during training set batch generation. The functions for data augmentation are implemented in [data_generator.py][data_generator.py]. 
 The following techniques are applied the images:
-- Left and right camera images: Left and right camera images are used additionaly to the center image. Using a left and a right camera comes in handy when model must recover from being off-road. If we associate the image from the center camera with a certain left then we can we can map the image from the left camera with slightly softer left turn. Whereas the image from the right camera shall be associated with a harder left turn. Speaking in steering angles, a constant offset, 0.25, is added to the angle when the image from the left camera image is used. This offset is substracted from the angle when the image of right camera is used. The code for this operations is in the ```generator(...)``` function.
+- Left and right camera images: Left and right camera images are used additionaly to the center image. Using a left and a right camera comes in handy when model must recover from being off-road. If we associate the image from the center camera with a certain left turn then we can we can map the image from the left camera with slightly softer left turn. Whereas the image from the right camera shall be associated with a harder left turn. Speaking in steering angles, a constant offset, 0.25, is added to the angle when the image from the left camera image is used. This offset is substracted from the angle when the image of right camera is used. The code for this operations is in the ```generator(...)``` function.
 ```python
   ...
   # Left image
