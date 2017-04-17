@@ -8,13 +8,7 @@
 [recovery_image]: ./images/recovery_driving.png "Recovery mode"
 [flipped_image]: ./images/flipped_image.png "Flipped images"
 [brightness_changes]: ./images/brightness_changes.png "Brightness variations"
-[image1]: ./examples/placeholder.png "Model Visualization"
-[image2]: ./examples/placeholder.png "Grayscaling"
-[image3]: ./examples/placeholder_small.png "Recovery Image"
-[image4]: ./examples/placeholder_small.png "Recovery Image"
-[image5]: ./examples/placeholder_small.png "Recovery Image"
-[image6]: ./examples/placeholder_small.png "Normal Image"
-[image7]: ./examples/placeholder_small.png "Flipped Image"
+[cropped_grayscale_images]: ./images/cropped_grayscaled.png "Cropped and grayscaled"
 
 [//]: # (File References)
 [model.py]: ./model.py
@@ -355,6 +349,16 @@ def brightness(image, cfactor=0.5):
 Variations in the brightness of images is shown in the next example.
 
 ![text alt][brightness_changes]
+
+#### Data Preprocessing
+All images are finally cropped and converted to grayscale images before they are used by the first conv layer as input data. I convert them to grayscale, because my model is able to keep the car on track for at least one round on track one, the lake track. Using grayscale images reduced the number of parameters and also reduced training time. Both image cropping and grayscaling is done in Keras, implemented as a Lambda layer.
+```python
+  ...
+  model.add(Cropping2D(cropping=((70,25), (0,0)), input_shape=(160,320,3)))
+  model.add(Lambda(lambda x: K.tf.image.rgb_to_grayscale(x, name=None)))
+```
+This is an example of an cropped and grayscaled image.
+![text alt][cropped_grayscale_images]
 
 After the collection process, I had X number of data points. I then preprocessed this data by ...
 
