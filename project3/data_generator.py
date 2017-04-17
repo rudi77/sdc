@@ -10,8 +10,8 @@ import random
 import cv2
 import numpy as np
 from numpy import newaxis
+import matplotlib.pyplot as plt
 import sklearn
-
 import tensorflow as tf
 
 def generator(samples, batch_size, isAugment = True):
@@ -60,7 +60,7 @@ def generator(samples, batch_size, isAugment = True):
                         images.append(center_flipped_image)
                         angles.append(center_flipped_angle)
                         
-                    # Change contrast
+                    # Change brightness
                     img_brightness = brightness(center_image, random.uniform(0.2, 1.2))
                     images.append(img_brightness)
                     angles.append(center_angle)
@@ -127,10 +127,6 @@ def brightness(image, cfactor=0.5):
     # convert the YUV image back to RGB format
     return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
 
-def add_shadow(image):
-    w,h,c = image.shape          
-    return image
-
 def shift_horizontal(img, angle):
     """
     Shifts an image in horizontal direction.
@@ -156,3 +152,16 @@ def shift_horizontal(img, angle):
     
     return cv2.warpAffine(img, M, (cols,rows)), angle
 
+def plot_history( history, filename='./loss.png' ):
+    """
+    Plot the training and validation loss for each epoch
+    @history contains the training and validation loss values for a full run.
+    """
+    
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model mean squared error loss')
+    plt.ylabel('mean squared error loss')
+    plt.xlabel('epoch')
+    plt.legend(['training set', 'validation set'], loc='upper right')
+    plt.savefig(filename)

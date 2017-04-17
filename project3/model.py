@@ -27,7 +27,7 @@ import h5py
 
 def create_model():
     # Dropout is used in every FC to prevent the net from overfitting
-    keep_prob = 0.7
+    keep_prob = 0.3
 
     model = Sequential()
 
@@ -198,9 +198,6 @@ def main(argv):
                           callbacks=callbacks_list,
                           initial_epoch=settings.initial_epoch,
                           verbose=1)
-    
-    ### print the keys contained in the history object
-    print(history.history.keys())
     
     dg.plot_history(history)
 
