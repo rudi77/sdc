@@ -3,6 +3,9 @@
 [imgsim]: ./images/simulator.png "Simulator Image"
 [convmodel]: ./images/model_architecture.png "My conv model"
 [angledist]: ./images/distribution_orig_new_data.png "Steering angle distribution"
+[centerline_image]: ./images/center_line_driving.png "Center line"
+[curvesonly_image]: ./images/curve_driving.png "Curves only"
+[recovery_image]: ./images/recovery_driving.png "Recovery mode"
 [image1]: ./examples/placeholder.png "Model Visualization"
 [image2]: ./examples/placeholder.png "Grayscaling"
 [image3]: ./examples/placeholder_small.png "Recovery Image"
@@ -277,27 +280,39 @@ The csv file consists of the following entries:
 For this project the center, left, right and steering values were taken into account. I trained my model with these data which did not lead to the desired result - my model was not able to keep the car on track but instead it directly guided the car into the lake.
 Looking at the steering value distribution of the provided training set indicates two things:
 - The data set is small. There are about 8036 sample rows in the training_log.csv file
-- The data set is unbalanced most steering values are distributed around 0.0.
+- The data set is unbalanced most steering values are distributed around 0.0. A steering value of 0.0 means that the car is driving straight ahead.
+
 A model that is trained with a small, unbalanced data set could be biased and underfitted. Therfore I started to collect more data. My final data set consists of 46632 samples - one samples comprises the left, center and right image. I tried to out balance my data set using different techniques. The original and final steering angle distribution are visualized in the following plot.
 
 ![alt  text][angledist]
 
 My data set is still normal distributed around 0.0 but variance is greater than in the original data set.
 
-##### Data collection Strategies 
+##### Data collection Strategies
 
 
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
+- Center line tracking:
+To capture good driving behavior, I recorded several laps on track one and two using center lane driving. Here are example images of center lane driving:
 
-![alt text][image2]
+![alt text][centerline_image]
 
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
+- Curves only tracking:
+To get more curve samples I recorded only when the steering angle was greater or less 0.0. These are example images from curve driving.
 
-![alt text][image3]
-![alt text][image4]
-![alt text][image5]
+![alt text][curvesonly_image]
 
-Then I repeated this process on track two in order to get more data points.
+I added two additional recording modes to the simulator which simplified curves recording.
+  - Mode _LeftCurves_: This recording mode captures only when the car drives a left curve. Enable or disable this mode by pressing L key.
+  - Mode _RightCurves_: This recording mode captures only when the car drives a right curve. Enable or disable this mode by pressing T key.
+
+- Recovery tracking:
+I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the model would learn to 
+These images show what a recovery looks like starting from right side of the road.
+
+![text alt][recovery_image]
+
+
+##### Data Augmentation
 
 To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
 
