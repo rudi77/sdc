@@ -360,9 +360,5 @@ All images are finally cropped and converted to grayscale images before they are
 This is an example of an cropped and grayscaled image.
 ![text alt][cropped_grayscale_images]
 
-After the collection process, I had X number of data points. I then preprocessed this data by ...
-
-
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
-
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+#### Training Process
+Collecting data, testing augmentation methods and experimenting with different model architectures was done locally on my laptop. Training the model was carried out on an EC2 instance with GPU support. The final model test was then again done on my machine.
