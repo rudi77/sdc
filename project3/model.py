@@ -25,7 +25,7 @@ from keras.models import model_from_json
 from keras import optimizers
 import h5py
 
-def create_model():
+def create_model2():
     # Dropout is used in every FC to prevent the net from overfitting
     keep_prob = 0.7
 
@@ -35,7 +35,6 @@ def create_model():
     model.add(Cropping2D(cropping=((70,25), (0,0)), input_shape=(160,320,3)))
     model.add(Lambda(lambda x: K.tf.image.rgb_to_grayscale(x, name=None)))
     model.add(Lambda(lambda x: (x - 128.) / 128.))
-    #model.add(Lambda(lambda x: x / 255 - 0.5))
     model.add(Lambda(lambda x: K.tf.image.resize_images(x, (66,200))))
 
     # Convolutional Layers
@@ -45,6 +44,42 @@ def create_model():
     model.add(Conv2D(64, 3, activation='relu'))
     model.add(Conv2D(64, 3, activation='relu'))
 
+    # Fully Connected Layers
+    model.add(Flatten())
+    model.add(Dense(100))
+    model.add(Dropout(keep_prob))
+    model.add(Dense(50))
+    model.add(Dropout(keep_prob))
+    model.add(Dense(10))
+    model.add(Dropout(keep_prob))
+    model.add(Dense(1))
+
+    return model
+
+def create_model():
+    # Dropout is used in every FC to prevent the net from overfitting
+    keep_prob = 0.5
+
+    model = Sequential()
+
+    # Crop image, normalize it and resize it to the shape that nvidia used too.
+    model.add(Cropping2D(cropping=((70,25), (0,0)), input_shape=(160,320,3)))
+    model.add(Lambda(lambda x: K.tf.image.rgb_to_grayscale(x, name=None)))
+    model.add(Lambda(lambda x: (x - 128.) / 128.))
+    model.add(Lambda(lambda x: K.tf.image.resize_images(x, (60,140))))
+
+    # Convolutional Layers
+    model.add(Conv2D(36, 3, strides=(2,2), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2,2)))    
+    
+    model.add(Conv2D(48, 5, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2,2)))
+    model.add(Dropout(0.25))
+    
+    model.add(Conv2D(64, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2,2)))    
+    model.add(Dropout(0.25))
+    
     # Fully Connected Layers
     model.add(Flatten())
     model.add(Dense(100))
@@ -180,7 +215,7 @@ def main(argv):
     callback_tb = TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
     
     # checkpoint
-    filepath="checkpoint-{epoch:02d}-{val_loss:.2f}.hdf5"
+    filepath="new_model-{epoch:02d}-{val_loss:.2f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
     callbacks_list = [callback_tb, checkpoint]
 
@@ -191,13 +226,19 @@ def main(argv):
     settings.model.compile(optimizer="adam", loss='mse')
 
     print("start training")
-    settings.model.fit_generator(train_generator,
+    history = settings.model.fit_generator(train_generator,
                           steps_per_epoch = len(train_samples) / settings.batches,
                           epochs = settings.epochs,
                           validation_data=validation_generator,
-                          validation_steps=len(validation_samples) / settings.batches,
+                          validation_steps = len(validation_samples) / settings.batches,
                           callbacks=callbacks_list,
-                          initial_epoch=settings.initial_epoch)
+                          initial_epoch=settings.initial_epoch,
+                          verbose=1)
+    
+    ### print the keys contained in the history object
+    print(history.history.keys())
+    
+    dg.plot_history(history)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
