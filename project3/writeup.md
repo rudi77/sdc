@@ -48,7 +48,7 @@ My project includes the following files:
 * [model.py][model.py] containing the script to create and train the model.
 * [data_generator.py][data_generator.py] containing a samples generator and several helper functions used to augment training data.
 * [model.h5][model.h5] containing the final trained convolution neural network.
-* [track_one.mp4][track_one.mp4] contains the video show the car driving around track one.
+* [track_one.mp4][track_one.mp4] contains the video showing the car driving around track one.
 * writeup.md My report summarizing the results
 
 #### drive.py
