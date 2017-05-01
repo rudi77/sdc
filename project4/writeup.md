@@ -113,6 +113,21 @@ This is an example of an undistorted image. First the original image is shown an
 :-------------------------:|:----------------------------------------
 ![][original_image]  |  ![][undistorted_image]  
 
+### 2. Perspective transformation
+In a second step a perspective transformation is applied to the undistorted image. In particular a bird’s-eye view transform is applied. This view is then used in a subsequent step to find and extract the road lanes.
+The [helpers.py][helpers.py] file contains a `warp` function which creates and returns a bird’s eye view representation of the image. Source and destination points are needed for a perspective transformation. The source points will be mapped on the provided destination points. The source and destination points are hardcoded into the `warp` function.
+```python
+def warp(undist):
+    src = np.float32([[710,460],[1110,720],[205,720],[575,460]])
+    dst = np.float32([[1000,0],[1000,720],[300,720],[300,0]])    
+        
+    M = cv2.getPerspectiveTransform(src, dst)
+    
+    img_size = (undist.shape[1], undist.shape[0])
+    warped = cv2.warpPerspective(undist, M, img_size)
+    return warped, M
+```
+There also exists an `unwarp` function which transforms an image back to it original representation. This function is called as a final step when the detect lanes are projected on the processed video frame. The `unwarp` function is the same as the `warp` function but with interchanged source and destination points.
 
 ### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
 
