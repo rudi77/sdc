@@ -66,38 +66,52 @@ class Line():
     def last_line_detected(self):
         if len(self.__line_segments) == 0:
             return False
-        
         last_line = self.__line_segments[-1]
-
         return last_line.detected
     
-    def is_new_line_valid(self, line_segment):
+    def is_valid_line(self, line_segment):
         """
         Validates line segment. It compares the line segment with the last
         inserted line segment.
-        It compares the coefficients and the radis. +-10% deviation is ok but not
+        It compares the coefficients and the radis. +-20% deviation is ok but not
         more. If the last line segement is invalid (NONE) then this line segment
         is definitely valid.
         """
+        if line_segment is None:
+            return False
+        
         if self.__line_segments[-1] is None:
             return True
         
-        percent = self.__line_segments[-1].radius * (100. / line_segment.radius)
-        radi_diff_percent = abs(100.0 - percent)
+        deviation = self.__line_segments[-1].radius / line_segment.radius
         
-        return True if radi_diff_percent <= 10 else False
-    
-    def smoothed_coefficients(self):
+        return 0.8 <= deviation and deviation <= 1.2
+            
+    def get_smoothed_line(self, num_frames):
         """
-        Calcs average of coefficients of last n line segments
+        Smoothes the line by using the pixels of the last n frames
         """
-        coeffs = []
+        x = []
+        y = []
         
-        for ls in self.__line_segments:
-            if ls is not None:
-                coeffs.append(ls.coefficients)
+        if num_frames <= len(self.__line_segments):
+            for i in reversed(range(num_frames)):
+                x.append(self.__line_segments[i].x)
+                y.append(self.__line_segments[i].y)
+        else:
+            for ls in self.__line_segments:
+                x.append(ls.x)
+                y.append(ls.y)        
+
+        x = np.concatenate(x)
+        y = np.concatenate(y)
+
+        fit = np.polyfit(y, x, 2)
+        ploty = np.linspace(0, 720-1, 720 )
+        smoothed_line = fit[0]*ploty**2 + fit[1]*ploty + fit[2]
         
-        return np.mean(coeffs, axis=0)
+        return smoothed_line
+
     
     def reset(self):
         self.__line_segments.clear()

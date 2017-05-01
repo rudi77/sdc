@@ -51,18 +51,19 @@ def calibrate_camera(cal_images, nx, ny):
     # arrays to store all object points and image points from all images
     objpoints = [] # 3d points in real world space
     imgpoints = [] # 2d points in image plane
+
+    # prepare object points like (0,0,0), (1,0,0),(2,0,0) ... (8,4,0)
+    objp = np.zeros((nx * ny, 3), np.float32)
+    objp[:,:2] = np.mgrid[0:nx,0:ny].T.reshape(-1,2) # x, y coordinates
     
     img_shape = None
+    
     for img_name in cal_images:
         img = mpimg.imread(img_name)
         
         if img_shape is None:
             img_shape = (img.shape[1], img.shape[0])
         
-        # prepare object points like (0,0,0), (1,0,0),(2,0,0) ... (9,5,0)
-        objp = np.zeros((nx * ny, 3), np.float32)
-        objp[:,:2] = np.mgrid[0:nx,0:ny].T.reshape(-1,2) # x, y coordinates
-
         # convert image to grayscale
         gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
@@ -74,6 +75,8 @@ def calibrate_camera(cal_images, nx, ny):
             imgpoints.append(corners)
             
     assert(len(objpoints) == len(imgpoints))
+    
+    # get camera calibration matrix and distoration coefficients
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_shape, None, None)
     
     return mtx, dist
@@ -119,7 +122,7 @@ def unwarp2(birds_eye_view, Minv, shape):
 
 ############### Color and Gradient Transformation #############################
 
-def binary_b_channel(img, min_thresh=150, max_thresh=180):
+def binary_b_channel(img, min_thresh=145, max_thresh=180):
     b_img = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)[:,:,2]
     b_binary = np.zeros_like(b_img)
     b_binary[(b_img >= min_thresh) & (b_img <= max_thresh)] = 1

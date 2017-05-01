@@ -35,7 +35,10 @@ def process_image(img, mtx, dist, M, Minv):
     cg_binary = np.zeros_like(gradx)
     cg_binary[(b_binary == 1) | (v_binary == 1) | (gradx == 1)] = 1
         
-    # do a blind search
+    
+    is_valid_line = True
+    # Do a blind search. A blind search is done at the very beginning or if we could not
+    # find a lane with our improved search method
     if LeftLine.last_line_detected() == False or RightLine.last_line_detected() == False:
         LeftLineSegment, RightLineSegment = helpers.blind_search(cg_binary.copy())
         LeftLine.add_line(LeftLineSegment)
@@ -46,11 +49,23 @@ def process_image(img, mtx, dist, M, Minv):
         left_fit = LeftLine.get_last_line().coefficients
         right_fit = RightLine.get_last_line().coefficients
         LeftLineSegment, RightLineSegment = helpers.search_next(cg_binary.copy(), left_fit, right_fit)
+        
+        # Do a sanity check before we add the new line segment to the line
+        if LeftLine.is_valid_line(LeftLineSegment) and RightLine.is_valid_line(RightLineSegment):
+            LeftLine.add_line(LeftLineSegment)
+            RightLine.add_line(RightLineSegment)
+        else:
+            is_valid_line = False
 
     # project the line on the undistorted image
-    left_fitx = LeftLineSegment.xfitted
-    right_fitx = RightLineSegment.xfitted
+    left_fitx = LeftLine.get_smoothed_line(num_frames=3)
+    right_fitx = RightLine.get_smoothed_line(num_frames=3)
+    
     result_img = helpers.project_lines(img_undist, cg_binary, left_fitx, right_fitx, Minv)
+    
+    if not is_valid_line:
+        LeftLine.reset()
+        RightLine.reset()        
 
     # put radius and vehicle position on the image
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -92,12 +107,16 @@ def main():
     # Ok, now we have M and Minv which we will use for image warping and unwarping in all frames
     process = lambda image: process_image(image, mtx, dist, M, Minv)
     
-    output = 'project_video_result4.mp4'
-    clip1 = VideoFileClip("project_video.mp4")
-    white_clip = clip1.fl_image(process)
+    #output = 'project_video_result.mp4'
+    #clip1 = VideoFileClip("project_video.mp4")
+    
+    output = 'challenge_video_result.mp4'
+    clip1 = VideoFileClip("challenge_video.mp4")
+    
+    clip = clip1.fl_image(process)
     
     print("start video processing...")
-    white_clip.write_videofile(output, audio=False)
+    clip.write_videofile(output, audio=False)
     
 if __name__ == "__main__": main()
     
