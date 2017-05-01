@@ -1,6 +1,6 @@
 # Advanced Lane Finding Project #
 
-This is the fourth project of the sdc course. In this project lane boundaries shall be detected in a video provided by udacity. Additionaly lane curvature and vehicale position values shall be estimated.
+This is the fourth project of the sdc course. In this project lane boundaries shall be detected in a video provided by udacity. Additionaly lane curvature and vehicle position values shall be estimated.
 
 The goals of this project are the following:
 
@@ -44,8 +44,8 @@ This repository contains the following files.
 ### Camera Calibration
 Distorted images produced by pinhole cameras can be corrected by applying camera calibration techniques. In this project I use the [black-white chessboard][calibration_tutorial] approach. The camera calibration code is implemented in the `helpers.camera_calibration()` functions in the [helpers.py][helpers.py] file
 In principle this approach works as follows:
-1. Images from a chessboard must be taken from a static camera. Images must be take from different perspectives. Therefore the chessboard is placed at differnt locations and orientations. I used these [images][calibration_images] which were also provided by Udacity.
-2. Then we need the coordinates (x,y,z) of the chessboard corners in real world and on the image (x,y). The real world coordinates are called objectpoints and the corresponding coordinates on the image are called imagepoints.
+1. Images from a chessboard must be taken from a static camera. Images must be taken from different perspectives. Therefore the chessboard is placed at differnt locations and orientations. I used these [images][calibration_images] which were also provided by Udacity.
+2. Then we need the real world coordinates (x,y,z) as well as the image coordinates (x,y) of the chessboard corners. The real world coordinates are called objectpoints and the corresponding coordinates on the image are called imagepoints.
     - Objectpoints can be generated using numpy's `np.mgrid()` function.
     - The chessboard corners in the image can be found with the opencv's `cv2.findChessboardCorners()` function. This function takes a grayscale image as input argument.
 3. Having retrieved all objectpoints and imagepoints, we can now calculate the calibration matrix __mtx__ and distortion coefficients __dist__ which are needed to undistort an image.
