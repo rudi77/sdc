@@ -29,6 +29,10 @@ The goals of this project are the following:
 [original_image]: ./output_images/original_image.png
 [undistorted_image]: ./output_images/undistorted_image.png
 
+[default_perspective]: ./output_images/default_perspective.png
+[warped]: ./output_images/warped.png
+[unwarped]: ./output_images/unwarped.png
+
 
 ## Files in this repository
 This repository contains the following files.
@@ -115,7 +119,7 @@ This is an example of an undistorted image. First the original image is shown an
 
 ### 2. Perspective transformation
 In a second step a perspective transformation is applied to the undistorted image. In particular a bird’s-eye view transform is applied. This view is then used in a subsequent step to find and extract the road lanes.
-The [helpers.py][helpers.py] file contains a `warp` function which creates and returns a bird’s eye view representation of the image. Source and destination points are needed for a perspective transformation. The source points will be mapped on the provided destination points. The source and destination points are hardcoded into the `warp` function.
+The [helpers.py][helpers.py] file contains a `warp()` function which creates and returns a bird’s eye view representation of the image. Source and destination points are needed for a perspective transformation. The source points will be mapped on the provided destination points. The source and destination points are hardcoded into the `warp()` function.
 ```python
 def warp(undist):
     src = np.float32([[710,460],[1110,720],[205,720],[575,460]])
@@ -127,43 +131,21 @@ def warp(undist):
     warped = cv2.warpPerspective(undist, M, img_size)
     return warped, M
 ```
-There also exists an `unwarp` function which transforms an image back to it original representation. This function is called as a final step when the detect lanes are projected on the processed video frame. The `unwarp` function is the same as the `warp` function but with interchanged source and destination points.
+There also exists an `unwarp()` function which transforms an image back to it original representation. This function is called as a final step when the detect lanes are projected on the processed video frame. The `unwarp()` function is the same as the `warp()` function but with interchanged source and destination points.
 
-### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
+The following images show a transformation to a bird's eye view and back to the original perspective.
+
+ Default perspective       | Bird's eye view                          | Unwarped
+:-------------------------:|:----------------------------------------:|:---------------------------
+![][default_perspective]   |  ![][warped]                             | ![][unwarped]
+
+### 3.Color and gradient transformation and binarization.
 
 I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
 
 ![alt text][image3]
 
-### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
-
-```python
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
-```
-
-This resulted in the following source and destination points:
-
-| Source        | Destination   | 
-|:-------------:|:-------------:| 
-| 585, 460      | 320, 0        | 
-| 203, 720      | 320, 720      |
-| 1127, 720     | 960, 720      |
-| 695, 460      | 960, 0        |
-
-I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
-
-![alt text][image4]
 
 ### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
