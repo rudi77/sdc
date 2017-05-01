@@ -1,12 +1,8 @@
-## Writeup Template
+# Advanced Lane Finding Project #
 
-### You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
+This is the fourth project of the sdc course. In this project lane boundaries shall be detected in a video provided by udacity. Additionaly lane curvature and vehicale position values shall be estimated.
 
----
-
-**Advanced Lane Finding Project**
-
-The goals / steps of this project are the following:
+The goals of this project are the following:
 
 * Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
 * Apply a distortion correction to raw images.
@@ -19,27 +15,84 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/undistort_output.png "Undistorted"
-[image2]: ./test_images/test1.jpg "Road Transformed"
+[distorted_chessboard]: ./output_images/distorted_chessboard.png "Distorted"
+[distorted_chessboard_with_corners]: ./output_images/distorted_chessboard_with_corners.png "Distorted"
+[undistorted_chessboard]: ./output_images/undistorted_chessboard.png "Undistorted"
+
 [image3]: ./examples/binary_combo_example.jpg "Binary Example"
 [image4]: ./examples/warped_straight_lines.jpg "Warp Example"
 [image5]: ./examples/color_fit_lines.jpg "Fit Visual"
 [image6]: ./examples/example_output.jpg "Output"
 [video1]: ./project_video.mp4 "Video"
 
+[calibration_images]: ./camera_cal
+[calibration_tutorial]: http://docs.opencv.org/3.0-beta/doc/py_tutorials/py_calib3d/py_calibration/py_calibration.html
+
+[helpers.py]: ./helpers.py
+[lane.py]: ./lane.py
+[pipeline.py]: ./pipeline
+[exploration.ipynb]: ./exploration.ipynb
+## Files in this repository
+This repository contains the following files.
+- [pipeline.py][pipeline.py] contains the image processing steps (the pipeline) for finding lanes on the road. This pipeline is applied to each video frame
+- [helpers.py][helpers.py] contains all functions that are used in each image processing.
+- [lane.py][lane.py] contains the Lane and LaneSegment classes which describe the lanes that are found in video frames.
+- [exploration.ipynb][exploration.ipynb] contains my ipython notebook which I used for data exploration.
+
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
-### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
-
----
-
-### Writeup / README
-
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Advanced-Lane-Lines/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
-
-You're reading it!
-
 ### Camera Calibration
+Distorted images produced by pinhole cameras can be corrected by applying camera calibration techniques. In this project I use the [black-white chessboard][calibration_tutorial] approach. The camera calibration code is implemented in the `helpers.camera_calibration()` functions in the [helpers.py][helpers.py] file
+In principle this approach works as follows:
+1. Images from a chessboard must be taken from a static camera. Images must be take from different perspectives. Therefore the chessboard is placed at differnt locations and orientations. I used these [images][calibration_images] which were also provided by Udacity.
+2. Then we need the coordinates (x,y,z) of the chessboard corners in real world and on the image (x,y). The real world coordinates are called objectpoints and the corresponding coordinates on the image are called imagepoints.
+    - Objectpoints can be generated using numpy's `np.mgrid()` function.
+    - The chessboard corners in the image can be found with the opencv's `cv2.findChessboardCorners()` function. This function takes a grayscale image as input argument.
+3. Having retrieved all objectpoints and imagepoints, we can now calculate the calibration matrix __mtx__ and distortion coefficients __dist__ which are needed to undistort an image.
+4. Finally, we can now undistort an image using `cv2.undistort()`
+
+By applying theses camera calibration steps I obtained the following results:
+
+ Distorted                 | Distorted with corners                   | Undistorted
+:-------------------------:|:----------------------------------------:|:---------------------------
+![][distorted_chessboard]  |  ![][distorted_chessboard_with_corners]  | ![][undistorted_chessboard]
+
+This is my camera calibration code:
+```python
+def calibrate_camera(cal_images, nx, ny):
+    # arrays to store all object points and image points from all images
+    objpoints = [] 
+    imgpoints = []
+
+    # prepare object points like (0,0,0), (1,0,0),(2,0,0) ... (8,4,0)
+    objp = np.zeros((nx * ny, 3), np.float32)
+    objp[:,:2] = np.mgrid[0:nx,0:ny].T.reshape(-1,2) # x, y coordinates
+    
+    img_shape = None
+    
+    for img_name in cal_images:
+        img = mpimg.imread(img_name)
+        
+        if img_shape is None:
+            img_shape = (img.shape[1], img.shape[0])
+        
+        # convert image to grayscale
+        gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+
+        # find chessboardcorners
+        ret, corners = cv2.findChessboardCorners(gray, (nx, ny), None)
+        
+        if ret == True:
+            objpoints.append(objp)
+            imgpoints.append(corners)
+            
+    assert(len(objpoints) == len(imgpoints))
+    
+    # get camera calibration matrix and distoration coefficients
+    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_shape, None, None)
+    
+    return mtx, dist
+```
 
 #### 1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
 
