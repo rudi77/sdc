@@ -34,7 +34,7 @@ def process_image(img, mtx, dist, M, Minv):
     # combine all binaries to a single binary image
     cg_binary = np.zeros_like(gradx)
     cg_binary[(b_binary == 1) | (v_binary == 1) | (gradx == 1)] = 1
-    
+        
     # do a blind search
     if LeftLine.last_line_detected() == False or RightLine.last_line_detected() == False:
         LeftLineSegment, RightLineSegment = helpers.blind_search(cg_binary.copy())
@@ -45,17 +45,23 @@ def process_image(img, mtx, dist, M, Minv):
     else:
         left_fit = LeftLine.get_last_line().coefficients
         right_fit = RightLine.get_last_line().coefficients
-        
         LeftLineSegment, RightLineSegment = helpers.search_next(cg_binary.copy(), left_fit, right_fit)
 
+    # project the line on the undistorted image
     left_fitx = LeftLineSegment.xfitted
     right_fitx = RightLineSegment.xfitted
     result_img = helpers.project_lines(img_undist, cg_binary, left_fitx, right_fitx, Minv)
 
+    # put radius and vehicle position on the image
     font = cv2.FONT_HERSHEY_SIMPLEX
-    text = 'Left radius {} m, right radius {} m'.format(LeftLineSegment.radius,RightLineSegment.radius)
+    text = 'Left radius {} m'.format(LeftLineSegment.radius)
     cv2.putText(result_img, text, (30,80), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
+    text = 'Right radius {} m'.format(RightLineSegment.radius)
+    cv2.putText(result_img, text, (30,120), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
+    text2 = 'Vehicle position {} m'.format(LeftLineSegment.vehicle_position)
+    cv2.putText(result_img, text2, (30,160), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
     
+    # return final image
     return result_img
 
 def main():
@@ -86,7 +92,7 @@ def main():
     # Ok, now we have M and Minv which we will use for image warping and unwarping in all frames
     process = lambda image: process_image(image, mtx, dist, M, Minv)
     
-    output = 'project_video_result3.mp4'
+    output = 'project_video_result4.mp4'
     clip1 = VideoFileClip("project_video.mp4")
     white_clip = clip1.fl_image(process)
     

@@ -156,6 +156,15 @@ def polyfit(x, y):
     
     return fit, fitx
 
+def calc_vehicle_pos(leftx, rightx, midpoint):
+    # lane midpoint
+    lane_center = leftx + int((rightx - leftx) / 2)
+    # calculate difference between lane midpoint and image midpoint which
+    # is the deviation of the car to the lane midpoint
+    diff = abs(lane_center - midpoint)    
+    deviation = round(diff * (3.7 / 700), 2)
+    
+    return deviation
 
 def blind_search(binary_warped):
     # crop the image. The last 20 pixel won't be taken into account because
@@ -167,9 +176,11 @@ def blind_search(binary_warped):
 
     # Find the peak of the left and right halves of the histogram
     # These will be the starting point for the left and right lines
-    midpoint = np.int(histogram.shape[0]/2)
+    midpoint = np.int(histogram.shape[0]/2)    
     leftx_base = np.argmax(histogram[:midpoint])
     rightx_base = np.argmax(histogram[midpoint:]) + midpoint
+    
+    vehicle_pos = calc_vehicle_pos(leftx_base, rightx_base, midpoint)
     
     # Choose the number of sliding windows. I use 10 because 700 can be divided by 10
     nwindows = 10
@@ -236,10 +247,10 @@ def blind_search(binary_warped):
 
     # Create Left and Right Line Segments    
     left_fit, left_fitx = polyfit(leftx, lefty)
-    LeftLineSegment = line.LineSegment(left_fit, left_fitx, leftx, lefty)
+    LeftLineSegment = line.LineSegment(left_fit, left_fitx, leftx, lefty, vehicle_pos)
     
     right_fit, right_fitx = polyfit(rightx, righty)
-    RightLineSegment = line.LineSegment(right_fit, right_fitx, rightx, righty)
+    RightLineSegment = line.LineSegment(right_fit, right_fitx, rightx, righty, vehicle_pos)
 
     return LeftLineSegment, RightLineSegment
 
@@ -252,7 +263,7 @@ def search_next(binary_warped, left_fit, right_fit):
     Searches for the lines based on the result of the previous frame.
     """
     binary_warped = binary_warped[0:700,:]
-    
+       
     # Get all nonzero pixels from the warped image.
     # Store the x and y indices in separate lists
     nonzero = binary_warped.nonzero()
@@ -272,32 +283,16 @@ def search_next(binary_warped, left_fit, right_fit):
     
     # Create Left and Right Line Segments    
     left_fit, left_fitx = polyfit(leftx, lefty)
-    LeftLineSegment = line.LineSegment(left_fit, left_fitx, leftx, lefty)
-    
     right_fit, right_fitx = polyfit(rightx, righty)
-    RightLineSegment = line.LineSegment(right_fit, right_fitx, rightx, righty)
+    
+    midpoint = np.int(binary_warped.shape[1] / 2)    
+    vehicle_pos = calc_vehicle_pos(left_fitx[-1], right_fitx[-1], midpoint)
+    
+    LeftLineSegment = line.LineSegment(left_fit, left_fitx, leftx, lefty, vehicle_pos)
+    RightLineSegment = line.LineSegment(right_fit, right_fitx, rightx, righty, vehicle_pos)
 
     return LeftLineSegment, RightLineSegment
     
-def calc_curvature(leftx, rightx):
-    """
-    Calculates the curvature of a line
-    """
-    ploty = np.linspace(0, 720-1, 720 )
-    y_eval = np.max(ploty)
-
-    # Define conversions in x and y from pixels space to meters
-    ym_per_pix = 30 / 720 # meters per pixel in y dimension
-    xm_per_pix = 3.7 / 700 # meters per pixel in x dimension
-
-    # Fit new polynomials to x,y in world space
-    left_fit_cr = np.polyfit(ploty*ym_per_pix, leftx*xm_per_pix, 2)
-    right_fit_cr = np.polyfit(ploty*ym_per_pix, rightx*xm_per_pix, 2)
-    # Calculate the new radii of curvature
-    left_curverad = ((1 + (2*left_fit_cr[0]*y_eval*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
-    right_curverad = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
-    
-    return (round(left_curverad,1), round(right_curverad,1))
 
 def project_lines(undist, warped, left_fitx, right_fitx, Minv):
     ploty = np.linspace(0, 720-1, 720 )
@@ -321,12 +316,3 @@ def project_lines(undist, warped, left_fitx, right_fitx, Minv):
     result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
     
     return result
-
-def calc_vehicle_pos(leftx, rightx):
-    # lane midpoint
-    lane_center = leftx + int((rightx - leftx) / 2)
-    # calculate difference between lane midpoint and image midpoint which
-    # is the deviation of the car to the lane midpoint
-    diff = round(abs(lane_center - midpoint) * (3.7 / 700), 2)
-    
-    return diff

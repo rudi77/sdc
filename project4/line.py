@@ -9,7 +9,7 @@ import numpy as np
 
 # Defines a line in a single frame. There shall be a left and a right line.
 class LineSegment():
-    def __init__(self, coeffs=None, fitx=None, x=None, y=None):
+    def __init__(self, coeffs=None, fitx=None, x=None, y=None, vpos=None):
         # was the line in the current frame detected        
         self.detected = True if fitx is not None and coeffs is not None else False
 
@@ -30,6 +30,9 @@ class LineSegment():
             
         # radius of the curvature in meters
         self.radius = self.__calc_curvature__(self.xfitted) if self.xfitted is not None else None
+        
+        # contains the vehicle's position in meters
+        self.vehicle_position = vpos
         
     def __calc_curvature__(self, xfitted):
         """
