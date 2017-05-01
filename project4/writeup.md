@@ -13,19 +13,22 @@ The goals of this project are the following:
 * Warp the detected lane boundaries back onto the original image.
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
-[//]: # (Image References)
-
-[distorted_chessboard]: ./output_images/distorted_chessboard.png "Distorted"
-[distorted_chessboard_with_corners]: ./output_images/distorted_chessboard_with_corners.png "Distorted"
-[undistorted_chessboard]: ./output_images/undistorted_chessboard.png "Undistorted"
-[calibration_images]: ./camera_cal
-[calibration_tutorial]: http://docs.opencv.org/3.0-beta/doc/py_tutorials/py_calib3d/py_calibration/py_calibration.html
+[//]: # (References)
 
 [helpers.py]: ./helpers.py
 [lane.py]: ./lane.py
 [pipeline.py]: ./pipeline
 [exploration.ipynb]: ./exploration.ipynb
 [parameters.p]: ./parameters.p
+
+[calibration_images]: ./camera_cal
+[calibration_tutorial]: http://docs.opencv.org/3.0-beta/doc/py_tutorials/py_calib3d/py_calibration/py_calibration.html
+[distorted_chessboard]: ./output_images/distorted_chessboard.png "Distorted"
+[distorted_chessboard_with_corners]: ./output_images/distorted_chessboard_with_corners.png "Distorted"
+[undistorted_chessboard]: ./output_images/undistorted_chessboard.png "Undistorted"
+[original_image]: ./output_images/original_image.png
+[undistorted_image]: ./output_images/undistorted_image.png
+
 
 ## Files in this repository
 This repository contains the following files.
@@ -99,8 +102,17 @@ of the following steps which are applied on each single video frame.
 - Curvature and vehicle position calculation
 
 ### 1. Image distortion correction
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]
+Every image is undistorted by calling the `undistort(image, mtx, dist)` function in the [helpers.py][helpers.py] file.
+```python
+def undistort(image, mtx, dist):
+    return cv2.undistort(image, mtx, dist, None, mtx)
+```
+This is an example of an undistorted image. First the original image is shown and then the undistorted image is presented.
+
+ Original Image                 | Undistorted Image
+:-------------------------:|:----------------------------------------
+![][original_image]  |  ![][undistorted_image]  
+
 
 ### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
 
