@@ -166,6 +166,27 @@ The following image sequence shows the extracted B and G channels as well as the
 
 ![][color_to_binary]
 
+Finally, I combined both channel with the x gradients of the image using the Sobel operator. The gradients are computed in the `helpers.gradx()` method.
+
+```python
+def gradx(img, kernel=11, min_thresh=50, max_thresh=100):
+    # calculates derivatives in x direction:  
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    
+    sobel = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=kernel)
+    abs_sobel = np.absolute(sobel)
+    scaled_sobel = np.uint8(255*abs_sobel/np.max(abs_sobel))
+    sbinary = np.zeros_like(scaled_sobel)
+    
+    # creates a binary images based on the provided min and max thresholds
+    sbinary[(scaled_sobel >= min_thresh) & (scaled_sobel <= max_thresh)] = 1
+    return sbinary
+```
+The following image sequence shows the gradient image, the combined color channels and the final binary image.
+
+![][combined_binary]
+
+
 ### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
 Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
