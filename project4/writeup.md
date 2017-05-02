@@ -51,8 +51,6 @@ This repository contains the following files.
 - [exploration.ipynb][exploration.ipynb] contains my ipython notebook which I used for data exploration.
 - [parameters.p][parameters.p] a pickle file which contains the calibration matrix, the distortion coefficients, and the transformation matrices M and Minv.
 
-## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
-
 ## Camera Calibration
 Distorted images produced by pinhole cameras can be corrected by applying camera calibration techniques. In this project I use the [black-white chessboard][calibration_tutorial] approach. The camera calibration code is implemented in the `helpers.camera_calibration()` functions in the [helpers.py][helpers.py] file
 In principle this approach works as follows:
@@ -301,6 +299,7 @@ This is the [link to my challenge result](./challenge_video_result.mp4)
 
 Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further. 
 
-My approach is pretty straightfoward
-
-
+Finally, I implemented a working solution which is able to successfully detect the lanes in the project video. Applying my approach to the challenge video fails miserably on most frames with some minor exceptions.
+In my mind I'm faced with the following problems:
+1. Color and gradient thresholding: Beside the fact that this was the most time consuming part I was not able to find the right color channels and thresholds for all situations. I did a lot of experiments with different thresholds and color spaces but at the end I took a setting which definitely worked for the project video but does not work in general under all lighting conditions. Maybe color and gradient thresholding is not the right solution for this problem. Maybe a machine learning based approach could do a better job
+2. Performance: This pipeline is pretty compute intensive. When I created the movie I was not able to process more than 6 to 8 frames per second. This might be too slow for a real time application. So performance improvement must definitely done.
