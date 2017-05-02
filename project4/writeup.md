@@ -250,7 +250,34 @@ def calc_vehicle_pos(leftx, rightx, midpoint):
 
 ### 6. Visualzing the detected lanes
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+I implemented this step in the ```project_lines()``` functions which can also be found in the [helpers.py][helpers.py] file. What this function does can be explained as follows. It takes the undistorted frame, the warped image (birds eye view), the line pixels for the left and right lane and the inverse transformation matrix as input. Based on the warped image an empty image is created. With the line pixels a polygone is drawn on it. Then this image is transformed back into the original perspective. Finally, a weighted image from the undistorted and unwarped image is created.
+
+```python
+def project_lines(undist, warped, left_fitx, right_fitx, Minv):
+    ploty = np.linspace(0, 720-1, 720 )
+    
+    # Create an image to draw the lines on
+    warp_zero = np.zeros_like(warped).astype(np.uint8)
+    color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
+
+    # Recast the x and y points into usable format for cv2.fillPoly()
+    pts_left = np.array([np.transpose(np.vstack([left_fitx, ploty]))])
+    pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, ploty])))])
+    pts = np.hstack((pts_left, pts_right))
+
+    # Draw the lane onto the warped blank image
+    cv2.fillPoly(color_warp, np.int_([pts]), (0,255, 0))
+
+    # Warp the blank back to original image space using inverse perspective matrix (Minv)
+    newwarp = cv2.warpPerspective(color_warp, Minv, (undist.shape[1], undist.shape[0]))
+    
+    # Combine the result with the original image
+    result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
+    
+    return result
+```
+
+Here is an example of my result on a test image:
 
 ![alt text][image6]
 
@@ -260,7 +287,8 @@ I implemented this step in lines # through # in my code in `yet_another_file.py`
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_video.mp4)
+Here is a [link to my video result](./project_video_result.mp4)
+This is the [link to my challenge result](./challenge_video_result.mp4)
 
 ---
 
