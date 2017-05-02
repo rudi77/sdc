@@ -40,8 +40,8 @@ The goals of this project are the following:
 ## Files in this repository
 This repository contains the following files.
 - [pipeline.py][pipeline.py] contains the image processing steps (the pipeline) for finding lanes on the road. This pipeline is applied to each video frame
-- [helpers.py][helpers.py] contains all functions that are used in each image processing.
-- [lane.py][lane.py] contains the Lane and LaneSegment classes which describe the lanes that are found in video frames.
+- [helpers.py][helpers.py] contains the functions that are used in each image processing step.
+- [lane.py][lane.py] contains the Lane and LaneSegment classes which describe the lanes that are found in a video frames.
 - [exploration.ipynb][exploration.ipynb] contains my ipython notebook which I used for data exploration.
 - [parameters.p][parameters.p] a pickle file which contains the calibration matrix, the distortion coefficients, and the transformation matrices M and Minv.
 
