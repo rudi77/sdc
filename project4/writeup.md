@@ -1,6 +1,6 @@
 # Advanced Lane Finding Project #
 
-This is the fourth project of the sdc course. In this project lane boundaries shall be detected in a video provided by udacity. Additionaly lane curvature and vehicle position values shall be estimated.
+This is the fourth project of the sdc course. In this project lane boundaries shall be detected in a video provided by udacity. Additionally, the lane curvature radius and vehicle position shall be calculated and displayed.
 
 The goals of this project are the following:
 
@@ -33,16 +33,23 @@ The goals of this project are the following:
 [warped]: ./output_images/warped.png
 [unwarped]: ./output_images/unwarped.png
 
+[color_to_binary]: ./output_images/color_to_binary.png
+[combined_binary]: ./output_images/combined_binary.png
+
+[histogram]: ./output_images/histogram.png
+[blind_search]: ./output_images/blind_search.png
+[next_search]: ./output_images/next_search.png
+
+[line_visualization]: ./output_images/lane_visualization.jpg
+
 
 ## Files in this repository
 This repository contains the following files.
 - [pipeline.py][pipeline.py] contains the image processing steps (the pipeline) for finding lanes on the road. This pipeline is applied to each video frame
-- [helpers.py][helpers.py] contains all functions that are used in each image processing.
-- [lane.py][lane.py] contains the Lane and LaneSegment classes which describe the lanes that are found in video frames.
+- [helpers.py][helpers.py] contains the functions that are used in each image processing step.
+- [lane.py][lane.py] contains the Lane and LaneSegment classes which describe the lanes that are found in a video frames.
 - [exploration.ipynb][exploration.ipynb] contains my ipython notebook which I used for data exploration.
 - [parameters.p][parameters.p] a pickle file which contains the calibration matrix, the distortion coefficients, and the transformation matrices M and Minv.
-
-## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
 ## Camera Calibration
 Distorted images produced by pinhole cameras can be corrected by applying camera calibration techniques. In this project I use the [black-white chessboard][calibration_tutorial] approach. The camera calibration code is implemented in the `helpers.camera_calibration()` functions in the [helpers.py][helpers.py] file
@@ -120,6 +127,15 @@ This is an example of an undistorted image. First the original image is shown an
 ### 2. Perspective transformation
 In a second step a perspective transformation is applied to the undistorted image. In particular a bird’s-eye view transform is applied. This view is then used in a subsequent step to find and extract the road lanes.
 The [helpers.py][helpers.py] file contains a `warp()` function which creates and returns a bird’s eye view representation of the image. Source and destination points are needed for a perspective transformation. The source points will be mapped on the provided destination points. The source and destination points are hardcoded into the `warp()` function.
+
+ Source points  | Destination points     
+:--------------:|:-----------------
+   (710,460)    |   (1000,0)
+   (1110,720)   |   (1000,720)
+   (205,720)    |   (300,720)
+   (575,460)   |   (300,0)
+
+This is the corresponding pyhton function:
 ```python
 def warp(undist):
     src = np.float32([[710,460],[1110,720],[205,720],[575,460]])
@@ -131,7 +147,7 @@ def warp(undist):
     warped = cv2.warpPerspective(undist, M, img_size)
     return warped, M
 ```
-There also exists an `unwarp()` function which transforms an image back to it original representation. This function is called as a final step when the detect lanes are projected on the processed video frame. The `unwarp()` function is the same as the `warp()` function but with interchanged source and destination points.
+There also exists an `unwarp()` function which transforms an image back to its original representation. This function is called as a final step when the detected lanes are projected on the processed video frame. The `unwarp()` function is the same as the `warp()` function but with interchanged source and destination points.
 
 The following images show a transformation to a bird's eye view and back to the original perspective.
 
@@ -141,27 +157,129 @@ The following images show a transformation to a bird's eye view and back to the 
 
 ### 3.Color and gradient transformation and binarization.
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
+I used a combination of color and gradient thresholds to generate a binary image. First, I extracted the B channel of the LAB color space and the G channel of the RGB space of the current frame in the `process_image()` function. Then I converted them into binary images using `binary_channel()` function. You find both functions in the `helpers.py` file.
+```python
+    # binarize image
+    b_channel = cv2.cvtColor(img_birds_eye, cv2.COLOR_RGB2LAB)[:,:,2]
+    b_binary = helpers.binary_channel(b_channel, min_thresh=145, max_thresh=180)    
+    g_channel = img_birds_eye[:,:,1]
+    g_binary = helpers.binary_channel(g_channel, min_thresh=170, max_thresh=255) 
+ ```
 
-![alt text][image3]
+The following image sequence shows the extracted B and G channels as well as the combination of both binary images.
+
+![][color_to_binary]
+
+Finally, I combined both channel with the x gradients of the image using the Sobel operator. The gradients are computed in the `helpers.gradx()` method.
+
+```python
+def gradx(img, kernel=11, min_thresh=50, max_thresh=100):
+    # calculates derivatives in x direction:  
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    
+    sobel = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=kernel)
+    abs_sobel = np.absolute(sobel)
+    scaled_sobel = np.uint8(255*abs_sobel/np.max(abs_sobel))
+    sbinary = np.zeros_like(scaled_sobel)
+    
+    # creates a binary images based on the provided min and max thresholds
+    sbinary[(scaled_sobel >= min_thresh) & (scaled_sobel <= max_thresh)] = 1
+    return sbinary
+```
+The following image sequence shows the gradient image, the combined color channels and the final binary image.
+
+![][combined_binary]
 
 
+### 4. Lane detection
+I implemented two functions `blind_search()` and `next_search()` which are used for detecting lanes in each video frame. The `helpers.blind_search()` function is applied to the first frame in the video whereas `next_search()` is used for subsequent frames.
 
-### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
+A __blind search__ is applied to the first video frame when any prior knowledge is available or when `next_search()` was not able to find any viable lanes. It works roughly as follows:
+1. Compute the histogram of the lower half of the frame. Find the two highest peaks which are a good indicator for the x positions of the lane lines. The x positions are the starting point for our lane line search. The image below shows the histogram with the two peaks. 
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+![][histogram]
 
-![alt text][image5]
+2. Slide a window around the left and right x position over the image in y direction from the bottom to the top. This is shown in the next image. The window is recentered if more the n=50 pixels were found within the window. The found pixels are stored in list. Eventually, a second order polynomial fit is calculated.
 
-#### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
+![][blind_search]
 
-I did this in lines # through # in my code in `my_other_file.py`
+Now we now where the lines are. We use this information when we search for the lines in the next frame. We use the line positions from the previous frame and search in a surrounding area for the next lines. The next image shows this approach:
 
-### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+![][next_search]
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+I have implemented two classes __LineSegment__ and __Line__. You find both classes in the [lane.py][lane.py] file. A __LineSegment__ instance stores the information about one detected line in one frame as well as the curvature radius and the vehicle position. A __Line__ exists for the left and right lane line. It keeps the last n detected __LineSegments__. The __Lane__ class provides a sanity check method `is_valid_line()` which checks whether a __LineSegment__ is valid. It also contains the `get_smoothed_line()` method. This method computes a fit over detected lane line pixels of the last n frames. A __Line__ instance is reset if the `next_search()` function was not able to find viable lanes for several consecutive frames. A blind search is carried out after a __Line__ reset.
 
-![alt text][image6]
+#### 5. Curvature and vehicle position calculation
+
+The left and right curvature radius of the lane is calculated in the __LineSegment__ class. This is code.
+```python
+    def __calc_curvature__(self, xfitted):
+        """
+        Calculates the curvature of a line
+        """
+        ploty = np.linspace(0, 720-1, 720 )
+        y_eval = np.max(ploty)
+    
+        # Define conversions in x and y from pixels space to meters
+        ym_per_pix = 30 / 720 # meters per pixel in y dimension
+        xm_per_pix = 3.7 / 700 # meters per pixel in x dimension
+    
+        # Fit new polynomials to x,y in world space
+        fit_cr = np.polyfit(ploty * ym_per_pix, xfitted * xm_per_pix, 2)
+        # Calculate the new radii of curvature
+        curverad = ((1 + (2 * fit_cr[0] * y_eval * ym_per_pix + fit_cr[1])**2)**1.5) / np.absolute(2 * fit_cr[0])
+        
+        return round(curverad,1)
+```
+
+Vehicle position caluclation is implemented in `calc_vehicle_pos()` in the [helpers.py][helpers.py] file and looks as follows
+```python
+def calc_vehicle_pos(leftx, rightx, midpoint):
+    meters_per_pixel = 3.7 / 700.0
+    lane_width = round((rightx - leftx) * meters_per_pixel, 1)
+        
+    # lane midpoint
+    lane_center = leftx + int((rightx - leftx) / 2)
+    # calculate difference between lane midpoint and image midpoint which
+    # is the deviation of the car to the lane midpoint
+    diff = abs(lane_center - midpoint)    
+    deviation = round(diff * meters_per_pixel, 2)
+    
+    return deviation, lane_width
+```
+
+### 6. Visualzing the detected lanes
+
+I implemented this step in the ```project_lines()``` functions which can also be found in the [helpers.py][helpers.py] file. What this function does can be explained as follows. It takes the undistorted frame, the warped image (birds eye view), the line pixels for the left and right lane and the inverse transformation matrix as input. Based on the warped image an empty image is created. With the line pixels a polygone is drawn on it. Then this image is transformed back into the original perspective. Finally, a weighted image from the undistorted and unwarped image is created.
+
+```python
+def project_lines(undist, warped, left_fitx, right_fitx, Minv):
+    ploty = np.linspace(0, 720-1, 720 )
+    
+    # Create an image to draw the lines on
+    warp_zero = np.zeros_like(warped).astype(np.uint8)
+    color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
+
+    # Recast the x and y points into usable format for cv2.fillPoly()
+    pts_left = np.array([np.transpose(np.vstack([left_fitx, ploty]))])
+    pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, ploty])))])
+    pts = np.hstack((pts_left, pts_right))
+
+    # Draw the lane onto the warped blank image
+    cv2.fillPoly(color_warp, np.int_([pts]), (0,255, 0))
+
+    # Warp the blank back to original image space using inverse perspective matrix (Minv)
+    newwarp = cv2.warpPerspective(color_warp, Minv, (undist.shape[1], undist.shape[0]))
+    
+    # Combine the result with the original image
+    result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
+    
+    return result
+```
+
+Here is an example of my result on a test image:
+
+![][line_visualization]
 
 ---
 
@@ -169,7 +287,9 @@ I implemented this step in lines # through # in my code in `yet_another_file.py`
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_video.mp4)
+Here is a [link to my video result](./project_video_result.mp4)
+
+This is the [link to my challenge result](./challenge_video_result.mp4)
 
 ---
 
@@ -177,4 +297,9 @@ Here's a [link to my video result](./project_video.mp4)
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further. 
+
+Finally, I implemented a working solution which is able to successfully detect the lanes in the project video. Applying my approach to the challenge video fails miserably on most frames with some minor exceptions.
+In my mind I'm faced with the following problems:
+1. Color and gradient thresholding: Beside the fact that this was the most time consuming part I was not able to find the right color channels and thresholds for all situations. I did a lot of experiments with different thresholds and color spaces but at the end I took a setting which definitely worked for the project video but does not work in general under all lighting conditions. Maybe color and gradient thresholding is not the right solution for this problem. Maybe a machine learning based approach could do a better job in finding lanes in an image. A cnn or any other ML algorithm could be used as a pixel classifier which predicts whether a pixel belongs to a lane line. These pixels could then be used to fit the line.
+2. Performance: This pipeline is pretty compute intensive. When I created the movie I was not able to process more than 6 to 8 frames per second. This might be too slow for a real time application. So performance improvement must definitely done.
