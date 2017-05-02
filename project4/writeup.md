@@ -36,6 +36,10 @@ The goals of this project are the following:
 [color_to_binary]: ./output_images/color_to_binary.png
 [combined_binary]: ./output_images/combined_binary.png
 
+[histogram]: ./output_images/histogram.png
+[blind_search]: ./output_images/blind_search.png
+[next_search]: ./output_images/next_search.png
+
 
 ## Files in this repository
 This repository contains the following files.
@@ -189,6 +193,21 @@ The following image sequence shows the gradient image, the combined color channe
 
 ### 4. Lane detection
 I implemented two functions `helpers.blind_search()` and `helpers.next_search()` which are used for detecting lanes in each video frame. The `helpers.blind_search()` function is applied to the first frame in the video whereas `helpers.next_search()` is used for subsequent frames.
+
+A __blind search__ is applied to the first video frame when any prior knowledge is available or when `next_search()` was not able to find any viable lanes. It works roughly as follows:
+1. Compute the histogram of the lower half of the frame. Find the two highest peaks which are a good indicator for the x positions of the lane lines. The x positions are the starting point for our lane line search. The image below shows the histogram with the two peaks. 
+
+![][histogram]
+
+2. Slide a window around the left and right x position over the image in y direction from the bottom to the top. This is shown in the next image. The window is recentered if more the n=50 pixels were found within the window. The found pixels are stored in list. Eventually, a second order polynomial fit is calculated.
+
+![][blind_search]
+
+Now we now where the lines are. We use this information when we search for the lines in the subsequent frames. We use the line positions from the previous frame and search in a surrounding area for the next lines. Next image shows this approach:
+
+![][next_search]
+
+I store the information which describes a lane in a frame in __LaneSegment__.
 
 #### 5. Curvature and vehicle position calculation
 
