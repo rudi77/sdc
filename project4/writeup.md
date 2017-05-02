@@ -40,6 +40,8 @@ The goals of this project are the following:
 [blind_search]: ./output_images/blind_search.png
 [next_search]: ./output_images/next_search.png
 
+[line_visualization]: ./output_images/lane_visualization.jpg
+
 
 ## Files in this repository
 This repository contains the following files.
@@ -157,7 +159,7 @@ The following images show a transformation to a bird's eye view and back to the 
 
 ### 3.Color and gradient transformation and binarization.
 
-I used a combination of color and gradient thresholds to generate a binary image. First, I extracted the B channel of the LAB color space and the G channel of the RGB space of the current frame in the `pipeline.process_image()` function. Then I converted them into binary images using `helpers.binary_channel` function.
+I used a combination of color and gradient thresholds to generate a binary image. First, I extracted the B channel of the LAB color space and the G channel of the RGB space of the current frame in the `process_image()` function. Then I converted them into binary images using `binary_channel()` function. You find both functions in the `helpers.py` file.
 ```python
     # binarize image
     b_channel = cv2.cvtColor(img_birds_eye, cv2.COLOR_RGB2LAB)[:,:,2]
@@ -192,7 +194,7 @@ The following image sequence shows the gradient image, the combined color channe
 
 
 ### 4. Lane detection
-I implemented two functions `helpers.blind_search()` and `helpers.next_search()` which are used for detecting lanes in each video frame. The `helpers.blind_search()` function is applied to the first frame in the video whereas `helpers.next_search()` is used for subsequent frames.
+I implemented two functions `blind_search()` and `next_search()` which are used for detecting lanes in each video frame. The `helpers.blind_search()` function is applied to the first frame in the video whereas `next_search()` is used for subsequent frames.
 
 A __blind search__ is applied to the first video frame when any prior knowledge is available or when `next_search()` was not able to find any viable lanes. It works roughly as follows:
 1. Compute the histogram of the lower half of the frame. Find the two highest peaks which are a good indicator for the x positions of the lane lines. The x positions are the starting point for our lane line search. The image below shows the histogram with the two peaks. 
@@ -203,7 +205,7 @@ A __blind search__ is applied to the first video frame when any prior knowledge 
 
 ![][blind_search]
 
-Now we now where the lines are. We use this information when we search for the lines in the subsequent frames. We use the line positions from the previous frame and search in a surrounding area for the next lines. Next image shows this approach:
+Now we now where the lines are. We use this information when we search for the lines in the next frame. We use the line positions from the previous frame and search in a surrounding area for the next lines. The next image shows this approach:
 
 ![][next_search]
 
@@ -279,7 +281,7 @@ def project_lines(undist, warped, left_fitx, right_fitx, Minv):
 
 Here is an example of my result on a test image:
 
-![alt text][image6]
+![][line_visualization]
 
 ---
 
@@ -288,6 +290,7 @@ Here is an example of my result on a test image:
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
 Here is a [link to my video result](./project_video_result.mp4)
+
 This is the [link to my challenge result](./challenge_video_result.mp4)
 
 ---
@@ -296,4 +299,8 @@ This is the [link to my challenge result](./challenge_video_result.mp4)
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further. 
+
+My approach is pretty straightfoward
+
+
