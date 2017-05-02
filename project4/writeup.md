@@ -187,17 +187,14 @@ The following image sequence shows the gradient image, the combined color channe
 ![][combined_binary]
 
 
-### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
+### 4. Lane detection
+I implemented two functions `helpers.blind_search()` and `helpers.next_search()` which are used for detecting lanes in each video frame. The `helpers.blind_search()` function is applied to the first frame in the video whereas `helpers.next_search()` is used for subsequent frames.
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
-
-![alt text][image5]
-
-#### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
+#### 5. Curvature and vehicle position calculation
 
 I did this in lines # through # in my code in `my_other_file.py`
 
-### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+### 6. Visualzing the detected lanes
 
 I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
 
