@@ -33,6 +33,9 @@ The goals of this project are the following:
 [warped]: ./output_images/warped.png
 [unwarped]: ./output_images/unwarped.png
 
+[color_to_binary]: ./output_images/color_to_binary.png
+[combined_binary]: ./output_images/combined_binary.png
+
 
 ## Files in this repository
 This repository contains the following files.
@@ -150,11 +153,18 @@ The following images show a transformation to a bird's eye view and back to the 
 
 ### 3.Color and gradient transformation and binarization.
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
+I used a combination of color and gradient thresholds to generate a binary image. First, I extracted the B channel of the LAB color space and the G channel of the RGB space of the current frame in the `pipeline.process_image()` function. Then I converted them into binary images using `helpers.binary_channel` function.
+```python
+    # binarize image
+    b_channel = cv2.cvtColor(img_birds_eye, cv2.COLOR_RGB2LAB)[:,:,2]
+    b_binary = helpers.binary_channel(b_channel, min_thresh=145, max_thresh=180)    
+    g_channel = img_birds_eye[:,:,1]
+    g_binary = helpers.binary_channel(g_channel, min_thresh=170, max_thresh=255) 
+ ```
 
-![alt text][image3]
+The following image sequence shows the extracted B and G channels as well as the combination of both binary images.
 
-
+![][color_to_binary]
 
 ### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
