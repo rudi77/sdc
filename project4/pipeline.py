@@ -9,15 +9,18 @@ import glob
 import cv2
 import numpy as np
 import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
 from moviepy.editor import VideoFileClip
 import helpers
 import line
 
-LeftLine = line.Line()
-RightLine = line.Line()
+LeftLine = line.Line(max_lines=3)
+RightLine = line.Line(max_lines=3)
 
+img_counter = 0
 
 def process_image(img, mtx, dist, M, Minv):
+    global img_counter
     # undistort image
     img_undist = helpers.undistort(img, mtx, dist)
     
@@ -25,16 +28,18 @@ def process_image(img, mtx, dist, M, Minv):
     img_birds_eye = helpers.warp2(img_undist, M)
         
     # binarize image
-    b_binary = helpers.binary_b_channel(img_birds_eye)    
-    v_binary = helpers.binary_v_channel(img_birds_eye)  
+    b_channel = cv2.cvtColor(img_birds_eye, cv2.COLOR_RGB2LAB)[:,:,2]
+    b_binary = helpers.binary_channel(b_channel, min_thresh=145, max_thresh=180)    
+    g_channel = img_birds_eye[:,:,1]
+    g_binary = helpers.binary_channel(g_channel, min_thresh=170, max_thresh=255)  
     
     # calc gradients in x direction
-    gradx = helpers.gradx(img_birds_eye)
+    gradx = helpers.gradx(img_birds_eye, min_thresh=80, max_thresh=120)
     
     # combine all binaries to a single binary image
-    cg_binary = np.zeros_like(gradx)
-    cg_binary[(b_binary == 1) | (v_binary == 1) | (gradx == 1)] = 1
-        
+    cg_binary = np.zeros_like(b_binary)
+    #cg_binary[(b_binary == 1) | (v_binary == 1) | (gradx == 1)] = 1
+    cg_binary[(b_binary == 1) | (g_binary == 1) | (gradx == 1)] = 1
     
     is_valid_line = True
     # Do a blind search. A blind search is done at the very beginning or if we could not
@@ -60,21 +65,24 @@ def process_image(img, mtx, dist, M, Minv):
     # project the line on the undistorted image
     left_fitx = LeftLine.get_smoothed_line(num_frames=3)
     right_fitx = RightLine.get_smoothed_line(num_frames=3)
-    
     result_img = helpers.project_lines(img_undist, cg_binary, left_fitx, right_fitx, Minv)
     
+    # Get curvature radius, vehicle position and lane width
+    left_radius = LeftLine.get_last_line().radius
+    right_radius = RightLine.get_last_line().radius
+    vehicle_position = RightLine.get_last_line().vehicle_position
+    lane_width = LeftLine.get_last_line().lane_width
+
+    helpers.print_measurements(result_img, left_radius, right_radius, vehicle_position, lane_width)
+    
+    # If lane finding failed, then reset left and right lines.
     if not is_valid_line:
         LeftLine.reset()
-        RightLine.reset()        
-
-    # put radius and vehicle position on the image
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    text = 'Left radius {} m'.format(LeftLineSegment.radius)
-    cv2.putText(result_img, text, (30,80), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
-    text = 'Right radius {} m'.format(RightLineSegment.radius)
-    cv2.putText(result_img, text, (30,120), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
-    text2 = 'Vehicle position {} m'.format(LeftLineSegment.vehicle_position)
-    cv2.putText(result_img, text2, (30,160), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
+        RightLine.reset()
+        
+    if img_counter == 0:
+        plt.imsave("./output_images/lane_visualization.jpg", result_img)
+        img_counter += 1
     
     # return final image
     return result_img
@@ -107,11 +115,14 @@ def main():
     # Ok, now we have M and Minv which we will use for image warping and unwarping in all frames
     process = lambda image: process_image(image, mtx, dist, M, Minv)
     
-    #output = 'project_video_result.mp4'
-    #clip1 = VideoFileClip("project_video.mp4")
+    output = 'project_video_result2.mp4'
+    clip1 = VideoFileClip("project_video.mp4")
     
-    output = 'challenge_video_result.mp4'
-    clip1 = VideoFileClip("challenge_video.mp4")
+    #output = 'challenge_video_result.mp4'
+    #clip1 = VideoFileClip("challenge_video.mp4")
+    
+    #output = 'harder_challenge_video_result.mp4'
+    #clip1 = VideoFileClip('harder_challenge_video.mp4')
     
     clip = clip1.fl_image(process)
     

@@ -117,7 +117,7 @@ def unwarp(birds_eye_view, shape):
 
 def unwarp2(birds_eye_view, Minv, shape):    
     img_size = (shape[1], shape[0])
-    warped = cv2.warpPerspective(birds_eye_view, Minv, img_size) 
+    unwarped = cv2.warpPerspective(birds_eye_view, Minv, img_size) 
     return unwarped
 
 ############### Color and Gradient Transformation #############################
@@ -134,9 +134,18 @@ def binary_v_channel(img, min_thresh=225, max_thresh=255):
     v_binary[(v_img >= min_thresh) & (v_img <= max_thresh)] = 1
     return v_binary
 
+def binary_channel(img, min_thresh=0, max_thresh=255, ):
+    """
+    A generic binary image function.
+    """
+    binary = np.zeros_like(img)
+    binary[(img >= min_thresh) & (img <= max_thresh)] = 1
+    return binary
+
 def gradx(img, kernel=11, min_thresh=50, max_thresh=100):
-    # calculates derivatives in x direction:  
+    # calculates derivatives in x direction:
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)[:,:,2]
+    #gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     
     sobel = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=kernel)
     abs_sobel = np.absolute(sobel)
@@ -160,14 +169,17 @@ def polyfit(x, y):
     return fit, fitx
 
 def calc_vehicle_pos(leftx, rightx, midpoint):
+    meters_per_pixel = 3.7 / 700.0
+    lane_width = round((rightx - leftx) * meters_per_pixel, 1)
+        
     # lane midpoint
     lane_center = leftx + int((rightx - leftx) / 2)
     # calculate difference between lane midpoint and image midpoint which
     # is the deviation of the car to the lane midpoint
     diff = abs(lane_center - midpoint)    
-    deviation = round(diff * (3.7 / 700), 2)
+    deviation = round(diff * meters_per_pixel, 2)
     
-    return deviation
+    return deviation, lane_width
 
 def blind_search(binary_warped):
     # crop the image. The last 20 pixel won't be taken into account because
@@ -183,7 +195,7 @@ def blind_search(binary_warped):
     leftx_base = np.argmax(histogram[:midpoint])
     rightx_base = np.argmax(histogram[midpoint:]) + midpoint
     
-    vehicle_pos = calc_vehicle_pos(leftx_base, rightx_base, midpoint)
+    vehicle_pos, lane_width = calc_vehicle_pos(leftx_base, rightx_base, midpoint)
     
     # Choose the number of sliding windows. I use 10 because 700 can be divided by 10
     nwindows = 10
@@ -250,10 +262,10 @@ def blind_search(binary_warped):
 
     # Create Left and Right Line Segments    
     left_fit, left_fitx = polyfit(leftx, lefty)
-    LeftLineSegment = line.LineSegment(left_fit, left_fitx, leftx, lefty, vehicle_pos)
+    LeftLineSegment = line.LineSegment(left_fit, left_fitx, leftx, lefty, vehicle_pos, lane_width)
     
     right_fit, right_fitx = polyfit(rightx, righty)
-    RightLineSegment = line.LineSegment(right_fit, right_fitx, rightx, righty, vehicle_pos)
+    RightLineSegment = line.LineSegment(right_fit, right_fitx, rightx, righty, vehicle_pos, lane_width)
 
     return LeftLineSegment, RightLineSegment
 
@@ -289,10 +301,10 @@ def search_next(binary_warped, left_fit, right_fit):
     right_fit, right_fitx = polyfit(rightx, righty)
     
     midpoint = np.int(binary_warped.shape[1] / 2)    
-    vehicle_pos = calc_vehicle_pos(left_fitx[-1], right_fitx[-1], midpoint)
+    vehicle_pos, lane_width = calc_vehicle_pos(left_fitx[-1], right_fitx[-1], midpoint)
     
-    LeftLineSegment = line.LineSegment(left_fit, left_fitx, leftx, lefty, vehicle_pos)
-    RightLineSegment = line.LineSegment(right_fit, right_fitx, rightx, righty, vehicle_pos)
+    LeftLineSegment = line.LineSegment(left_fit, left_fitx, leftx, lefty, vehicle_pos, lane_width)
+    RightLineSegment = line.LineSegment(right_fit, right_fitx, rightx, righty, vehicle_pos, lane_width)
 
     return LeftLineSegment, RightLineSegment
     
@@ -319,3 +331,17 @@ def project_lines(undist, warped, left_fitx, right_fitx, Minv):
     result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
     
     return result
+
+
+def print_measurements(img, left_radius, right_radius, vehicle_position, lane_width):
+    # put radius and vehicle position on the image
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    text = 'Left radius {} m'.format(left_radius)
+    cv2.putText(img, text, (30,80), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
+    text1 = 'Right radius {} m'.format(right_radius)
+    cv2.putText(img, text1, (30,120), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
+    text2 = 'Vehicle position {} m'.format(vehicle_position)
+    cv2.putText(img, text2, (30,160), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
+    text3 = 'Lane width {} m'.format(lane_width)
+    cv2.putText(img, text3, (30,200), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
+

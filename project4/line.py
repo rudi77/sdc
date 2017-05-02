@@ -9,7 +9,7 @@ import numpy as np
 
 # Defines a line in a single frame. There shall be a left and a right line.
 class LineSegment():
-    def __init__(self, coeffs=None, fitx=None, x=None, y=None, vpos=None):
+    def __init__(self, coeffs=None, fitx=None, x=None, y=None, vpos=None, lwidth=None):
         # was the line in the current frame detected        
         self.detected = True if fitx is not None and coeffs is not None else False
 
@@ -34,6 +34,9 @@ class LineSegment():
         # contains the vehicle's position in meters
         self.vehicle_position = vpos
         
+        # contains the lane width in meters
+        self.lane_width = lwidth
+        
     def __calc_curvature__(self, xfitted):
         """
         Calculates the curvature of a line
@@ -54,8 +57,10 @@ class LineSegment():
 
 # Define a class to receive the characteristics of each line detection
 class Line():
-    def __init__(self, max_lines=3):
+    def __init__(self, max_lines=3, reset_limit=3):
         self.__line_segments = collections.deque(maxlen=max_lines)
+        self.reset_limit = reset_limit
+        self.reset_counter = 0
         
     def add_line(self, line_segment):
         self.__line_segments.append(line_segment)
@@ -85,7 +90,15 @@ class Line():
         
         deviation = self.__line_segments[-1].radius / line_segment.radius
         
-        return 0.8 <= deviation and deviation <= 1.2
+        radius_deviation = 0.85 <= deviation and deviation <= 1.15
+        lane_width_deviation = 0.85 <= 3.7 / line_segment.lane_width <= 1.15
+        
+        isvalid = radius_deviation and lane_width_deviation
+        
+        if not isvalid:
+            self.reset_counter += 1
+            
+        return isvalid
             
     def get_smoothed_line(self, num_frames):
         """
@@ -114,6 +127,9 @@ class Line():
 
     
     def reset(self):
-        self.__line_segments.clear()
-        
-        
+        """
+        Resets the lane, i.e. it clears the line_segments deque.
+        """
+        if self.reset_counter == self.reset_limit:
+            self.__line_segments.clear()
+            self.reset_counter = 0
