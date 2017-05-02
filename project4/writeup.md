@@ -211,7 +211,42 @@ I have implemented two classes __LineSegment__ and __Line__. You find both class
 
 #### 5. Curvature and vehicle position calculation
 
-I did this in lines # through # in my code in `my_other_file.py`
+The left and right curvature radius of the lane is calculated in the __LineSegment__ class. This is code.
+```python
+    def __calc_curvature__(self, xfitted):
+        """
+        Calculates the curvature of a line
+        """
+        ploty = np.linspace(0, 720-1, 720 )
+        y_eval = np.max(ploty)
+    
+        # Define conversions in x and y from pixels space to meters
+        ym_per_pix = 30 / 720 # meters per pixel in y dimension
+        xm_per_pix = 3.7 / 700 # meters per pixel in x dimension
+    
+        # Fit new polynomials to x,y in world space
+        fit_cr = np.polyfit(ploty * ym_per_pix, xfitted * xm_per_pix, 2)
+        # Calculate the new radii of curvature
+        curverad = ((1 + (2 * fit_cr[0] * y_eval * ym_per_pix + fit_cr[1])**2)**1.5) / np.absolute(2 * fit_cr[0])
+        
+        return round(curverad,1)
+```
+
+Vehicle position caluclation is implemented in `calc_vehicle_pos()` in the [helpers.py][helpers.py] file and looks as follows
+```python
+def calc_vehicle_pos(leftx, rightx, midpoint):
+    meters_per_pixel = 3.7 / 700.0
+    lane_width = round((rightx - leftx) * meters_per_pixel, 1)
+        
+    # lane midpoint
+    lane_center = leftx + int((rightx - leftx) / 2)
+    # calculate difference between lane midpoint and image midpoint which
+    # is the deviation of the car to the lane midpoint
+    diff = abs(lane_center - midpoint)    
+    deviation = round(diff * meters_per_pixel, 2)
+    
+    return deviation, lane_width
+```
 
 ### 6. Visualzing the detected lanes
 
