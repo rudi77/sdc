@@ -1,6 +1,6 @@
 # Advanced Lane Finding Project #
 
-This is the fourth project of the sdc course. In this project lane boundaries shall be detected in a video provided by udacity. Additionaly lane curvature and vehicle position values shall be estimated.
+This is the fourth project of the sdc course. In this project lane boundaries shall be detected in a video provided by udacity. Additionally, the lane curvature radius and vehicle position shall be calculated and displayed.
 
 The goals of this project are the following:
 
