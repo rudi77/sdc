@@ -207,7 +207,7 @@ Now we now where the lines are. We use this information when we search for the l
 
 ![][next_search]
 
-I have implemented two classes __LineSegment__ and __Line__. You find both classes in the [line.py][line.py] file. A __LineSegment__ instance stores the information about one detected line in one frame as well as the curvature radius and the vehicle position. A __Line__ exists for the left and right lane line. It keeps the last n detected __LineSegments__. The __Lane__ class provides a sanity check method which checks weather a __LineSegment__ is valid. It also contains the `get_smoothed_line()` method. This method computes a fit over detected lane line pixels of the last n frames.
+I have implemented two classes __LineSegment__ and __Line__. You find both classes in the [lane.py][lane.py] file. A __LineSegment__ instance stores the information about one detected line in one frame as well as the curvature radius and the vehicle position. A __Line__ exists for the left and right lane line. It keeps the last n detected __LineSegments__. The __Lane__ class provides a sanity check method `is_valid_line()` which checks whether a __LineSegment__ is valid. It also contains the `get_smoothed_line()` method. This method computes a fit over detected lane line pixels of the last n frames. A __Line__ instance is reset if the `next_search()` function was not able to find viable lanes for several consecutive frames. A blind search is carried out after a __Line__ reset.
 
 #### 5. Curvature and vehicle position calculation
 
