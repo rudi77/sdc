@@ -169,6 +169,7 @@ def polyfit(x, y):
     return fit, fitx
 
 def calc_vehicle_pos(leftx, rightx, midpoint):
+    
     meters_per_pixel = 3.7 / 700.0
     lane_width = round((rightx - leftx) * meters_per_pixel, 1)
         
@@ -176,7 +177,7 @@ def calc_vehicle_pos(leftx, rightx, midpoint):
     lane_center = leftx + int((rightx - leftx) / 2)
     # calculate difference between lane midpoint and image midpoint which
     # is the deviation of the car to the lane midpoint
-    diff = abs(lane_center - midpoint)    
+    diff = lane_center - midpoint    
     deviation = round(diff * meters_per_pixel, 2)
     
     return deviation, lane_width
@@ -340,8 +341,14 @@ def print_measurements(img, left_radius, right_radius, vehicle_position, lane_wi
     cv2.putText(img, text, (30,80), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
     text1 = 'Right radius {} m'.format(right_radius)
     cv2.putText(img, text1, (30,120), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
+    
+    avg_radius = round((left_radius + right_radius) / 2.0, 1)
+    avg_radius_text = 'Averaged radius {} m'.format(avg_radius)
+    cv2.putText(img, avg_radius_text, (30,160), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
+    
     text2 = 'Vehicle position {} m'.format(vehicle_position)
-    cv2.putText(img, text2, (30,160), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
+    cv2.putText(img, text2, (30,200), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
     text3 = 'Lane width {} m'.format(lane_width)
-    cv2.putText(img, text3, (30,200), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
+    cv2.putText(img, text3, (30,240), font, 1.2, (200,255,155), 4, cv2.LINE_AA)
+    
 

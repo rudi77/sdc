@@ -39,18 +39,23 @@ class LineSegment():
         
     def __calc_curvature__(self, xfitted):
         """
-        Calculates the curvature of a line
+        Calculates the curvature of a line. The radius is calculated in meters
         """
         ploty = np.linspace(0, 720-1, 720 )
+        
+        # We calculate the radius in the middle of the fitted line
         y_eval = np.max(ploty)
     
         # Define conversions in x and y from pixels space to meters
-        ym_per_pix = 30 / 720 # meters per pixel in y dimension
-        xm_per_pix = 3.7 / 700 # meters per pixel in x dimension
+        # A white dashed line is 3.0 m long. In my birds eye view image representation
+        # a single dashed line is approximately 95 pixels long.
+        ym_per_pix = 3.0 / 95.0    # meters per pixel in y dimension, based on a white dahsed line in birds eye view
+        xm_per_pix = 3.7 / 700.0    # meters per pixel in x dimension
     
         # Fit new polynomials to x,y in world space
         fit_cr = np.polyfit(ploty * ym_per_pix, xfitted * xm_per_pix, 2)
-        # Calculate the new radii of curvature
+        
+        # Calculate the new radi of curvature
         curverad = ((1 + (2 * fit_cr[0] * y_eval * ym_per_pix + fit_cr[1])**2)**1.5) / np.absolute(2 * fit_cr[0])
         
         return round(curverad,1)

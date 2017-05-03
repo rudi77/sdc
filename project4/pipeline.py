@@ -21,6 +21,7 @@ img_counter = 0
 
 def process_image(img, mtx, dist, M, Minv):
     global img_counter
+    
     # undistort image
     img_undist = helpers.undistort(img, mtx, dist)
     
@@ -38,7 +39,6 @@ def process_image(img, mtx, dist, M, Minv):
     
     # combine all binaries to a single binary image
     cg_binary = np.zeros_like(b_binary)
-    #cg_binary[(b_binary == 1) | (v_binary == 1) | (gradx == 1)] = 1
     cg_binary[(b_binary == 1) | (g_binary == 1) | (gradx == 1)] = 1
     
     is_valid_line = True
@@ -115,11 +115,11 @@ def main():
     # Ok, now we have M and Minv which we will use for image warping and unwarping in all frames
     process = lambda image: process_image(image, mtx, dist, M, Minv)
     
-    output = 'project_video_result2.mp4'
-    clip1 = VideoFileClip("project_video.mp4")
+    #output = 'project_video_result.mp4'
+    #clip1 = VideoFileClip("project_video.mp4")
     
-    #output = 'challenge_video_result.mp4'
-    #clip1 = VideoFileClip("challenge_video.mp4")
+    output = 'challenge_video_result.mp4'
+    clip1 = VideoFileClip("challenge_video.mp4")
     
     #output = 'harder_challenge_video_result.mp4'
     #clip1 = VideoFileClip('harder_challenge_video.mp4')
