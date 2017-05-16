@@ -5,6 +5,7 @@ Created on Sat May 13 17:18:03 2017
 @author: rudi
 """
 import os
+import time
 import numpy as np
 import pandas as pd
 import cv2
@@ -42,11 +43,11 @@ def bin_spatial(img, color_space='RGB', size=(32, 32)):
 # Define a function to compute color histogram features  
 def color_hist(img, nbins=32, bins_range=(0, 256)):
     # Compute the histogram of the RGB channels separately
-    img_hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+    img_ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
     
-    rhist = np.histogram(img_hsv[:,:,0], bins=nbins, range=bins_range)
-    ghist = np.histogram(img_hsv[:,:,1], bins=nbins, range=bins_range)
-    bhist = np.histogram(img_hsv[:,:,2], bins=nbins, range=bins_range)
+    rhist = np.histogram(img_ycrcb[:,:,0], bins=nbins, range=bins_range)
+    ghist = np.histogram(img_ycrcb[:,:,1], bins=nbins, range=bins_range)
+    bhist = np.histogram(img_ycrcb[:,:,2], bins=nbins, range=bins_range)
     
     # Generating bin centers
     bin_edges = rhist[1]
@@ -59,11 +60,18 @@ def color_hist(img, nbins=32, bins_range=(0, 256)):
     return rhist, ghist, bhist, bin_centers, hist_features
     
 
+def calc_number_of_features(pix_per_cell, cells_per_block, orient, imgsize=64):
+    """
+    Calculates the number of HOG features.
+    """  
+    blocks = imgsize // pix_per_cell
+    return (blocks - (cells_per_block - 1)) * (blocks - (cells_per_block - 1)) *  cells_per_block * cells_per_block *  orient
+
 def create_header(num_features, pix_per_cell, cells_per_block, orient):
     """
     Creates the header for our dataset.
     """
-    header_entries = ['hog_' + str(pix_per_cell) + '_' + str(cells_per_block) + '_' + str(orient) + '_' + str(i) for i in range(num_features)]    
+    header_entries = [i+1 for i in range(num_features)]    
     header_entries.insert(0,'imagename')
     header_entries.append('label')
     
@@ -85,6 +93,7 @@ def create_feature_row(imgname, isVehicle, pix_per_cell, cells_per_block, orient
     and cell size and the number of orientations.
     """
     img = cv2.imread(imgname)
+
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         
     hog_features = hog(img_gray, 
@@ -96,11 +105,11 @@ def create_feature_row(imgname, isVehicle, pix_per_cell, cells_per_block, orient
     
     _, _, _, _, hist_features = color_hist(img)
     
-    feature_list = np.concatenate((hog_features, hist_features)).tolist()
-    feature_list.insert(0, imgname)
-    feature_list.append(1 if isVehicle else 0)
+    label = 1 if isVehicle else 0
     
-    return feature_list
+    feature_list = np.concatenate(([imgname],hog_features, hist_features, [label]))
+    
+    return feature_list.tolist()
 
 
 def write_features(filename, feature_rows, header):
@@ -117,21 +126,18 @@ def generate_datasets():
     pix_per_cell = 8
     cell_per_block = 2
     
-    for i in range(6,13,1):
+    for i in range(6,7,1):
         orient = i
     
         filename = 'dataset_8_2_{}_3_32.csv'.format(orient)
-    
         print('generating ', filename)
         
         num_features = calc_number_of_features(pix_per_cell, cell_per_block, orient)
         header = create_header(num_features + 3 * 32, pix_per_cell, cell_per_block, orient)
-        
-        print(num_features, len(header))
-        
+
         feature_rows = []    
         counter = 0
-        
+        tStart = time.time()
         # iterate over each car image
         for car in cars:
             row = create_feature_row(car, True, pix_per_cell, cell_per_block, orient)
@@ -144,8 +150,9 @@ def generate_datasets():
                 
             counter += 1
         
-        write_features(filename, feature_rows, header)
-        feature_rows = []
+        if len(feature_rows):
+            write_features(filename, feature_rows, header)
+            feature_rows = []
         counter = 0
             
         # iterate over each non-car image
@@ -163,5 +170,8 @@ def generate_datasets():
         
         write_features(filename, feature_rows, header)
         feature_rows = []
+        
+        tEnd = time.time()
+        print("dataset generation in {} [s]".format(round(tEnd-tStart, 5)))
 
-generate_datasets()
+#generate_datasets()

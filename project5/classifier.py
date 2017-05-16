@@ -16,6 +16,7 @@ from sklearn.externals import joblib
 from sklearn.model_selection import GridSearchCV
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 # taken from: 
 # http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html#sphx-glr-auto-examples-model-selection-plot-confusion-matrix-py
@@ -58,12 +59,12 @@ def train_svc(X, y, tune=True):
     if tune == True:
         parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
         svr = svm.SVC()
-        classifier = GridSearchCV(svr, parameters)
+        clf = GridSearchCV(svr, parameters)
     else:
-        classifier = svm.SVC()
+        clf = svm.SVC()
         
-    classifier.fit(X, y)
-    return classifier
+    clf.fit(X, y)
+    return clf
 
 def calc_metrics(y_test, y_pred):    
     accuracy = metrics.accuracy_score(y_test, y_pred)
@@ -91,7 +92,11 @@ def load(filename):
     return joblib.load( filename )
 
 def train_models():
-    filenames = ['dataset_8_2_6_3_32.csv', 'dataset_8_2_7_3_32.csv', 'dataset_8_2_8_3_32.csv', 'dataset_8_2_9_3_32.csv']
+    #filenames = ['dataset_8_2_6_3_32.csv', 'dataset_8_2_7_3_32.csv', 'dataset_8_2_8_3_32.csv', 'dataset_8_2_9_3_32.csv']
+    filenames = ['dataset_8_2_6_3_32.tsv']
+    
+    classifiers = []
+    
     for filename in filenames:
         print("train svm model with ", filename)
         
@@ -104,10 +109,16 @@ def train_models():
         
         shuffled_dataset = shuffle(dataset)
         
-        X = shuffled_dataset.ix[:,0:num_features-1]
+        X = shuffled_dataset.ix[:,0:num_features-1].astype(np.float64)        
         y = shuffled_dataset.ix[:,num_features-1:num_features]
         
-        X_train, X_test, y_train, y_test = train_test_split( X, y, test_size=0.2, random_state=42)
+        # Normalize features
+        # Fit a per-column scaler
+        X_scaler = StandardScaler().fit(X)
+        # Apply the scaler to X
+        scaled_X = X_scaler.transform(X)
+        
+        X_train, X_test, y_train, y_test = train_test_split(scaled_X, y, test_size=0.3, random_state=42)
         
         # train a support vector machine
         svm = train_svc(X_train, y_train.values.ravel())
@@ -131,9 +142,11 @@ def train_models():
         base = os.path.basename(filename)
         name = os.path.splitext(base)
         # serialize model
-        dump(svm, "svm_{}.pkl".format(name))
+        dump(svm, "svm_{}.pkl".format(name[0]))
         
-train_models()
+        classifiers.append(svm)
+    return classifiers
 
 
+#train_models()
 
