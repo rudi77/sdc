@@ -3,7 +3,7 @@
 
 # Vehicle Detection Project
 
-This is this fifth and last project of the first term. In this project vehicles in a provided movie shall be detected. Therefore a mixture of image processing and machine learing pipeline shall be implemented.
+This is this fifth and last project of the first term. In this project vehicles in a provided movie shall be detected. Additionaly, I've also re-used the code from project 4 to detect road lanes.
 
 The goals / steps of this project are the following:
 
@@ -14,11 +14,17 @@ The goals / steps of this project are the following:
 * Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
 * Estimate a bounding box for vehicles detected.
 
+[pipeline.py]: ./pipeline.py
+[classifier.py]: ./classifier.py
+[dataset_generator.py]: ./dataset_generator.py
+[exploration.ipynb]: ./exploration.ipynb
+[writeup.md]: ./writeup.md
+
 [helpers.py]: ./helpers.py
 [lane.py]: ./lane.py
 [parameters.p]: ./parameters.p
 
-[pipeline.py]: ./pipeline
+
 
 [//]: # (Image References)
 [image1]: ./examples/car_not_car.png
@@ -32,7 +38,14 @@ The goals / steps of this project are the following:
 
 ## Files in this repository
 This repository contains the following files.
+#### Vehicle detection ####
 - [pipeline.py][pipeline.py] contains the image processing steps (the pipeline) for finding vehicles and lanes on the road. This pipeline is applied to each video frame
+- [classifier.py][classifier.py] contains the code for training a support vector machine.
+- [dataset_generator.py][dataset_generator.py] contains the code for generating features like HoG, spatial bins and color histograms and dataset files
+- [exploration.ipynb][exploration.ipynb] a notebook which I have used for explorative data analysis.
+- [writeup.md][writeup.md] 
+
+#### Road lanes detection ####
 - [helpers.py][helpers.py] contains the functions that are used in each image processing step.
 - [lane.py][lane.py] contains the Lane and LaneSegment classes which describe the lanes that are found in a video frames.
 - [parameters.p][parameters.p] a pickle file which contains the calibration matrix, the distortion coefficients, and the transformation matrices M and Minv.
