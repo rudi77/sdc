@@ -56,17 +56,17 @@ In the following sections I will describe my pipeline that detects and visualize
 of the following steps. Each step is applied to each single video frame.
 
 #### Preprocessing ####
-1.) Generate a dataset.
-2.) Use the generated dataset to train a classifier.
-3.) Serialize the model to a file so that it can be later used in the actual image processing pipeline
+1. Generate a dataset.
+2. Use the generated dataset to train a classifier.
+3. Serialize the model to a file so that it can be later used in the actual image processing pipeline
 
 #### Image Processing Pipeline ####
-1.) Use a sliding window search to detect possible vehicles
-2.) Generate a heatmap. The heatmap is used to reduce false positives as well as to identify vehicles
-3.) Suround the detected vehicles with a bounding box
+1. Use a sliding window search to detect possible vehicles
+2. Generate a heatmap. The heatmap is used to reduce false positives as well as to identify vehicles
+3. Suround the detected vehicles with a bounding box
 
 #### Lane Line Detection ####
-1.) Detect lane lines
+1. Detect lane lines
 
 ## Implementing a Vehicle Detector
 
