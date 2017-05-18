@@ -23,8 +23,10 @@ from sklearn.preprocessing import StandardScaler
 from skimage.feature import hog
 from moviepy.editor import VideoFileClip
 from IPython.display import HTML
-
 from scipy.ndimage.measurements import label
+
+import helpers
+import line
 import dataset_generator as dg
 
 
@@ -89,12 +91,12 @@ def find_cars(img, classifier, x_scaler, scale=1, ystart=400, ystop=656, orient=
                 ytop_draw = np.int(ytop*scale)
                 win_draw = np.int(window*scale)                
                 boxes.append([(xbox_left, ytop_draw+ystart), (xbox_left+win_draw,ytop_draw+win_draw+ystart)])                
-                cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),colors[0],2)
-            else:
-                xbox_left = np.int(xleft*scale)
-                ytop_draw = np.int(ytop*scale)
-                win_draw = np.int(window*scale)
-                cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),colors[1],2)
+                #cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),colors[0],2)
+            #else:
+            #    xbox_left = np.int(xleft*scale)
+            #    ytop_draw = np.int(ytop*scale)
+            #    win_draw = np.int(window*scale)
+            #    cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),colors[1],2)
 
 
     return draw_img, boxes
@@ -131,36 +133,88 @@ def draw_labeled_bboxes(img, labels):
     # Return the image
     return img
 
-import collections
-# stores boxes of the last n frames
-box_deque = collections.deque(maxlen=10)
 
-#search_windows = [(1, [400, 500],  "Img 64x64", [(0,255,0), (255,0,0)]),
-#                   (1.5, [400, 656],  "Img 96x96", [(0,255,0), (200,200,0)]),
-#                   (2,   [450, None],  "Img 128x128",[(0,255,0), (120,120,0)]),
-#                   (2.5, [450, None], "Img 160x160",[(0,255,0), (80,120,160)])]  # 160x160
+LeftLine = line.Line(max_lines=3)
+RightLine = line.Line(max_lines=3)
+img_counter = 0
 
-search_windows = [(1.5, [400, 656],  "Img 96x96", [(0,255,0), (200,200,0)]),
-                  (2,   [450, None],  "Img 128x128",[(0,255,0), (120,120,0)]),
-                  (2.5, [450, None], "Img 160x160",[(0,255,0), (80,120,160)])]  # 160x160
-
-
-#search_windows = [(1,   [400, 500],  "Img 64x64", [(0,255,0), (255,0,0)])]
-
-model = joblib.load('svm_dataset_8_2_9_3_32.pkl')
-clf = model['clf']
-x_scaler = model['scaler']
-
-def process_image(img, plot=False, convert=True):
-    global box_deque
-    global clf
-    global x_scaler
+def detect_lane(img, mtx, dist, M, Minv):
+    global img_counter
+    global LeftLine
+    global RightLine
     
+    # undistort image
+    img_undist = helpers.undistort(img, mtx, dist)
+    
+    # birds eye view
+    img_birds_eye = helpers.warp2(img_undist, M)
+        
+    # binarize image
+    b_channel = cv2.cvtColor(img_birds_eye, cv2.COLOR_RGB2LAB)[:,:,2]
+    b_binary = helpers.binary_channel(b_channel, min_thresh=145, max_thresh=180)    
+    g_channel = img_birds_eye[:,:,1]
+    g_binary = helpers.binary_channel(g_channel, min_thresh=170, max_thresh=255)  
+    
+    # calc gradients in x direction
+    gradx = helpers.gradx(img_birds_eye, min_thresh=80, max_thresh=120)
+    
+    # combine all binaries to a single binary image
+    cg_binary = np.zeros_like(b_binary)
+    cg_binary[(b_binary == 1) | (g_binary == 1) | (gradx == 1)] = 1
+    
+    is_valid_line = True
+    # Do a blind search. A blind search is done at the very beginning or if we could not
+    # find a lane with our improved search method
+    if LeftLine.last_line_detected() == False or RightLine.last_line_detected() == False:
+        LeftLineSegment, RightLineSegment = helpers.blind_search(cg_binary.copy())
+        LeftLine.add_line(LeftLineSegment)
+        RightLine.add_line(RightLineSegment)
+
+    # improved search based on the previous result
+    else:
+        left_fit = LeftLine.get_last_line().coefficients
+        right_fit = RightLine.get_last_line().coefficients
+        LeftLineSegment, RightLineSegment = helpers.search_next(cg_binary.copy(), left_fit, right_fit)
+        
+        # Do a sanity check before we add the new line segment to the line
+        if LeftLine.is_valid_line(LeftLineSegment) and RightLine.is_valid_line(RightLineSegment):
+            LeftLine.add_line(LeftLineSegment)
+            RightLine.add_line(RightLineSegment)
+        else:
+            is_valid_line = False
+
+    # project the line on the undistorted image
+    left_fitx = LeftLine.get_smoothed_line(num_frames=3)
+    right_fitx = RightLine.get_smoothed_line(num_frames=3)
+    result_img = helpers.project_lines(img_undist, cg_binary, left_fitx, right_fitx, Minv)
+    
+    # Get curvature radius, vehicle position and lane width
+    left_radius = LeftLine.get_last_line().radius
+    right_radius = RightLine.get_last_line().radius
+    vehicle_position = RightLine.get_last_line().vehicle_position
+    lane_width = LeftLine.get_last_line().lane_width
+
+    helpers.print_measurements(result_img, left_radius, right_radius, vehicle_position, lane_width)
+    
+    # If lane finding failed, then reset left and right lines.
+    if not is_valid_line:
+        LeftLine.reset()
+        RightLine.reset()
+        
+    if img_counter == 0:
+        plt.imsave("./output_images/lane_visualization.jpg", result_img)
+        img_counter += 1
+    
+    # return final image
+    return result_img
+        
+def detect_cars(img, clf, x_scaler, box_deque, search_windows):    
     img_copy = img.copy().astype(np.float32)/255
     heat = np.zeros_like(img[:,:,0]).astype(np.float)
     
     box_list = []
     images_with_boxes = []
+    
     for sw in search_windows:
         img_hog, boxes = find_cars(img_copy, clf, x_scaler, scale=sw[0], ystart=sw[1][0], ystop=sw[1][1], orient=9,  colors=sw[3])
                 
@@ -186,8 +240,9 @@ def process_image(img, plot=False, convert=True):
 
     # Find final boxes from heatmap using label function
     labels = label(heatmap)
-    draw_img = draw_labeled_bboxes(np.copy(img), labels)
+    draw_img = draw_labeled_bboxes(np.copy(img), labels)    
     
+    plot = False
     show_all = False
     
     if plot == True:
@@ -232,6 +287,46 @@ def process_image(img, plot=False, convert=True):
     
     return draw_img
 
+def process_image(image, mtx, dist, M, Minv, clf, x_scaler, box_deque, search_windows):
+    img = detect_cars(image, clf, x_scaler, box_deque, search_windows)
+    img = detect_lane(img, mtx, dist, M, Minv)
+    
+    return img
+
+
+def main():
+    # load the params needed for image un-distortion
+    params = helpers.load('parameters.p', './')
+    mtx = params['mtx']
+    dist = params['dist']
+    M = params['M']
+    Minv = params['Minv']
+    
+    # Load svm model and scaler
+    model = joblib.load('svm_dataset_8_2_9_3_32.pkl')
+    clf = model['clf']
+    x_scaler = model['scaler']
+    
+    # stores boxes of the last n frames
+    box_deque = collections.deque(maxlen=10)
+    
+    #search_windows = [(1, [400, 500],  "Img 64x64", [(0,255,0), (255,0,0)]),
+    #                   (1.5, [400, 656],  "Img 96x96", [(0,255,0), (200,200,0)]),
+    #                   (2,   [450, None],  "Img 128x128",[(0,255,0), (120,120,0)]),
+    #                   (2.5, [450, None], "Img 160x160",[(0,255,0), (80,120,160)])]  # 160x160
+    
+    search_windows = [(1.5, [400, 656],  "Img 96x96", [(0,255,0), (200,200,0)]),
+                      (2,   [450, None],  "Img 128x128",[(0,255,0), (120,120,0)]),
+                      (2.5, [450, None], "Img 160x160",[(0,255,0), (80,120,160)])]  # 160x160    
+        
+    process = lambda image: process_image(image, mtx, dist, M, Minv, clf, x_scaler, box_deque, search_windows)
+
+    output = 'project_video_processed.mp4'
+    clip = VideoFileClip("project_video.mp4")    
+    #output = 'test_video_processed2.mp4'
+    #clip = VideoFileClip("test_video.mp4")    
+    output_clip = clip.fl_image(process) 
+    output_clip.write_videofile(output, audio=False)
 
 #test_images = glob.glob('test_images/*.jpg')
 
@@ -240,7 +335,4 @@ def process_image(img, plot=False, convert=True):
     #process_image(img, plot=True, convert=False)
     #mpimg.imsave(img_name, img)
 
-output = 'project_video_processed.mp4'
-clip = VideoFileClip("project_video.mp4")
-output_clip = clip.fl_image(process_image) 
-output_clip.write_videofile(output, audio=False)
+if __name__ == "__main__": main()
