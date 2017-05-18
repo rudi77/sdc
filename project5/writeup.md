@@ -25,14 +25,10 @@ The goals / steps of this project are the following:
 [parameters.p]: ./parameters.p
 
 [//]: # (Image References)
-[image1]: ./examples/car_not_car.png
-[image2]: ./examples/HOG_example.jpg
-[image3]: ./examples/sliding_windows.jpg
-[image4]: ./examples/sliding_window.jpg
-[image5]: ./examples/bboxes_and_heat.png
-[image6]: ./examples/labels_map.png
-[image7]: ./examples/output_bboxes.png
-[video1]: ./project_video.mp4
+[image1]: ./output_images/car_notcar.png
+[image2]: ./output_images/hog_features
+[image3]: ./output_images/color_histogram
+[image4]: ./output_images/spatial_binning.png
 
 ## Files in this repository
 This repository contains the following files.
@@ -68,9 +64,10 @@ of the following steps. Each step is applied to each single video frame.
 #### Lane Line Detection ####
 1. Detect lane lines
 
-## Implementing a Vehicle Detector
-
-### Dataset Generation
+## Preprocessing
+The following sections describe the necessary steps that were taken to implement a working vehicle classifier.
+### 1. Dataset Generation
+I downloaded the [vehicle](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/vehicles.zip) and [non-vehicles](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/non-vehicles.zip) dataset which was provided by [Udacity](https://udacity.com) and copied them into separate folders. Then I iterated over each image and computed a feature vector. I also added the corresponding label (CAR=1, NOTCAR=0) to the end of the feature vector. Finally, I generated a [pandas](http://pandas.pydata.org/) from the feature vectors and stored them as csv file. 
 
 #### Histogram of Oriented Gradients (HOG)
 
