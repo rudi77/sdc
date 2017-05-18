@@ -24,8 +24,6 @@ The goals / steps of this project are the following:
 [lane.py]: ./lane.py
 [parameters.p]: ./parameters.p
 
-
-
 [//]: # (Image References)
 [image1]: ./examples/car_not_car.png
 [image2]: ./examples/HOG_example.jpg
@@ -51,14 +49,24 @@ This repository contains the following files.
 - [parameters.p][parameters.p] a pickle file which contains the calibration matrix, the distortion coefficients, and the transformation matrices M and Minv.
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
-
-
 ---
 
 ## Vehicle Detection Pipeline
-In the following sections I will describe my pipeline that detects and visualizes vehicles. My pipeline consists
+In the following sections I will describe my pipeline that detects and visualizes vehicles and lane lines. The pipeline consists
 of the following steps. Each step is applied to each single video frame.
-TODO
+
+#### Preprocessing ####
+1.) Generate a dataset.
+2.) Use the generated dataset to train a classifier.
+3.) Serialize the model to a file so that it can be later used in the actual image processing pipeline
+
+#### Image Processing Pipeline ####
+1.) Use a sliding window search to detect possible vehicles
+2.) Generate a heatmap. The heatmap is used to reduce false positives as well as to identify vehicles
+3.) Suround the detected vehicles with a bounding box
+
+#### Lane Line Detection ####
+1.) Detect lane lines
 
 ## Implementing a Vehicle Detector
 
