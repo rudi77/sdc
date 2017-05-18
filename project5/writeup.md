@@ -1,9 +1,9 @@
-##Writeup Template
-###You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
+# UNDER CONSTRUCTION #
 
----
 
-**Vehicle Detection Project**
+# Vehicle Detection Project
+
+This is this fifth and last project of the first term. In this project vehicles in a provided movie shall be detected. Additionaly, I've also re-used the code from project 4 to detect road lanes.
 
 The goals / steps of this project are the following:
 
@@ -13,6 +13,16 @@ The goals / steps of this project are the following:
 * Implement a sliding-window technique and use your trained classifier to search for vehicles in images.
 * Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
 * Estimate a bounding box for vehicles detected.
+
+[pipeline.py]: ./pipeline.py
+[classifier.py]: ./classifier.py
+[dataset_generator.py]: ./dataset_generator.py
+[exploration.ipynb]: ./exploration.ipynb
+[writeup.md]: ./writeup.md
+
+[helpers.py]: ./helpers.py
+[lane.py]: ./lane.py
+[parameters.p]: ./parameters.p
 
 [//]: # (Image References)
 [image1]: ./examples/car_not_car.png
@@ -24,17 +34,45 @@ The goals / steps of this project are the following:
 [image7]: ./examples/output_bboxes.png
 [video1]: ./project_video.mp4
 
+## Files in this repository
+This repository contains the following files.
+#### Vehicle detection ####
+- [pipeline.py][pipeline.py] contains the image processing steps (the pipeline) for finding vehicles and lanes on the road. This pipeline is applied to each video frame
+- [classifier.py][classifier.py] contains the code for training a support vector machine.
+- [dataset_generator.py][dataset_generator.py] contains the code for generating features like HoG, spatial bins and color histograms and dataset files
+- [exploration.ipynb][exploration.ipynb] a notebook which I have used for explorative data analysis.
+- [writeup.md][writeup.md] 
+
+#### Road lanes detection ####
+- [helpers.py][helpers.py] contains the functions that are used in each image processing step.
+- [lane.py][lane.py] contains the Lane and LaneSegment classes which describe the lanes that are found in a video frames.
+- [parameters.p][parameters.p] a pickle file which contains the calibration matrix, the distortion coefficients, and the transformation matrices M and Minv.
+
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
-###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
-
 ---
-###Writeup / README
 
-####1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Vehicle-Detection/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
+## Vehicle Detection Pipeline
+In the following sections I will describe my pipeline that detects and visualizes vehicles and lane lines. The pipeline consists
+of the following steps. Each step is applied to each single video frame.
 
-You're reading it!
+#### Preprocessing ####
+1. Generate a dataset.
+2. Use the generated dataset to train a classifier.
+3. Serialize the model to a file so that it can be later used in the actual image processing pipeline
 
-###Histogram of Oriented Gradients (HOG)
+#### Image Processing Pipeline ####
+1. Use a sliding window search to detect possible vehicles
+2. Generate a heatmap. The heatmap is used to reduce false positives as well as to identify vehicles
+3. Suround the detected vehicles with a bounding box
+
+#### Lane Line Detection ####
+1. Detect lane lines
+
+## Implementing a Vehicle Detector
+
+### Dataset Generation
+
+#### Histogram of Oriented Gradients (HOG)
 
 ####1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
@@ -48,16 +86,19 @@ I then explored different color spaces and different `skimage.hog()` parameters 
 
 Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
 
-
 ![alt text][image2]
 
 ####2. Explain how you settled on your final choice of HOG parameters.
 
 I tried various combinations of parameters and...
 
+
+### Training a Support Vector Machine
 ####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
 I trained a linear SVM using...
+
+## Detecting Vechicles - Sliding Window Search
 
 ###Sliding Window Search
 
@@ -73,6 +114,7 @@ Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spat
 
 ![alt text][image4]
 ---
+
 
 ### Video Implementation
 
