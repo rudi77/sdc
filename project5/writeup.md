@@ -1,9 +1,9 @@
-##Writeup Template
-###You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
+# UNDER CONSTRUCTION #
 
----
 
-**Vehicle Detection Project**
+# Vehicle Detection Project
+
+This is this fifth and last project of the first term. In this project vehicles in a provided movie shall be detected. Therefore a mixture of image processing and machine learing pipeline shall be implemented.
 
 The goals / steps of this project are the following:
 
@@ -13,6 +13,12 @@ The goals / steps of this project are the following:
 * Implement a sliding-window technique and use your trained classifier to search for vehicles in images.
 * Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
 * Estimate a bounding box for vehicles detected.
+
+[helpers.py]: ./helpers.py
+[lane.py]: ./lane.py
+[parameters.p]: ./parameters.p
+
+[pipeline.py]: ./pipeline
 
 [//]: # (Image References)
 [image1]: ./examples/car_not_car.png
@@ -24,17 +30,28 @@ The goals / steps of this project are the following:
 [image7]: ./examples/output_bboxes.png
 [video1]: ./project_video.mp4
 
+## Files in this repository
+This repository contains the following files.
+- [pipeline.py][pipeline.py] contains the image processing steps (the pipeline) for finding vehicles and lanes on the road. This pipeline is applied to each video frame
+- [helpers.py][helpers.py] contains the functions that are used in each image processing step.
+- [lane.py][lane.py] contains the Lane and LaneSegment classes which describe the lanes that are found in a video frames.
+- [parameters.p][parameters.p] a pickle file which contains the calibration matrix, the distortion coefficients, and the transformation matrices M and Minv.
+
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
-###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
+
 
 ---
-###Writeup / README
 
-####1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Vehicle-Detection/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
+## Vehicle Detection Pipeline
+In the following sections I will describe my pipeline that detects and visualizes vehicles. My pipeline consists
+of the following steps. Each step is applied to each single video frame.
+TODO
 
-You're reading it!
+## Implementing a Vehicle Detector
 
-###Histogram of Oriented Gradients (HOG)
+### Dataset Generation
+
+#### Histogram of Oriented Gradients (HOG)
 
 ####1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
@@ -48,16 +65,19 @@ I then explored different color spaces and different `skimage.hog()` parameters 
 
 Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
 
-
 ![alt text][image2]
 
 ####2. Explain how you settled on your final choice of HOG parameters.
 
 I tried various combinations of parameters and...
 
+
+### Training a Support Vector Machine
 ####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
 I trained a linear SVM using...
+
+## Detecting Vechicles - Sliding Window Search
 
 ###Sliding Window Search
 
@@ -73,6 +93,7 @@ Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spat
 
 ![alt text][image4]
 ---
+
 
 ### Video Implementation
 
