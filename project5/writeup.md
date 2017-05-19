@@ -168,13 +168,14 @@ Sliding windows of different sizes are used to detect vehicles - actually the si
 
 I used three different window size: 96x96, 128x128 and 160x160 respectively. 
 
-The heatmap is used to detect vehicles as well as to filter false positives by using a certain threshold. The heatmap is the result of the accumulation of bounding boxes of several consecutive frames. The functions for heatmap generation and the final vehicle detections and visualization are `add_heat()`, `def apply_threshold()` and `def draw_labeled_bboxes()` - they can be found in the file `pipeline.py`
+The heatmap is used to detect vehicles as well as to filter false positives by using a certain threshold. The heatmap is the result of the accumulation of bounding boxes of several consecutive frames. The functions for heatmap generation and the final vehicle detections and visualization are `add_heat()`, `def apply_threshold()` and `def draw_labeled_bboxes()` - they can be found in the file `pipeline.py`. These functions were taken from the lectures.
+
+The following images show the image processing pipeline.
 
 ![][image5]
 
 ![][image6]
 
-####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
 ---
 
