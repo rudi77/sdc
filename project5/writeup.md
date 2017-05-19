@@ -56,7 +56,7 @@ of the following steps.
 #### Preprocessing ####
 1. Generate a dataset.
 2. Use the generated dataset to train a classifier.
-3. Serialize the model to a file so that it can be later used in the actual image processing pipeline
+3. Serialize the model to a file so that it can be re-used later in the actual image processing pipeline
 
 #### Image Processing Pipeline ####
 1. Use a sliding window search to detect possible vehicles
@@ -77,14 +77,14 @@ Here is an example of a randomly chosen car and non-car image.
 #### Histogram of Oriented Gradients (HOG)
 The [histogram of oriented gradients (HOG)](https://en.wikipedia.org/wiki/Histogram_of_oriented_gradients) is a feature vector which can be used to detect objects like vehicles in image processing. The technique counts occurrences of gradient orientation in localized portions of an image. 
 
-A HoG depends on three parameters:
+A HOG depends on three parameters:
 - orientation: the number of oriented gradients that shall be taken into account
 - pixels_per_cell: the number of pixels per cell
 - cells_per_block: the number of cells per block
 
 Here is an example using the `YCrCb` color space and different values for the HOG parameters:
 
-| Color   |  Orienations |  PixelPerCell |  CellsPerBlock |
+| Color   |  Orientations |  PixelPerCell |  CellsPerBlock |
 | ------- |:------------:|:-------------:|:--------------:| 
 | `YCrCb` | [6,7,8,9]    | [8, 16]       | [2,4]          |
 
@@ -102,7 +102,7 @@ These are two examples of color histograms of randomly picked `car` and `notcar`
 ![][image3_2]
 
 #### Spatial Binning
-Finally, I also investigated the impact of spatial binning on the classifiers ability to detect vehicles.
+Finally, I also investigated the impact of spatial binning on the classifiers ability to detect vehicles. Here are two examples. 
 
 ![][image4]
 
@@ -110,14 +110,25 @@ Finally, I also investigated the impact of spatial binning on the classifiers ab
 
 #### Feature Vector
 My final feature vector consists of the following features:
-- HOG features: Converted image into `YCrCb` color space and generated HOG for each channel. HOG parameters: `orientation=9`, `pix_per_cell=8` and `cells_per_block=2`
-- Color histogram: Also in `YCrCb` color space with `nbins=16` and `bins_range=(0, 256)`
-- Spatial binning: Resized images to 16x16.
+- HOG features: For each channel
+- Color histogram: For each channel
+- Spatial binning
+
+| Color   |  Orientation |  PixelPerCell |  CellsPerBlock | NBins | BinsRange |  Spatial BinningSize |
+| ------- |:------------:|:-------------:|:--------------:|:-----:|:---------:|:----------------:| 
+| `YCrCb` | 9            | 8             |  2             | 16    |  0 - 256  | 16x16            |
 
 ### Training a Support Vector Machine
-####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
+I trained a Support Vector Machine (SVM) as vehicle classifier/detector. Therefore, I loaded the previously generated dataset into memory, shuffled it and split it into a trainingset and testset. For the testset I used 20% of the total dataset. Trainingsets and testsets are normalized and then fed to the svm. I've also applied a GridSearch for hyper parameter tunings. The metrics of the final classifier are:
 
-I trained a linear SVM using...
+|  Metric   |  Value          |
+|:---------:|:---------------:|
+| Accuracy  | 0.995495495495 | 
+| Precision | 0.99769186382  |
+| Recall    | 0.993107409535 |
+| F1 score  | 0.995394358089 |
+ 
+
 
 ## Detecting Vechicles - Sliding Window Search
 
