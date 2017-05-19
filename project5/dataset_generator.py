@@ -30,6 +30,8 @@ def to_colorspace(img, color_space='RGB'):
             image_converted = cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
         elif color_space == 'YCrCb':
             image_converted = cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
+        elif color_space == 'Gray':
+            image_converted = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     else: 
         image_converted = np.copy(img)
         
@@ -40,9 +42,8 @@ def to_colorspace(img, color_space='RGB'):
 # Define a function to compute color histogram features  
 # Pass the color_space flag as 3-letter all caps string
 # like 'HSV' or 'LUV' etc.
-def bin_spatial(img, size=(32, 32)):
-    features = cv2.resize(img, size).ravel() 
-    return features
+def bin_spatial(img, size=(32, 32), asvec=True):    
+    return cv2.resize(img, size).ravel() if asvec == True else cv2.resize(img, size)
 
 # Define a function to compute color histogram features  
 def color_hist(img, nbins=32, bins_range=(0, 256), histonly=True):
@@ -105,29 +106,37 @@ def num_hog_features(pix_per_cell, cells_per_block, orient, imgsize=64):
     blocks = imgsize // pix_per_cell
     return (blocks - (cells_per_block - 1)) * (blocks - (cells_per_block - 1)) *  cells_per_block * cells_per_block *  orient
 
-def create_feature_row(img, pix_per_cell=8, cells_per_block=2, orient=9, color_bins=16, spat_size=(16,16), label = None, imgname = None):
+def create_feature_row(img, pix_per_cell=8, cells_per_block=2, orient=9, color_bins=16, spat_size=(16,16), label = None, imgname = None, useAll=True, useCols=True):
     """
-    Computes HOG features and returns a feature row. 
-    First, the image is grayscaled and the HOG function is called.
-    The last entry is the label and the remaining ones describe the 
-    compute HOG feature vector. The number of feature items depends on the block 
-    and cell size and the number of orientations.
+    Computes a feature descriptor for the provided image. This feature vector contains different feature
+    types. HoG, Color Histograms and Spatial binnings.
+    The feature descriptor is returned as a single list of feature entries.
     """
+
+    features = []
     img_converted = to_colorspace(img, 'YCrCb')
-            
-    hog_features_1 = hog_features(img_converted[:,:,0], orient, pix_per_cell, cells_per_block, feature_vec=True)    
-    hog_features_2 = hog_features(img_converted[:,:,1], orient, pix_per_cell, cells_per_block, feature_vec=True)
-    hog_features_3 = hog_features(img_converted[:,:,2], orient, pix_per_cell, cells_per_block, feature_vec=True)
+    if useAll == True:
+        for i in range(3):
+            hog = hog_features(img_converted[:,:,i], orient, pix_per_cell, cells_per_block, feature_vec=True)    
+            features.extend(hog)
+    else:
+        img_gray = to_colorspace(img, 'Gray')
+        hog = hog_features(img_gray, orient, pix_per_cell, cells_per_block, feature_vec=True)    
+        features.extend(hog)
     
-    col_features = color_hist(img_converted, nbins=color_bins)
-    
-    spat_features = bin_spatial(img_converted, size=spat_size)
+    if useCols == True:
+        col_features = color_hist((img_converted * 255).astype(np.uint8), nbins=color_bins)
+        spat_features = bin_spatial(img_converted, size=spat_size)
+        features.extend(col_features)
+        features.extend(spat_features)
     
     if label is None:
-        return np.concatenate((hog_features_1, hog_features_2, hog_features_3, col_features, spat_features)).tolist()
+        return np.concatenate(features).tolist()
     else:
-        assert(imgname is not None)
-        return np.concatenate(([imgname],hog_features_1, hog_features_2, hog_features_3, col_features, spat_features, [label])).tolist()
+        # This branch is used when a trainingset is generated. Here, the image path and the label
+        # is added to the vector
+        assert(imgname is not None)        
+        return np.concatenate(([imgname], features, [label])).tolist()
 
 
 def generate_datasets():
@@ -152,14 +161,15 @@ def generate_datasets():
     for i in range(9,10,1):
         orient = i
     
-        filename = 'dataset_8_2_{}_3_32.tsv'.format(orient)
+        filename = 'dataset_8_2_{}_3_16_3_16_16_all.tsv'.format(orient)
         
         print('generating ', filename)
         
-        num_features = calc_number_of_features(pix_per_cell, cell_per_block, orient) * 3 # because all three channels are used
+        num_features = calc_number_of_features(pix_per_cell, cell_per_block, orient)
         
         # 3*16 color bins, 16*16*3 spatial bins
-        header = create_header(num_features + 3 * 16 + 16*16*3, pix_per_cell, cell_per_block, orient)
+        header = create_header(num_features*3 + 3*16 + 16*16*3, pix_per_cell, cell_per_block, orient)
+        #header = create_header(num_features, pix_per_cell, cell_per_block, orient)
 
         feature_rows = []    
         counter = 0
@@ -167,8 +177,7 @@ def generate_datasets():
         # iterate over each car image
         for car in cars:
             img = mpimg.imread(car)
-            row = create_feature_row(img, pix_per_cell, cell_per_block, orient, label=CAR, imgname=car)
-                       
+            row = create_feature_row(img, pix_per_cell, cell_per_block, orient, label=CAR, imgname=car, useAll=True, useCols=True)
             feature_rows.append(row)
             
             if  counter % 500 == 0:
@@ -186,7 +195,7 @@ def generate_datasets():
         # iterate over each non-car image
         for notcar in notcars:
             img = mpimg.imread(notcar)
-            row = create_feature_row(img, pix_per_cell, cell_per_block, orient, label=NOTCAR, imgname=notcar)
+            row = create_feature_row(img, pix_per_cell, cell_per_block, orient, label=NOTCAR, imgname=notcar, useAll=True, useCols=True)
             feature_rows.append(row)
             
             if  counter % 500 == 0:

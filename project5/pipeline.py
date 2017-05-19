@@ -9,6 +9,7 @@ import collections
 import numpy as np
 import cv2
 import glob
+import time
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
@@ -31,36 +32,45 @@ import dataset_generator as dg
 
 
 # Define a single function that can extract features using hog sub-sampling and make predictions
-def find_cars(img, classifier, x_scaler, scale=1, ystart=400, ystop=656, orient=6, pix_per_cell=8, cells_per_block=2, colors=[(0,255,0), (255,0,0)]):
+def find_cars(img, classifier, x_scaler, scale=1, ystart=400, ystop=656, 
+              orient=6, pix_per_cell=8, cells_per_block=2,
+              useAll=True, useCol=False, xstart=0):
     
+    xstart_scaled = xstart
     draw_img = np.copy(img)    
-    img_tosearch = img[ystart:ystop,:,:]
+    img_tosearch = img[ystart:ystop,xstart:-1,:]
     
     if scale != 1:
         imshape = img_tosearch.shape
         img_tosearch = cv2.resize(img_tosearch, (np.int(imshape[1]/scale), np.int(imshape[0]/scale)))
+        xstart_scaled = np.int(xstart/scale)
         
     img_converted = cv2.cvtColor(img_tosearch, cv2.COLOR_RGB2YCrCb)
     
     # Define blocks and steps as above
     nxblocks = (img_converted.shape[1] // pix_per_cell) - cells_per_block + 1
     nyblocks = (img_converted.shape[0] // pix_per_cell) - cells_per_block + 1 
-    
-    # 64 was the orginal sampling rate, with 8 cells and 8 pix per cell
+        
+    # sliding windo size
     window = 64
     nblocks_per_window = (window // pix_per_cell) - cells_per_block + 1
     cells_per_step = 2  # Instead of overlap, define how many cells to step
     nxsteps = (nxblocks - nblocks_per_window) // cells_per_step
     nysteps = (nyblocks - nblocks_per_window) // cells_per_step
 
-    # Compute individual channel HOG features for the entire image  
+    # Compute individual channel HOG features for the entire image    
     hog1 = dg.hog_features(img_converted[:,:,0], orient, pix_per_cell, cells_per_block)    
     hog2 = dg.hog_features(img_converted[:,:,1], orient, pix_per_cell, cells_per_block)
     hog3 = dg.hog_features(img_converted[:,:,2], orient, pix_per_cell, cells_per_block)
-            
+        
+    #img_gray = cv2.cvtColor(img_tosearch, cv2.COLOR_RGB2GRAY)
+    #hog = dg.hog_features(img_gray, orient, pix_per_cell, cells_per_block)
+                   
     # contains all boxes which may contain a vehicle
     boxes = []
     
+    tstart = time.time()
+
     for xb in range(nxsteps):
         for yb in range(nysteps):
             ypos = yb*cells_per_step
@@ -71,33 +81,41 @@ def find_cars(img, classifier, x_scaler, scale=1, ystart=400, ystop=656, orient=
             
             subimg = img_converted[ytop:ytop+window, xleft:xleft+window]
                        
-            # Extract HOG for this patch
+            # Extract HOG for this patch            
             hog_features_1 = hog1[ypos:ypos+nblocks_per_window, xpos:xpos+nblocks_per_window].ravel() 
             hog_features_2 = hog2[ypos:ypos+nblocks_per_window, xpos:xpos+nblocks_per_window].ravel() 
-            hog_features_3 = hog3[ypos:ypos+nblocks_per_window, xpos:xpos+nblocks_per_window].ravel() 
+            hog_features_3 = hog3[ypos:ypos+nblocks_per_window, xpos:xpos+nblocks_per_window].ravel()
             
-            # Extract color features                              
-            col_features = dg.color_hist(subimg, nbins=16)
+            #hog_features_1 = hog[ypos:ypos+nblocks_per_window, xpos:xpos+nblocks_per_window].ravel() 
+            col_features = dg.color_hist((subimg*255).astype(np.uint8), nbins=16)
             spat_features = dg.bin_spatial(subimg, size=(16, 16))
-
+            
             # predict
-            X = np.concatenate((hog_features_1, hog_features_2, hog_features_3, col_features, spat_features))            
+            #X = np.concatenate((hog_features_1, col_features, spat_features))
+            #X = np.concatenate((hog_features_1, hog_features_2, hog_features_3))
+            X = np.concatenate((hog_features_1, hog_features_2, hog_features_3, col_features, spat_features))
             X = [np.array(X).astype(np.float64)]            
             scaled_features = x_scaler.transform(X)        
             test_prediction = classifier.predict(scaled_features)
+            
+            xleft += xstart_scaled
             
             if test_prediction == 1:
                 xbox_left = np.int(xleft*scale)
                 ytop_draw = np.int(ytop*scale)
                 win_draw = np.int(window*scale)                
                 boxes.append([(xbox_left, ytop_draw+ystart), (xbox_left+win_draw,ytop_draw+win_draw+ystart)])                
-                #cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),colors[0],2)
-            #else:
-            #    xbox_left = np.int(xleft*scale)
-            #    ytop_draw = np.int(ytop*scale)
-            #    win_draw = np.int(window*scale)
-            #    cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),colors[1],2)
+                #cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),(0,255,0),6)
+            """
+            else:
+                xbox_left = np.int(xleft*scale)
+                ytop_draw = np.int(ytop*scale)
+                win_draw = np.int(window*scale)
+                cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),(255,0,0),2)
+            """
 
+    tend = time.time()
+    #print("duration: ", round(tend-tstart, 5))
 
     return draw_img, boxes
 
@@ -128,21 +146,11 @@ def draw_labeled_bboxes(img, labels):
         nonzerox = np.array(nonzero[1])
         # Define a bounding box based on min/max x and y
         bbox = ((np.min(nonzerox), np.min(nonzeroy)), (np.max(nonzerox), np.max(nonzeroy)))
-        # Draw the box on the image        
+        # Draw the box on the image
         cv2.rectangle(img, bbox[0], bbox[1], (0,0,255), 6)
-    # Return the image
     return img
 
-
-LeftLine = line.Line(max_lines=3)
-RightLine = line.Line(max_lines=3)
-img_counter = 0
-
-def detect_lane(img, mtx, dist, M, Minv):
-    global img_counter
-    global LeftLine
-    global RightLine
-    
+def detect_lane(img, mtx, dist, M, Minv, LeftLine, RightLine):    
     # undistort image
     img_undist = helpers.undistort(img, mtx, dist)
     
@@ -200,23 +208,33 @@ def detect_lane(img, mtx, dist, M, Minv):
     if not is_valid_line:
         LeftLine.reset()
         RightLine.reset()
-        
-    if img_counter == 0:
-        plt.imsave("./output_images/lane_visualization.jpg", result_img)
-        img_counter += 1
     
     # return final image
     return result_img
         
-def detect_cars(img, clf, x_scaler, box_deque, search_windows):    
+def detect_cars(img, clf, x_scaler, box_deque, search_windows, plot=False, threshold=1): 
+    """
+    Uses a sliding window search to detect possible vehicles in an image. Sliding windows
+    of different sizes at different locations in the image are used. Smaller windows shall
+    detect objects which seem to be far away and larger windows shall to detect vehicles
+    in the near vincinity.
+    Vehicle canditates  are represented as boxes. From theses boxes a heatmap is generated and thresholded, i.e.
+    keeps the values of pixels whose value is greater than than a given 'threshold'. The other
+    pixels are set to 0. This produces one or more blobs where one blob shoud represents one
+    vehicle. Blob detection is done in the label() function in scipy.ndimage.measurements.
+    Finally a bounding box is drawn around each detected blob.
+    """
+    
+    # The classifier was trained whith images in png format - pixel values are between 0 and 1
     img_copy = img.copy().astype(np.float32)/255
-    heat = np.zeros_like(img[:,:,0]).astype(np.float)
+   
     
     box_list = []
     images_with_boxes = []
     
+    # search for cars with different sliding window sizes
     for sw in search_windows:
-        img_hog, boxes = find_cars(img_copy, clf, x_scaler, scale=sw[0], ystart=sw[1][0], ystop=sw[1][1], orient=9,  colors=sw[3])
+        img_hog, boxes = find_cars(img_copy, clf, x_scaler, scale=sw[0], ystart=sw[1][0], ystop=sw[1][1], orient=9, xstart=sw[2][0])
                 
         if len(boxes) > 0:
             box_list.extend(boxes)
@@ -228,22 +246,21 @@ def detect_cars(img, clf, x_scaler, box_deque, search_windows):
     all_boxes = []
     for boxes in box_deque:
         all_boxes.extend(boxes)
-        
+   
+    heat = np.zeros_like(img[:,:,0]).astype(np.float)     
     heat = add_heat(heat,all_boxes)
 
     # Apply threshold to help remove false positives
-    heat = apply_threshold(heat,5)
+    heat = apply_threshold(heat, threshold)
 
     # Visualize the heatmap when displaying    
     heatmap = np.clip(heat, 0, 255)    
-    #histogram = np.sum(heatmap, axis=0)
-
+    
     # Find final boxes from heatmap using label function
     labels = label(heatmap)
     draw_img = draw_labeled_bboxes(np.copy(img), labels)    
     
-    plot = False
-    show_all = False
+    show_all = True
     
     if plot == True:
         fig = plt.figure(figsize=(20,8))
@@ -252,7 +269,7 @@ def detect_cars(img, clf, x_scaler, box_deque, search_windows):
         if show_all:
             plt.subplot(pos)
             plt.imshow(img)
-            plt.title(img_name)
+            plt.title("Original")
             
             pos += 1
             
@@ -260,7 +277,7 @@ def detect_cars(img, clf, x_scaler, box_deque, search_windows):
             for iwb in images_with_boxes:            
                 plt.subplot(pos)
                 plt.imshow(iwb)
-                plt.title(search_windows[cnt][2])
+                plt.title(search_windows[cnt][3])
                 cnt += 1
                 pos += 1
                         
@@ -276,7 +293,7 @@ def detect_cars(img, clf, x_scaler, box_deque, search_windows):
         else: 
             plt.subplot(131)
             plt.imshow(img)
-            plt.title(img_name)
+            plt.title("Original")
             plt.subplot(132)
             plt.imshow(heatmap, cmap='hot')
             plt.title('Heatmap')
@@ -287,10 +304,10 @@ def detect_cars(img, clf, x_scaler, box_deque, search_windows):
     
     return draw_img
 
-def process_image(image, mtx, dist, M, Minv, clf, x_scaler, box_deque, search_windows):
-    img = detect_cars(image, clf, x_scaler, box_deque, search_windows)
-    img = detect_lane(img, mtx, dist, M, Minv)
-    
+def process_image(image, mtx, dist, M, Minv, LeftLine, RightLine, clf, x_scaler, box_deque, search_windows, threshold=1):
+    img = detect_cars(image, clf, x_scaler, box_deque, search_windows, threshold)
+    img = detect_lane(img, mtx, dist, M, Minv, LeftLine, RightLine)
+
     return img
 
 
@@ -302,37 +319,54 @@ def main():
     M = params['M']
     Minv = params['Minv']
     
+    LeftLine = line.Line(max_lines=3)
+    RightLine = line.Line(max_lines=3)
+    
     # Load svm model and scaler
-    model = joblib.load('svm_dataset_8_2_9_3_32.pkl')
+    #model = joblib.load('svm_tuned_dataset_8_2_9_3_16_3_16_16_gray_with_color.pkl')
+    #model = joblib.load('svm_tuned_dataset_8_2_9_hog_only.pkl')
+    model = joblib.load('svm_tuned_dataset_8_2_9_3_16_3_16_16_all.pkl')    
     clf = model['clf']
     x_scaler = model['scaler']
     
     # stores boxes of the last n frames
     box_deque = collections.deque(maxlen=10)
-    
-    #search_windows = [(1, [400, 500],  "Img 64x64", [(0,255,0), (255,0,0)]),
-    #                   (1.5, [400, 656],  "Img 96x96", [(0,255,0), (200,200,0)]),
-    #                   (2,   [450, None],  "Img 128x128",[(0,255,0), (120,120,0)]),
-    #                   (2.5, [450, None], "Img 160x160",[(0,255,0), (80,120,160)])]  # 160x160
-    
+
+    """
+    search_windows = [(1, [400, 500],  "Img 64x64", [(0,255,0), (255,0,0)]),            # 64x64
+                       (1.5, [400, 656],  "Img 96x96", [(0,255,0), (200,200,0)]),       # 96x96
+                       (2,   [450, None],  "Img 128x128",[(0,255,0), (120,120,0)]),     # 128x128
+                       (2.5, [450, None], "Img 160x160",[(0,255,0), (80,120,160)])]     # 166x 160
+
     search_windows = [(1.5, [400, 656],  "Img 96x96", [(0,255,0), (200,200,0)]),
-                      (2,   [450, None],  "Img 128x128",[(0,255,0), (120,120,0)]),
-                      (2.5, [450, None], "Img 160x160",[(0,255,0), (80,120,160)])]  # 160x160    
+                      (2,   [400, None],  "Img 128x128",[(0,255,0), (120,120,0)]),
+                      (2.5, [432, None], "Img 160x160",[(0,255,0), (80,120,160)])]  # 160x160    
+    """
+    #search_windows = [(1, [400, 500],  "Img 64x64", [(0,255,0), (255,0,0)])]
+    
+    search_windows = [(1.5, [400, 592], [416, None], "Img 96x96"),
+                      (2,   [448, None], [380, None],  "Img 128x128",)]
+    
+    process = lambda image: process_image(image, mtx, dist, M, Minv, LeftLine, RightLine, clf, x_scaler, box_deque, search_windows, threshold=0)
         
-    process = lambda image: process_image(image, mtx, dist, M, Minv, clf, x_scaler, box_deque, search_windows)
+    if False:
+        test_images = glob.glob('output_images/*.jpg')
+        test_images.sort(key=os.path.getmtime)
+        fig = plt.figure(figsize=(20,12))
+        tstart = time.time()
+        for img_name in test_images[0:2]:
+            img = mpimg.imread(img_name)
+            detect_cars(img, clf, x_scaler, box_deque, search_windows, plot=True, threshold=5)
+        tend = time.time()
+        print("duration: ", round(tend-tstart, 5))
+        
+    else:
+        output = 'project_video_processed_hogs_and_cols.mp4'
+        clip = VideoFileClip("project_video.mp4")    
+        #output = 'test_video_processed_hog_and_cols.mp4'
+        #clip = VideoFileClip("test_video.mp4")    
+        output_clip = clip.fl_image(process) 
+        output_clip.write_videofile(output, audio=False)
 
-    output = 'project_video_processed.mp4'
-    clip = VideoFileClip("project_video.mp4")    
-    #output = 'test_video_processed2.mp4'
-    #clip = VideoFileClip("test_video.mp4")    
-    output_clip = clip.fl_image(process) 
-    output_clip.write_videofile(output, audio=False)
-
-#test_images = glob.glob('test_images/*.jpg')
-
-#for img_name in test_images:
-    #img = mpimg.imread(img_name)
-    #process_image(img, plot=True, convert=False)
-    #mpimg.imsave(img_name, img)
 
 if __name__ == "__main__": main()

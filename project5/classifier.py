@@ -53,19 +53,6 @@ def plot_confusion_matrix(cm, classes,
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
 
-def train_svc(X, y, tune=True):
-    print("training svm...")
-    
-    if tune == True:
-        parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
-        svr = svm.SVC()
-        clf = GridSearchCV(svr, parameters)
-    else:
-        clf = svm.SVC( kernel='linear', C=1)
-        
-    clf.fit(X, y)
-    return clf
-
 def calc_metrics(y_test, y_pred):    
     accuracy = metrics.accuracy_score(y_test, y_pred)
     precision = metrics.precision_score(y_test, y_pred)
@@ -83,19 +70,16 @@ def evaluate(classifier, X_test, y_test):
     accuracy, precision, recall, f1score, cnf_matrix = calc_metrics(y_test, y_pred)
     return accuracy, precision, recall, f1score, cnf_matrix
 
-def dump(clf, scaler, filename):
+def dump(clf, scaler, metrics, best_params, filename):
     # store tuned model
     print('dumping model and scaler')
-    joblib.dump({'clf' : clf, 'scaler' : scaler}, filename)
+    joblib.dump({'clf' : clf, 'scaler' : scaler, 'metrics' : metrics, 'bestparams' : best_params}, filename)
     
 def load(filename):
     # load model
     return joblib.load( filename )
 
-def train_models():
-    #filenames = ['dataset_8_2_6_3_32.tsv', 'dataset_8_2_7_3_32.tsv', 'dataset_8_2_8_3_32.tsv', 'dataset_8_2_9_3_32.tsv']
-    filenames = ['dataset_8_2_9_3_32.tsv']
-    
+def train_models(filenames, tune_model=True):   
     classifiers = []
     
     for filename in filenames:
@@ -114,44 +98,45 @@ def train_models():
         X = shuffled_dataset[:,0:num_features-1].astype(np.float64)        
         y = np.concatenate(shuffled_dataset[:,num_features-1:num_features].reshape(1,-1))
         
-        print(X.shape, ' ', y.shape)
-        
         # Normalize features
         # Fit a per-column scaler
         X_scaler = StandardScaler().fit(X)
         # Apply the scaler to X
         scaled_X = X_scaler.transform(X)
         
-        #X_train, X_test, y_train, y_test = train_test_split(scaled_X, y, test_size=0.2, random_state=42)
         X_train, X_test, y_train, y_test = train_test_split(scaled_X, y, test_size=0.2, random_state=42)
         
-        # train a support vector machine
-        svm = train_svc(X_train, y_train, tune=False)
+        if tune_model == True:
+            parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
+            svr = svm.SVC()
+            clf = GridSearchCV(svr, parameters)
+        else:
+            clf = svm.SVC( kernel='linear', C=1)
+            
+        clf.fit(X_train, y_train)
         
         # eval model
         # calculate some metrics
         accuracy, precision, recall, f1score, cnf_matrix = evaluate(svm, X_test, y_test)
+        metrics = {'accuracy' : accuracy, 'precision' : precision, 'recall' : recall, 'f1score' : f1score, 'cnfmatrix' : cnf_matrix}
         
         print('Accuracy ', accuracy)
         print('Precision ', precision)
         print('Recall ', recall)
         print('F1 score ', f1score)
         
-        np.set_printoptions(precision=2)
-        
         # Plot non-normalized confusion matrix
+        np.set_printoptions(precision=2)
         plt.figure()
         plot_confusion_matrix(cnf_matrix, classes=['NoCar', 'Car'], title='Confusion matrix, without normalization')
-        
-        
+
+        # serialize model, scaler and metrics                
         base = os.path.basename(filename)
         name = os.path.splitext(base)
-        # serialize model
-        dump(svm, X_scaler, "svm_{}.pkl".format(name[0]))
-        
-        classifiers.append(svm)
-    return classifiers
+        dumpfile = "svm_tuned_{}.pkl".format(name[0]) if tune_model == True else "svm_{}.pkl".format(name[0])
+        dump(clf, X_scaler, metrics clf.best_params_, dumpfile)
 
-
-#train_models()
+filenames = ['dataset_8_2_9_hog_only.tsv', 'dataset_8_2_9_3_16_3_16_16_gray_with_color.tsv', 'dataset_8_2_9_3_16_3_16_16_all.tsv']
+#filenames = ['dataset_8_2_9_3_16_3_16_16_all.tsv'] 
+train_models(filenames)
 
