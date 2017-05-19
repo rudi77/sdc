@@ -74,12 +74,23 @@ Here is an example of a randomly chosen car and non-car image.
 
 #### Histogram of Oriented Gradients (HOG)
 The [histogram of oriented gradients (HOG)](https://en.wikipedia.org/wiki/Histogram_of_oriented_gradients) is a feature vector which can be used to detect objects like vehicles in image processing. The technique counts occurrences of gradient orientation in localized portions of an image. 
-####1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
-Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
+A HoG depends on three parameters:
+- orientation: the number of oriented gradients that shall be taken into account
+- pixels_per_cell: the number of pixels per cell
+- cells_per_block: the number of cells per block
+
+Here is an example using the `YCrCb` color space and different values for the HOG parameters:
+
+| Color   |  Orienations |  PixelPerCell |  CellsPerBlock |
+| ------- |:------------:|:-------------:|:--------------:| 
+| `YCrCb` | [6,7,8,9]    | [8, 16]       | [2,4]          |
+
+
 ![][image2]
 
-The code for this step is contained in the first code cell of the IPython notebook (or in lines # through # of the file called `some_file.py`).  
+The code for this step is contained in`hog_features()` of the file called `dataset_generator.py`. 
+
 #### Color Histograms
 I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
 
