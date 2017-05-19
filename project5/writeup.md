@@ -28,7 +28,9 @@ The goals / steps of this project are the following:
 [image1]: ./output_images/car_notcar.png
 [image2]: ./output_images/hog_features.png
 [image3]: ./output_images/color_histogram.png
+[image3_2]: ./output_images/color_histogram_notcar.png
 [image4]: ./output_images/spatial_binning.png
+[image4_2]: ./output_images/spatial_binning_notcar.png
 
 ## Files in this repository
 This repository contains the following files.
@@ -53,8 +55,7 @@ of the following steps.
 
 #### Preprocessing ####
 1. Generate a dataset.
-2. Use the generated dataset to train a classifier.
-3. Serialize the model to a file so that it can be later used in the actual image processing pipeline
+2. Train a classifier to detect vehicles
 
 #### Image Processing Pipeline ####
 1. Use a sliding window search to detect possible vehicles
@@ -66,7 +67,7 @@ of the following steps.
 Preprocessing includes dataset generation und training a classifier.
 
 ### 1. Dataset Generation
-I downloaded the [vehicle](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/vehicles.zip) and [non-vehicles](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/non-vehicles.zip) dataset which was provided by [Udacity](https://udacity.com) and copied them into two separate folders respectively. Then I iterated over each  `vehicle` and `non-vehicle` image and computed a feature vector. I implemented this step in the `create_feature_row()` function in the `dataset_generator.py` file. I also added the corresponding label/class (CAR=1, NOTCAR=0) to the end of the feature vector. Finally, I generated a [pandas](http://pandas.pydata.org/) dataframe from the feature vectors and stored the frame as csv file. This file is later used to generate training and tet sets for the classifier.
+I downloaded the [vehicle](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/vehicles.zip) and [non-vehicles](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/non-vehicles.zip) dataset which was provided by [Udacity](https://udacity.com) and copied them into two separate folders respectively. Then I iterated over each  `vehicle` and `non-vehicle` image and computed a feature vector. I implemented this step in the `create_feature_row()` function in the `dataset_generator.py` file. I also added the corresponding label/class (CAR=1, NOTCAR=0) to the end of the feature vector. Finally, I generated a [pandas](http://pandas.pydata.org/) dataframe from the feature vectors and stored the frame as csv file. This file was later used to generate training and test sets for the classifier.
 
 Here is an example of a randomly chosen car and non-car image.
 
@@ -75,48 +76,91 @@ Here is an example of a randomly chosen car and non-car image.
 #### Histogram of Oriented Gradients (HOG)
 The [histogram of oriented gradients (HOG)](https://en.wikipedia.org/wiki/Histogram_of_oriented_gradients) is a feature vector which can be used to detect objects like vehicles in image processing. The technique counts occurrences of gradient orientation in localized portions of an image. 
 
-A HoG depends on three parameters:
+A HOG depends on three parameters:
 - orientation: the number of oriented gradients that shall be taken into account
 - pixels_per_cell: the number of pixels per cell
 - cells_per_block: the number of cells per block
 
 Here is an example using the `YCrCb` color space and different values for the HOG parameters:
 
-| Color   |  Orienations |  PixelPerCell |  CellsPerBlock |
+| Color   |  Orientations |  PixelPerCell |  CellsPerBlock |
 | ------- |:------------:|:-------------:|:--------------:| 
 | `YCrCb` | [6,7,8,9]    | [8, 16]       | [2,4]          |
 
 
 ![][image2]
 
-The code for this step is contained in`hog_features()` of the file called `dataset_generator.py`. 
+The code for this step is contained in`hog_features()` of the file `dataset_generator.py`. 
 
 #### Color Histograms
-I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
+I then explored different color spaces and color histogram as potential features. Color histograms are computed in the `color_hist()` function of the file `dataset_generator.py`
+These are two examples of color histograms of randomly picked `car` and `notcar` images.
 
 ![][image3]
 
+![][image3_2]
+
 #### Spatial Binning
+Finally, I also investigated the impact of spatial binning on the classifiers ability to detect vehicles. Here are two examples. 
 
 ![][image4]
 
-####2. Explain how you settled on your final choice of HOG parameters.
+![][image4_2]
 
-I tried various combinations of parameters and...
+#### Feature Vector
+My final feature vector consists of the following features:
+- HOG features: For each channel
+- Color histogram: For each channel
+- Spatial binning
 
+| Color   |  Orientation |  PixelPerCell |  CellsPerBlock | NBins | BinsRange |  Spatial BinningSize |
+| ------- |:------------:|:-------------:|:--------------:|:-----:|:---------:|:----------------:| 
+| `YCrCb` | 9            | 8             |  2             | 16    |  0 - 256  | 16x16            |
 
-### Training a Support Vector Machine
-####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
+### 2. Training a Support Vector Machine
+I trained a Support Vector Machine (SVM) as vehicle classifier/detector. Therefore, I loaded the previously generated dataset into memory, shuffled it and split it into a trainingset and testset. For the testset I used 20% of the total dataset. Trainingsets and testsets are normalized and then fed to the svm. I've also applied a GridSearch for hyper parameter tunings. After model evaluation I get the following metrics for it:
 
-I trained a linear SVM using...
+|  Metric   |  Value          |
+|:---------:|:---------------:|
+| Accuracy  | 0.995495495495 | 
+| Precision | 0.99769186382  |
+| Recall    | 0.993107409535 |
+| F1 score  | 0.995394358089 |
+ 
+The code can be found in the file `classifier.py` and the svm model is generated in the `train_models()` functions. The following lines are the most important ones: First I shuffle the dataset. Then I normalize the features. Therefore I use scikits `StandardScaler`. Then I create a training and a testset and fit the svm. Finally, I dump the model, the scaler, some metrices and the best_params to a file.
+```python
+        shuffled_dataset = shuffle(dataset.values)        
+        shuffled_dataset = shuffle(shuffled_dataset)
+        
+        X = shuffled_dataset[:,0:num_features-1].astype(np.float64)        
+        y = np.concatenate(shuffled_dataset[:,num_features-1:num_features].reshape(1,-1))
+        
+        # Normalize features
+        # Fit a per-column scaler
+        X_scaler = StandardScaler().fit(X)
+        # Apply the scaler to X
+        scaled_X = X_scaler.transform(X)
+        
+        X_train, X_test, y_train, y_test = train_test_split(scaled_X, y, test_size=0.2, random_state=42)
+        
+        if tune_model == True:
+            parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
+            svr = svm.SVC()
+            clf = GridSearchCV(svr, parameters)
+        else:
+            clf = svm.SVC( kernel='linear', C=1)
+            
+        clf.fit(X_train, y_train)
+        
+        ...
+        
+         dump(clf, X_scaler, metrics clf.best_params_, dumpfile)
+```
 
-## Detecting Vechicles - Sliding Window Search
+## 3. Image Processing Pipelin
 
-###Sliding Window Search
-
-####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
-
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+#### Sliding Window Search
+Sliding windows of different sizes are used to detect vehicles - actually the size of the sliding window is not really changed but search area is resized which has the same effect as changing the sliding window's size. This part is implemented in the `find_cars()` in the file `pipeline.py` and is based on the function that is provided by Udacity. The main idea is that we compute the HOGs only once and for the whole search area. Then we slide a window over this area extract the HOG features, the color histogram and spatial features, combine them to one feature vector and use the svm to predict a vehicle in this area. Potential areas will be stored and are returned to the caller for further processing. This is the most time consuming part
 
 ![alt text][image3]
 
