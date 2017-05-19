@@ -128,7 +128,35 @@ I trained a Support Vector Machine (SVM) as vehicle classifier/detector. Therefo
 | Recall    | 0.993107409535 |
 | F1 score  | 0.995394358089 |
  
-
+The code can be found in `classifier.py` and the svm model in generated in the `train_models()` functions. The following lines are the most important ones: First I shuffle the dataset. Then I normalize the features. Therefore I use scikits `StandardScaler`. Then I create a training and a testset and fit the svm. Finally, I dump the model the scaler, some metrices and the best_params to a file.
+```python
+        shuffled_dataset = shuffle(dataset.values)        
+        shuffled_dataset = shuffle(shuffled_dataset)
+        
+        X = shuffled_dataset[:,0:num_features-1].astype(np.float64)        
+        y = np.concatenate(shuffled_dataset[:,num_features-1:num_features].reshape(1,-1))
+        
+        # Normalize features
+        # Fit a per-column scaler
+        X_scaler = StandardScaler().fit(X)
+        # Apply the scaler to X
+        scaled_X = X_scaler.transform(X)
+        
+        X_train, X_test, y_train, y_test = train_test_split(scaled_X, y, test_size=0.2, random_state=42)
+        
+        if tune_model == True:
+            parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
+            svr = svm.SVC()
+            clf = GridSearchCV(svr, parameters)
+        else:
+            clf = svm.SVC( kernel='linear', C=1)
+            
+        clf.fit(X_train, y_train)
+        
+        ...
+        
+         dump(clf, X_scaler, metrics clf.best_params_, dumpfile)
+```
 
 ## Detecting Vechicles - Sliding Window Search
 
