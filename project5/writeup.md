@@ -68,7 +68,7 @@ of the following steps.
 Preprocessing includes dataset generation und training a classifier.
 
 ### 1. Dataset Generation
-I downloaded the [vehicle](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/vehicles.zip) and [non-vehicles](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/non-vehicles.zip) dataset which was provided by [Udacity](https://udacity.com) and copied them into two separate folders respectively. Then I iterated over each  `vehicle` and `non-vehicle` image and computed a feature vector. I implemented this step in the `create_feature_row()` function in the `dataset_generator.py` file. I also added the corresponding label/class (CAR=1, NOTCAR=0) to the end of the feature vector. Finally, I generated a [pandas](http://pandas.pydata.org/) dataframe from the feature vectors and stored the frame as csv file. This file is later used to generate training and tet sets for the classifier.
+I downloaded the [vehicle](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/vehicles.zip) and [non-vehicles](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/non-vehicles.zip) dataset which was provided by [Udacity](https://udacity.com) and copied them into two separate folders respectively. Then I iterated over each  `vehicle` and `non-vehicle` image and computed a feature vector. I implemented this step in the `create_feature_row()` function in the `dataset_generator.py` file. I also added the corresponding label/class (CAR=1, NOTCAR=0) to the end of the feature vector. Finally, I generated a [pandas](http://pandas.pydata.org/) dataframe from the feature vectors and stored the frame as csv file. This file was later used to generate training and test sets for the classifier.
 
 Here is an example of a randomly chosen car and non-car image.
 
@@ -94,7 +94,7 @@ Here is an example using the `YCrCb` color space and different values for the HO
 The code for this step is contained in`hog_features()` of the file `dataset_generator.py`. 
 
 #### Color Histograms
-I then explored different color spaces and color histogram as potential features. Color histgrams car computed in the `color_hist()` of the file `dataset_generator.py`
+I then explored different color spaces and color histogram as potential features. Color histograms are computed in the `color_hist()` function of the file `dataset_generator.py`
 These are two examples of color histograms of randomly picked `car` and `notcar` images.
 
 ![][image3]
@@ -107,6 +107,12 @@ Finally, I also investigated the impact of spatial binning on the classifiers ab
 ![][image4]
 
 ![][image4_2]
+
+#### Feature Vector
+My final feature vector consists of the following features:
+- HOG features: Converted image into `YCrCb' color space and generated HOG for each channel. HOG parameters: `orientation=9`, `pix_per_cell=8` and `cells_per_block=2`
+- Color histogram: Also in `YCrCb' color space with `nbins=16` and `bins_range=(0, 256)`
+- Spatial binning: Resized images to 16x16.
 
 ### Training a Support Vector Machine
 ####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
