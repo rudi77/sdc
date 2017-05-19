@@ -49,7 +49,7 @@ This repository contains the following files.
 
 ## Vehicle Detection Pipeline
 In the following sections I will describe my pipeline that detects and visualizes vehicles and lane lines. The pipeline consists
-of the following steps. Each step is applied to each single video frame.
+of the following steps.
 
 #### Preprocessing ####
 1. Generate a dataset.
@@ -59,16 +59,15 @@ of the following steps. Each step is applied to each single video frame.
 #### Image Processing Pipeline ####
 1. Use a sliding window search to detect possible vehicles
 2. Generate a heatmap. The heatmap is used to reduce false positives as well as to identify vehicles
-3. Suround the detected vehicles with a bounding box
-
-#### Lane Line Detection ####
-1. Detect lane lines
+3. Mark detected vehicles with a bounding box
+4. Detect lane lines
 
 ## Preprocessing
-The following sections describe the necessary steps that were taken to implement a working vehicle classifier.
+Preprocessing includes dataset generation und training a classifier.
 
 ### 1. Dataset Generation
-I downloaded the [vehicle](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/vehicles.zip) and [non-vehicles](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/non-vehicles.zip) dataset which was provided by [Udacity](https://udacity.com) and copied them into separate folders. Then I iterated over each  `vehicle` and `non-vehicle` and computed a feature vector. I implemented this step in the `create_feature_row()` function in the `dataset_generator.py` file. I also added the corresponding label/class (CAR=1, NOTCAR=0) to the end of the feature vector. Finally, I generated a [pandas](http://pandas.pydata.org/) dataframe from the feature vectors and stored the frame as csv file. 
+I downloaded the [vehicle](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/vehicles.zip) and [non-vehicles](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/non-vehicles.zip) dataset which was provided by [Udacity](https://udacity.com) and copied them into two separate folders respectively. Then I iterated over each  `vehicle` and `non-vehicle` image and computed a feature vector. I implemented this step in the `create_feature_row()` function in the `dataset_generator.py` file. I also added the corresponding label/class (CAR=1, NOTCAR=0) to the end of the feature vector. Finally, I generated a [pandas](http://pandas.pydata.org/) dataframe from the feature vectors and stored the frame as csv file. This file is later used to generate training and tet sets for the classifier.
+
 Here is an example of a randomly chosen car and non-car image.
 ![][image1]
 
