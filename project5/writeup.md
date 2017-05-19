@@ -110,8 +110,8 @@ Finally, I also investigated the impact of spatial binning on the classifiers ab
 
 #### Feature Vector
 My final feature vector consists of the following features:
-- HOG features: Converted image into `YCrCb' color space and generated HOG for each channel. HOG parameters: `orientation=9`, `pix_per_cell=8` and `cells_per_block=2`
-- Color histogram: Also in `YCrCb' color space with `nbins=16` and `bins_range=(0, 256)`
+- HOG features: Converted image into `YCrCb` color space and generated HOG for each channel. HOG parameters: `orientation=9`, `pix_per_cell=8` and `cells_per_block=2`
+- Color histogram: Also in `YCrCb` color space with `nbins=16` and `bins_range=(0, 256)`
 - Spatial binning: Resized images to 16x16.
 
 ### Training a Support Vector Machine
