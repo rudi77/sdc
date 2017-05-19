@@ -32,6 +32,10 @@ The goals / steps of this project are the following:
 [image4]: ./output_images/spatial_binning.png
 [image4_2]: ./output_images/spatial_binning_notcar.png
 
+[image5]: ./output_images/empty_regions.png
+[image6]: ./output_images/hot_regions.png
+
+
 ## Files in this repository
 This repository contains the following files.
 #### Vehicle detection ####
@@ -159,16 +163,21 @@ The code can be found in the file `classifier.py` and the svm model is generated
 
 ## 3. Image Processing Pipelin
 
-#### Sliding Window Search
-Sliding windows of different sizes are used to detect vehicles - actually the size of the sliding window is not really changed but search area is resized which has the same effect as changing the sliding window's size. This part is implemented in the `find_cars()` in the file `pipeline.py` and is based on the function that is provided by Udacity. The main idea is that we compute the HOGs only once and for the whole search area. Then we slide a window over this area extract the HOG features, the color histogram and spatial features, combine them to one feature vector and use the svm to predict a vehicle in this area. Potential areas will be stored and are returned to the caller for further processing. This is the most time consuming part
+#### Sliding Window Search and Heatmap
+Sliding windows of different sizes are used to detect vehicles - actually the size of the sliding window is not really changed but search area is resized which has the same effect as changing the sliding window's size. This part is implemented in the `find_cars()` in the file `pipeline.py` and is based on the function that was provided in the Udacity lectures. The main idea is that we compute the HOGs only once and for the whole search area. Then we slide a window over this area extract the HOG features, the color histogram and spatial features, combine them to one feature vector and use the svm to predict a vehicle in this area. Potential areas are stored as rectangles (bounding boxes) and are returned to the caller for further processing. 
+I used three different window size: 96x96, 128x128 and 160x160 respectively. The following images show the different windows as well as the generated heatmaps.
 
-![alt text][image3]
+![][image5]
+
+![][image6]
+
+
+
 
 ####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
 Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
 
-![alt text][image4]
 ---
 
 
