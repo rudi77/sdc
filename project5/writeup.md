@@ -55,8 +55,7 @@ of the following steps.
 
 #### Preprocessing ####
 1. Generate a dataset.
-2. Use the generated dataset to train a classifier.
-3. Serialize the model to a file so that it can be re-used later in the actual image processing pipeline
+2. Train a classifier to detect vehicles
 
 #### Image Processing Pipeline ####
 1. Use a sliding window search to detect possible vehicles
@@ -118,7 +117,7 @@ My final feature vector consists of the following features:
 | ------- |:------------:|:-------------:|:--------------:|:-----:|:---------:|:----------------:| 
 | `YCrCb` | 9            | 8             |  2             | 16    |  0 - 256  | 16x16            |
 
-### Training a Support Vector Machine
+### 2. Training a Support Vector Machine
 I trained a Support Vector Machine (SVM) as vehicle classifier/detector. Therefore, I loaded the previously generated dataset into memory, shuffled it and split it into a trainingset and testset. For the testset I used 20% of the total dataset. Trainingsets and testsets are normalized and then fed to the svm. I've also applied a GridSearch for hyper parameter tunings. After model evaluation I get the following metrics for it:
 
 |  Metric   |  Value          |
@@ -128,7 +127,7 @@ I trained a Support Vector Machine (SVM) as vehicle classifier/detector. Therefo
 | Recall    | 0.993107409535 |
 | F1 score  | 0.995394358089 |
  
-The code can be found in `classifier.py` and the svm model in generated in the `train_models()` functions. The following lines are the most important ones: First I shuffle the dataset. Then I normalize the features. Therefore I use scikits `StandardScaler`. Then I create a training and a testset and fit the svm. Finally, I dump the model the scaler, some metrices and the best_params to a file.
+The code can be found in the file `classifier.py` and the svm model is generated in the `train_models()` functions. The following lines are the most important ones: First I shuffle the dataset. Then I normalize the features. Therefore I use scikits `StandardScaler`. Then I create a training and a testset and fit the svm. Finally, I dump the model, the scaler, some metrices and the best_params to a file.
 ```python
         shuffled_dataset = shuffle(dataset.values)        
         shuffled_dataset = shuffle(shuffled_dataset)
@@ -158,13 +157,10 @@ The code can be found in `classifier.py` and the svm model in generated in the `
          dump(clf, X_scaler, metrics clf.best_params_, dumpfile)
 ```
 
-## Detecting Vechicles - Sliding Window Search
+## 3. Image Processing Pipelin
 
-###Sliding Window Search
-
-####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
-
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+#### Sliding Window Search
+Sliding windows of different sizes are used to detect vehicles - actually the size of the sliding window is not really changed but search area is resized which has the same effect as changing the sliding window's size. This part is implemented in the `find_cars()` in the file `pipeline.py` and is based on the function that is provided by Udacity. The main idea is that we compute the HOGs only once and for the whole search area. Then we slide a window over this area extract the HOG features, the color histogram and spatial features, combine them to one feature vector and use the svm to predict a vehicle in this area. Potential areas will be stored and are returned to the caller for further processing. This is the most time consuming part
 
 ![alt text][image3]
 
