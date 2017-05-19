@@ -27,7 +27,7 @@ The goals / steps of this project are the following:
 [//]: # (Image References)
 [image1]: ./output_images/car_notcar.png
 [image2]: ./output_images/hog_features.png
-[image3]: ./output_images/color_histogram
+[image3]: ./output_images/color_histogram.png
 [image4]: ./output_images/spatial_binning.png
 
 ## Files in this repository
@@ -69,6 +69,7 @@ Preprocessing includes dataset generation und training a classifier.
 I downloaded the [vehicle](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/vehicles.zip) and [non-vehicles](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/non-vehicles.zip) dataset which was provided by [Udacity](https://udacity.com) and copied them into two separate folders respectively. Then I iterated over each  `vehicle` and `non-vehicle` image and computed a feature vector. I implemented this step in the `create_feature_row()` function in the `dataset_generator.py` file. I also added the corresponding label/class (CAR=1, NOTCAR=0) to the end of the feature vector. Finally, I generated a [pandas](http://pandas.pydata.org/) dataframe from the feature vectors and stored the frame as csv file. This file is later used to generate training and tet sets for the classifier.
 
 Here is an example of a randomly chosen car and non-car image.
+
 ![][image1]
 
 #### Histogram of Oriented Gradients (HOG)
