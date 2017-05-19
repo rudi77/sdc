@@ -28,7 +28,9 @@ The goals / steps of this project are the following:
 [image1]: ./output_images/car_notcar.png
 [image2]: ./output_images/hog_features.png
 [image3]: ./output_images/color_histogram.png
+[image3_2]: ./output_images/color_histogram_notcar.png
 [image4]: ./output_images/spatial_binning.png
+[image4_2]: ./output_images/spatial_binning_notcar.png
 
 ## Files in this repository
 This repository contains the following files.
@@ -89,21 +91,22 @@ Here is an example using the `YCrCb` color space and different values for the HO
 
 ![][image2]
 
-The code for this step is contained in`hog_features()` of the file called `dataset_generator.py`. 
+The code for this step is contained in`hog_features()` of the file `dataset_generator.py`. 
 
 #### Color Histograms
-I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
+I then explored different color spaces and color histogram as potential features. Color histgrams car computed in the `color_hist()` of the file `dataset_generator.py`
+These are two examples of color histograms of randomly picked `car` and `notcar` images.
 
 ![][image3]
 
+![][image3_2]
+
 #### Spatial Binning
+Finally, I also investigated the impact of spatial binning on the classifiers ability to detect vehicles.
 
 ![][image4]
 
-####2. Explain how you settled on your final choice of HOG parameters.
-
-I tried various combinations of parameters and...
-
+![][image4_2]
 
 ### Training a Support Vector Machine
 ####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
