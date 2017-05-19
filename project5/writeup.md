@@ -119,7 +119,7 @@ My final feature vector consists of the following features:
 | `YCrCb` | 9            | 8             |  2             | 16    |  0 - 256  | 16x16            |
 
 ### Training a Support Vector Machine
-I trained a Support Vector Machine (SVM) as vehicle classifier/detector. Therefore, I loaded the previously generated dataset into memory, shuffled it and split it into a trainingset and testset. For the testset I used 20% of the total dataset. Trainingsets and testsets are normalized and then fed to the svm. I've also applied a GridSearch for hyper parameter tunings. The metrics of the final classifier are:
+I trained a Support Vector Machine (SVM) as vehicle classifier/detector. Therefore, I loaded the previously generated dataset into memory, shuffled it and split it into a trainingset and testset. For the testset I used 20% of the total dataset. Trainingsets and testsets are normalized and then fed to the svm. I've also applied a GridSearch for hyper parameter tunings. After model evaluation I get the following metrics for it:
 
 |  Metric   |  Value          |
 |:---------:|:---------------:|
