@@ -32,6 +32,10 @@ The goals / steps of this project are the following:
 [image4]: ./output_images/spatial_binning.png
 [image4_2]: ./output_images/spatial_binning_notcar.png
 
+[image5]: ./output_images/empty_regions.png
+[image6]: ./output_images/hot_regions.png
+
+
 ## Files in this repository
 This repository contains the following files.
 #### Vehicle detection ####
@@ -157,18 +161,22 @@ The code can be found in the file `classifier.py` and the svm model is generated
          dump(clf, X_scaler, metrics clf.best_params_, dumpfile)
 ```
 
-## 3. Image Processing Pipelin
+## 3. Image Processing Pipeline
+This is the part where vehicles are detected in each video frame.
 
 #### Sliding Window Search
-Sliding windows of different sizes are used to detect vehicles - actually the size of the sliding window is not really changed but search area is resized which has the same effect as changing the sliding window's size. This part is implemented in the `find_cars()` in the file `pipeline.py` and is based on the function that is provided by Udacity. The main idea is that we compute the HOGs only once and for the whole search area. Then we slide a window over this area extract the HOG features, the color histogram and spatial features, combine them to one feature vector and use the svm to predict a vehicle in this area. Potential areas will be stored and are returned to the caller for further processing. This is the most time consuming part
+Sliding windows of different sizes are used to detect vehicles - actually the size of the sliding window is not really changed but search area is resized which has the same effect as changing the sliding window's size. This part is implemented in the `find_cars()` in the file `pipeline.py` and is based on the function that was provided in the Udacity lectures. The main idea is that we compute the HOGs only once and for the whole search area. Then we slide a window over this area extract the HOG features, the color histogram and spatial features, combine them to one feature vector and use the svm to predict a vehicle in this area. Potential areas are stored as rectangles (bounding boxes) and are returned to the caller for further processing. 
+I used three different window size: 96x96, 128x128 and 160x160 respectively. 
 
-![alt text][image3]
+#### Heatmap
+The heatmap is used to detect vehicles as well as to filter false positives by using a certain threshold. The heatmap is the result of the accumulation of overlapping bounding boxes of several consecutive frames. The functions for heatmap generation and the final vehicle detections and visualization are `add_heat()`, `def apply_threshold()` and `def draw_labeled_bboxes()` - they can be found in the file `pipeline.py`. These functions were taken from the lectures.
 
-####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
+The following images show the sliding windows at different scales and the image processing pipeline.
 
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
+![][image5]
 
-![alt text][image4]
+![][image6]
+
 ---
 
 
@@ -178,29 +186,7 @@ Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spat
 Here's a [link to my video result](./project_video.mp4)
 
 
-####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
+## Discussion
 
-Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
-
-### Here are six frames and their corresponding heatmaps:
-
-![alt text][image5]
-
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
-![alt text][image6]
-
-### Here the resulting bounding boxes are drawn onto the last frame in the series:
-![alt text][image7]
-
-
-
----
-
-###Discussion
-
-####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
-
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
 
