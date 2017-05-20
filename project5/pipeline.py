@@ -34,16 +34,14 @@ import dataset_generator as dg
 # Define a single function that can extract features using hog sub-sampling and make predictions
 def find_cars(img, classifier, x_scaler, scale=1, ystart=400, ystop=656, 
               orient=6, pix_per_cell=8, cells_per_block=2,
-              useAll=True, useCol=False, xstart=0):
+              useAll=True, useCol=False):
     
-    xstart_scaled = xstart
     draw_img = np.copy(img)    
-    img_tosearch = img[ystart:ystop,xstart:-1,:]
+    img_tosearch = img[ystart:ystop,:,:]
     
     if scale != 1:
         imshape = img_tosearch.shape
         img_tosearch = cv2.resize(img_tosearch, (np.int(imshape[1]/scale), np.int(imshape[0]/scale)))
-        xstart_scaled = np.int(xstart/scale)
         
     img_converted = cv2.cvtColor(img_tosearch, cv2.COLOR_RGB2YCrCb)
     
@@ -57,7 +55,7 @@ def find_cars(img, classifier, x_scaler, scale=1, ystart=400, ystop=656,
     cells_per_step = 2  # Instead of overlap, define how many cells to step
     nxsteps = (nxblocks - nblocks_per_window) // cells_per_step
     nysteps = (nyblocks - nblocks_per_window) // cells_per_step
-
+    
     # Compute individual channel HOG features for the entire image    
     hog1 = dg.hog_features(img_converted[:,:,0], orient, pix_per_cell, cells_per_block)    
     hog2 = dg.hog_features(img_converted[:,:,1], orient, pix_per_cell, cells_per_block)
@@ -71,7 +69,7 @@ def find_cars(img, classifier, x_scaler, scale=1, ystart=400, ystop=656,
     
     tstart = time.time()
 
-    for xb in range(nxsteps):
+    for xb in range(nxsteps,0,-1):
         for yb in range(nysteps):
             ypos = yb*cells_per_step
             xpos = xb*cells_per_step
@@ -97,25 +95,21 @@ def find_cars(img, classifier, x_scaler, scale=1, ystart=400, ystop=656,
             X = [np.array(X).astype(np.float64)]            
             scaled_features = x_scaler.transform(X)        
             test_prediction = classifier.predict(scaled_features)
-            
-            xleft += xstart_scaled
-            
+                        
             if test_prediction == 1:
                 xbox_left = np.int(xleft*scale)
                 ytop_draw = np.int(ytop*scale)
                 win_draw = np.int(window*scale)                
                 boxes.append([(xbox_left, ytop_draw+ystart), (xbox_left+win_draw,ytop_draw+win_draw+ystart)])                
-                #cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),(0,255,0),6)
-            """
-            else:
-                xbox_left = np.int(xleft*scale)
-                ytop_draw = np.int(ytop*scale)
-                win_draw = np.int(window*scale)
-                cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),(255,0,0),2)
-            """
+                cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),(0,255,0),6)
+            #else:
+            #    xbox_left = np.int(xleft*scale)
+            #    ytop_draw = np.int(ytop*scale)
+            #    win_draw = np.int(window*scale)
+            #    cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),(255,0,0),2)
 
     tend = time.time()
-    #print("duration: ", round(tend-tstart, 5))
+    print("duration: ", round(tend-tstart, 5))
 
     return draw_img, boxes
 
@@ -234,7 +228,7 @@ def detect_cars(img, clf, x_scaler, box_deque, search_windows, plot=False, thres
     
     # search for cars with different sliding window sizes
     for sw in search_windows:
-        img_hog, boxes = find_cars(img_copy, clf, x_scaler, scale=sw[0], ystart=sw[1][0], ystop=sw[1][1], orient=9, xstart=sw[2][0])
+        img_hog, boxes = find_cars(img_copy, clf, x_scaler, scale=sw[0], ystart=sw[1][0], ystop=sw[1][1], orient=9)
                 
         if len(boxes) > 0:
             box_list.extend(boxes)
@@ -304,12 +298,21 @@ def detect_cars(img, clf, x_scaler, box_deque, search_windows, plot=False, thres
     
     return draw_img
 
+counter = 1
 def process_image(image, mtx, dist, M, Minv, LeftLine, RightLine, clf, x_scaler, box_deque, search_windows, threshold=1):
     img = detect_cars(image, clf, x_scaler, box_deque, search_windows, threshold)
     img = detect_lane(img, mtx, dist, M, Minv, LeftLine, RightLine)
-
     return img
-
+    
+    """
+    global counter
+    
+    if counter > 700:
+        mpimg.imsave( 'test_video_images\image_{}.jpg'.format(counter), image)
+        
+    counter += 1
+    return image
+    """
 
 def main():
     # load the params needed for image un-distortion
@@ -330,7 +333,7 @@ def main():
     x_scaler = model['scaler']
     
     # stores boxes of the last n frames
-    box_deque = collections.deque(maxlen=10)
+    box_deque = collections.deque(maxlen=5)
 
     """
     search_windows = [(1, [400, 500],  "Img 64x64", [(0,255,0), (255,0,0)]),            # 64x64
@@ -343,25 +346,28 @@ def main():
                       (2.5, [432, None], "Img 160x160",[(0,255,0), (80,120,160)])]  # 160x160    
     """
     #search_windows = [(1, [400, 500],  "Img 64x64", [(0,255,0), (255,0,0)])]
+
+    search_windows = [(1.5, [400, 560], [0, 400], "Img 96x96"),
+                      (2,   [400, 672], [0, 360],  "Img 128x128"),
+                      (2.5, [432, None], [0, 100], "Img 160x160")]
+
+
     
-    search_windows = [(1.5, [400, 592], [416, None], "Img 96x96"),
-                      (2,   [448, None], [380, None],  "Img 128x128",)]
-    
-    process = lambda image: process_image(image, mtx, dist, M, Minv, LeftLine, RightLine, clf, x_scaler, box_deque, search_windows, threshold=0)
+    process = lambda image: process_image(image, mtx, dist, M, Minv, LeftLine, RightLine, clf, x_scaler, box_deque, search_windows, threshold=3)
         
     if False:
-        test_images = glob.glob('output_images/*.jpg')
+        test_images = glob.glob('test_images/*.jpg')
         test_images.sort(key=os.path.getmtime)
         fig = plt.figure(figsize=(20,12))
         tstart = time.time()
-        for img_name in test_images[0:2]:
+        for img_name in test_images[1:3]:
             img = mpimg.imread(img_name)
-            detect_cars(img, clf, x_scaler, box_deque, search_windows, plot=True, threshold=5)
+            detect_cars(img, clf, x_scaler, box_deque, search_windows, plot=True, threshold=1)
         tend = time.time()
         print("duration: ", round(tend-tstart, 5))
         
     else:
-        output = 'project_video_processed_hogs_and_cols.mp4'
+        output = 'project_video_processed_newest2.mp4'
         clip = VideoFileClip("project_video.mp4")    
         #output = 'test_video_processed_hog_and_cols.mp4'
         #clip = VideoFileClip("test_video.mp4")    
