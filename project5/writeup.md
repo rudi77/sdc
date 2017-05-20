@@ -180,13 +180,14 @@ The following images show the sliding windows at different scales and the image 
 ---
 
 
-### Video Implementation
+## Video Implementation
 
-####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
 Here's a [link to my video result](./project_video.mp4)
 
 
 
 ## Discussion
+My pipeline is able to detect vehicles and suppresses successfully most false positives at least in the given test and project videos.
+The most time consuming part was not the programming part (some code was already provided by udacity) but the feature engineering and the generation of the project_video.
 
 
