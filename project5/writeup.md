@@ -161,16 +161,17 @@ The code can be found in the file `classifier.py` and the svm model is generated
          dump(clf, X_scaler, metrics clf.best_params_, dumpfile)
 ```
 
-## 3. Image Processing Pipelin
+## 3. Image Processing Pipeline
+This is the part where vehicles are detected in each video frame.
 
-#### Sliding Window Search and Heatmap
+#### Sliding Window Search
 Sliding windows of different sizes are used to detect vehicles - actually the size of the sliding window is not really changed but search area is resized which has the same effect as changing the sliding window's size. This part is implemented in the `find_cars()` in the file `pipeline.py` and is based on the function that was provided in the Udacity lectures. The main idea is that we compute the HOGs only once and for the whole search area. Then we slide a window over this area extract the HOG features, the color histogram and spatial features, combine them to one feature vector and use the svm to predict a vehicle in this area. Potential areas are stored as rectangles (bounding boxes) and are returned to the caller for further processing. 
-
 I used three different window size: 96x96, 128x128 and 160x160 respectively. 
 
-The heatmap is used to detect vehicles as well as to filter false positives by using a certain threshold. The heatmap is the result of the accumulation of bounding boxes of several consecutive frames. The functions for heatmap generation and the final vehicle detections and visualization are `add_heat()`, `def apply_threshold()` and `def draw_labeled_bboxes()` - they can be found in the file `pipeline.py`. These functions were taken from the lectures.
+#### Heatmap
+The heatmap is used to detect vehicles as well as to filter false positives by using a certain threshold. The heatmap is the result of the accumulation of overlapping bounding boxes of several consecutive frames. The functions for heatmap generation and the final vehicle detections and visualization are `add_heat()`, `def apply_threshold()` and `def draw_labeled_bboxes()` - they can be found in the file `pipeline.py`. These functions were taken from the lectures.
 
-The following images show the image processing pipeline.
+The following images show the sliding windows at different scales and the image processing pipeline.
 
 ![][image5]
 
