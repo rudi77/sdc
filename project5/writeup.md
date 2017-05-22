@@ -188,6 +188,18 @@ Here's a [link to my video result](./project_video.mp4)
 
 ## Discussion
 My pipeline is able to detect vehicles and suppresses successfully most false positives at least in the given test and project videos.
-The most time consuming part was not the programming part (some code was already provided by udacity) but the feature engineering and the generation of the project_video.
+My pipeline may not work properly under different light or weather conditions - haven't test that yet. 
+Its performance is also poor, especially the sliding window search takes a lot of time. This could be improved by:
+1.) Implement the pipeline in C/C++
+2.) Parallelization, e.g. one thread per window of a certain size.
+3.) Reduce the number of sliding windows by restricting the search area.
+4.) Do not take a sliding window search at all, e.g semantic segmentation.
+
+Manual feature engineering is also very time consuming - finding the right features needs lots of experimentation and takes time. This could be avoid by using e.g. a CNN. The advantages of such an approach:
+- No manual feature engineering needed.
+- Spatial information is taken into account.
+- End-to-end solution.
+
+Finally, I think this project was again very interesting and funny. I'm looking forward to the next challenge.
 
 
