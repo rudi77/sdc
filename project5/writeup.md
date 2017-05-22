@@ -1,6 +1,3 @@
-# UNDER CONSTRUCTION #
-
-
 # Vehicle Detection Project
 
 This is this fifth and last project of the first term. In this project vehicles in a provided movie shall be detected. Additionaly, I've also re-used the code from project 4 to detect road lanes.
@@ -169,7 +166,8 @@ Sliding windows of different sizes are used to detect vehicles - actually the si
 I used three different window size: 96x96, 128x128 and 160x160 respectively. 
 
 #### Heatmap
-The heatmap is used to detect vehicles as well as to filter false positives by using a certain threshold. The heatmap is the result of the accumulation of overlapping bounding boxes of several consecutive frames. The functions for heatmap generation and the final vehicle detections and visualization are `add_heat()`, `def apply_threshold()` and `def draw_labeled_bboxes()` - they can be found in the file `pipeline.py`. These functions were taken from the lectures.
+The heatmap is used to detect vehicles as well as to filter false positives by using a certain threshold. The heatmap is the result of the accumulation of overlapping bounding boxes of several consecutive frames. The functions for heatmap generation and the final vehicle detections and visualization are `add_heat()`, `def apply_threshold()` and `def draw_labeled_bboxes()` - they can be found in the file `pipeline.py`. These functions were taken from the lectures. 
+I set the threshold to 5 and bounding boxes of the last 10 frames are kept and used for thresholding.
 
 The following images show the sliding windows at different scales and the image processing pipeline.
 
@@ -195,7 +193,7 @@ Its performance is also poor, especially the sliding window search takes a lot o
 3. Reduce the number of sliding windows by restricting the search area.
 4. Use a different approach, e.g. semantic segmentation.
 
-Manual feature engineering is also very time consuming - finding the right features needs lots of experimentation and takes time. This could be avoid by using e.g. a CNN. The advantages of such an approach:
+Manual feature engineering is also very time consuming - finding the right features needs lots of experimentation and takes time. This could be avoided by using e.g. a CNN. The advantages of such an approach:
 1. No manual feature engineering needed.
 2. Spatial information is taken into account.
 3. End-to-end solution.
