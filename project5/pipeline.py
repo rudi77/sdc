@@ -5,8 +5,10 @@ Created on Sun May 14 21:55:11 2017
 @author: rudi
 """
 import os
+import sys
 import collections
 import numpy as np
+import getopt
 import cv2
 import glob
 import time
@@ -29,6 +31,7 @@ from scipy.ndimage.measurements import label
 import helpers
 import line
 import dataset_generator as dg
+import classifier
 
 
 # Define a single function that can extract features using hog sub-sampling and make predictions
@@ -298,81 +301,81 @@ def detect_cars(img, clf, x_scaler, box_deque, search_windows, plot=False, thres
     
     return draw_img
 
-counter = 1
 def process_image(image, mtx, dist, M, Minv, LeftLine, RightLine, clf, x_scaler, box_deque, search_windows, threshold=1):
     img = detect_cars(image, clf, x_scaler, box_deque, search_windows, threshold)
-    img = detect_lane(img, mtx, dist, M, Minv, LeftLine, RightLine)
+    img = detect_lane(img, mtx, dist, M, Minv, LeftLine, RightLine)    
     return img
     
-    """
-    global counter
+
+def usage():
+    print("usage: python model.py [-d]|[-t datasetfile]|[-p modelfile]")
+    print("arguments")
+    print("-h                   Help")
+    print("-d, --dataset        Generates the dataset dataset.tsv file. ")   
+    print("-t, --train          Trains a svm model. Provide it with the dataset.tsv file. The output is a svm_tuned_dataset.pkl file")
+    print("-p, --process        Process the video. Use svm_tuned_dataset.pkl as model file")    
+
+
+def main(argv):
     
-    if counter > 700:
-        mpimg.imsave( 'test_video_images\image_{}.jpg'.format(counter), image)
-        
-    counter += 1
-    return image
-    """
-
-def main():
-    # load the params needed for image un-distortion
-    params = helpers.load('parameters.p', './')
-    mtx = params['mtx']
-    dist = params['dist']
-    M = params['M']
-    Minv = params['Minv']
+    try:
+        opts, args = getopt.getopt(argv,"hdt:p::",["dataset", "train", "process"])
+        for opt, arg in opts:
+            if opt == '-h':
+                usage()
+                sys.exit()
+            elif opt in ('-d', '--dataset'):
+                dg.generate_datasets()
+            elif opt in ('-t', '--train'):
+                classifier.train_models([opt])
+            elif opt in ('-p', '--process'):                
+                # load the params needed for image un-distortion
+                params = helpers.load('parameters.p', './')
+                mtx = params['mtx']
+                dist = params['dist']
+                M = params['M']
+                Minv = params['Minv']
+                
+                LeftLine = line.Line(max_lines=3)
+                RightLine = line.Line(max_lines=3)
+                
+                # Load svm model and scaler
+                model = joblib.load(arg)    
+                clf = model['clf']
+                x_scaler = model['scaler']
+                
+                # stores boxes of the last n frames
+                box_deque = collections.deque(maxlen=10)
+            
+                search_windows = [(1.5, [400, 560], [0, 400], "Img 96x96"),
+                                  (2,   [400, 672], [0, 360],  "Img 128x128"),
+                                  (2.5, [432, None], [0, 100], "Img 160x160")]
+                
+                process = lambda image: process_image(image, mtx, dist, M, Minv, LeftLine, RightLine, clf, x_scaler, box_deque, search_windows, threshold=5)
+                    
+                if False:
+                    test_images = glob.glob('test_images/*.jpg')
+                    test_images.sort(key=os.path.getmtime)
+                    fig = plt.figure(figsize=(20,12))
+                    tstart = time.time()
+                    for img_name in test_images[1:3]:
+                        img = mpimg.imread(img_name)
+                        detect_cars(img, clf, x_scaler, box_deque, search_windows, plot=True, threshold=1)
+                    tend = time.time()
+                    print("duration: ", round(tend-tstart, 5))        
+                else:
+                    #output = 'project_video_processed.mp4'
+                    #clip = VideoFileClip("project_video.mp4")     
+                    output = 'test_video_processed.mp4'
+                    clip = VideoFileClip("test_video.mp4")     
+                    output_clip = clip.fl_image(process) 
+                    output_clip.write_videofile(output, audio=False)
+                
+    except getopt.GetoptError:
+        usage()
+        sys.exit(2)    
     
-    LeftLine = line.Line(max_lines=3)
-    RightLine = line.Line(max_lines=3)
+    sys.exit()
     
-    # Load svm model and scaler
-    #model = joblib.load('svm_tuned_dataset_8_2_9_3_16_3_16_16_gray_with_color.pkl')
-    #model = joblib.load('svm_tuned_dataset_8_2_9_hog_only.pkl')
-    model = joblib.load('svm_tuned_dataset_8_2_9_3_16_3_16_16_all.pkl')    
-    clf = model['clf']
-    x_scaler = model['scaler']
-    
-    # stores boxes of the last n frames
-    box_deque = collections.deque(maxlen=5)
-
-    """
-    search_windows = [(1, [400, 500],  "Img 64x64", [(0,255,0), (255,0,0)]),            # 64x64
-                       (1.5, [400, 656],  "Img 96x96", [(0,255,0), (200,200,0)]),       # 96x96
-                       (2,   [450, None],  "Img 128x128",[(0,255,0), (120,120,0)]),     # 128x128
-                       (2.5, [450, None], "Img 160x160",[(0,255,0), (80,120,160)])]     # 166x 160
-
-    search_windows = [(1.5, [400, 656],  "Img 96x96", [(0,255,0), (200,200,0)]),
-                      (2,   [400, None],  "Img 128x128",[(0,255,0), (120,120,0)]),
-                      (2.5, [432, None], "Img 160x160",[(0,255,0), (80,120,160)])]  # 160x160    
-    """
-    #search_windows = [(1, [400, 500],  "Img 64x64", [(0,255,0), (255,0,0)])]
-
-    search_windows = [(1.5, [400, 560], [0, 400], "Img 96x96"),
-                      (2,   [400, 672], [0, 360],  "Img 128x128"),
-                      (2.5, [432, None], [0, 100], "Img 160x160")]
-
-
-    
-    process = lambda image: process_image(image, mtx, dist, M, Minv, LeftLine, RightLine, clf, x_scaler, box_deque, search_windows, threshold=3)
-        
-    if False:
-        test_images = glob.glob('test_images/*.jpg')
-        test_images.sort(key=os.path.getmtime)
-        fig = plt.figure(figsize=(20,12))
-        tstart = time.time()
-        for img_name in test_images[1:3]:
-            img = mpimg.imread(img_name)
-            detect_cars(img, clf, x_scaler, box_deque, search_windows, plot=True, threshold=1)
-        tend = time.time()
-        print("duration: ", round(tend-tstart, 5))
-        
-    else:
-        output = 'project_video_processed_newest2.mp4'
-        clip = VideoFileClip("project_video.mp4")    
-        #output = 'test_video_processed_hog_and_cols.mp4'
-        #clip = VideoFileClip("test_video.mp4")    
-        output_clip = clip.fl_image(process) 
-        output_clip.write_videofile(output, audio=False)
-
-
-if __name__ == "__main__": main()
+if __name__ == "__main__": 
+    main(sys.argv[1:])

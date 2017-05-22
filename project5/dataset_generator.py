@@ -139,7 +139,7 @@ def create_feature_row(img, pix_per_cell=8, cells_per_block=2, orient=9, color_b
         return np.concatenate(([imgname], features, [label])).tolist()
 
 
-def generate_datasets():
+def generate_datasets(fname='dataset.tsv'):
     
     def write_features(filename, feature_rows, header):
         df = pd.DataFrame(feature_rows, columns=header)
@@ -152,8 +152,7 @@ def generate_datasets():
     notcars = glob.glob('training_set/non-vehicles/**/*.png')
     
     CAR = 1
-    NOTCAR = 0
-    
+    NOTCAR = 0    
     pix_per_cell = 8
     cell_per_block = 2
     
@@ -161,7 +160,7 @@ def generate_datasets():
     for i in range(9,10,1):
         orient = i
     
-        filename = 'dataset_8_2_{}_3_16_3_16_16_all.tsv'.format(orient)
+        filename = fname
         
         print('generating ', filename)
         

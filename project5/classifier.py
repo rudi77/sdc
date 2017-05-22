@@ -134,9 +134,8 @@ def train_models(filenames, tune_model=True):
         base = os.path.basename(filename)
         name = os.path.splitext(base)
         dumpfile = "svm_tuned_{}.pkl".format(name[0]) if tune_model == True else "svm_{}.pkl".format(name[0])
-        dump(clf, X_scaler, metrics clf.best_params_, dumpfile)
-
-filenames = ['dataset_8_2_9_hog_only.tsv', 'dataset_8_2_9_3_16_3_16_16_gray_with_color.tsv', 'dataset_8_2_9_3_16_3_16_16_all.tsv']
+        dump(clf, X_scaler, metrics, clf.best_params_, dumpfile)
+        
+#filenames = ['dataset_8_2_9_hog_only.tsv', 'dataset_8_2_9_3_16_3_16_16_gray_with_color.tsv', 'dataset_8_2_9_3_16_3_16_16_all.tsv']
 #filenames = ['dataset_8_2_9_3_16_3_16_16_all.tsv'] 
-train_models(filenames)
-
+#train_models(filenames)
