@@ -1,4 +1,19 @@
+
+[//]: # (Image References)
+[image0]: ./output_images/image_1.jpg
+[image1]: ./output_images/car_notcar.png
+[image2]: ./output_images/hog_features.png
+[image3]: ./output_images/color_histogram.png
+[image3_2]: ./output_images/color_histogram_notcar.png
+[image4]: ./output_images/spatial_binning.png
+[image4_2]: ./output_images/spatial_binning_notcar.png
+
+[image5]: ./output_images/empty_regions.png
+[image6]: ./output_images/hot_regions.png
+
 # Vehicle Detection Project
+
+![][image0]
 
 This is this fifth and last project of the first term. In this project vehicles in a provided movie shall be detected. Additionaly, I've also re-used the code from project 4 to detect road lanes.
 
@@ -21,16 +36,6 @@ The goals / steps of this project are the following:
 [lane.py]: ./line.py
 [parameters.p]: ./parameters.p
 
-[//]: # (Image References)
-[image1]: ./output_images/car_notcar.png
-[image2]: ./output_images/hog_features.png
-[image3]: ./output_images/color_histogram.png
-[image3_2]: ./output_images/color_histogram_notcar.png
-[image4]: ./output_images/spatial_binning.png
-[image4_2]: ./output_images/spatial_binning_notcar.png
-
-[image5]: ./output_images/empty_regions.png
-[image6]: ./output_images/hot_regions.png
 
 
 ## Files in this repository
