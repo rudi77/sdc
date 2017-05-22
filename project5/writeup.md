@@ -193,7 +193,7 @@ Its performance is also poor, especially the sliding window search takes a lot o
 1. Implement the pipeline in C/C++
 2. Parallelization, e.g. one thread per window of a certain size.
 3. Reduce the number of sliding windows by restricting the search area.
-4. Do not take a sliding window search at all, e.g semantic segmentation.
+4. Use a different approach, e.g. semantic segmentation.
 
 Manual feature engineering is also very time consuming - finding the right features needs lots of experimentation and takes time. This could be avoid by using e.g. a CNN. The advantages of such an approach:
 1. No manual feature engineering needed.
