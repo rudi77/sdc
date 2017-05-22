@@ -18,7 +18,7 @@ The goals / steps of this project are the following:
 [writeup.md]: ./writeup.md
 
 [helpers.py]: ./helpers.py
-[lane.py]: ./lane.py
+[lane.py]: ./line.py
 [parameters.p]: ./parameters.p
 
 [//]: # (Image References)
@@ -46,6 +46,38 @@ This repository contains the following files.
 - [helpers.py][helpers.py] contains the functions that are used in each image processing step.
 - [lane.py][lane.py] contains the Lane and LaneSegment classes which describe the lanes that are found in a video frames.
 - [parameters.p][parameters.p] a pickle file which contains the calibration matrix, the distortion coefficients, and the transformation matrices M and Minv.
+
+## Usage
+Shows all possible cmdline args:
+```sh
+PS> python .\pipeline.py -h
+usage: python model.py [-d]|[-t datasetfile]|[-p modelfile]
+arguments
+-h                   Help
+-d, --dataset        Generates the dataset dataset.tsv file.
+-t, --train          Trains a svm model. Provide it with the dataset.tsv file. The output is a svm_tuned_dataset.pkl file
+-p, --process        Process the video. Use svm_tuned_dataset.pkl as model file
+```
+
+Generate a new dataset:
+```sh
+PS> python .\pipeline.py -d
+```
+
+Train a model:
+```sh
+PS> python .\pipeline.py -t dataset.tsv
+```
+
+Process video:
+
+```sh
+PS> python .\pipeline.py -p svm_tuned_dataset.pkl
+```
+
+NOTE: You can download a pretrained model from [here](https://drive.google.com/file/d/0B2IrqAG6bsZWckZrNHFlS2VyQkE/view?usp=sharing).
+
+
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
 ---
